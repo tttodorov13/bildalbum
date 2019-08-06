@@ -3,6 +3,7 @@
           package="blog.photo.bildalbum">
 
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
 
     <application
             android:allowBackup="true"
@@ -36,6 +37,16 @@
                 android:name="com.facebook.FacebookContentProvider"
                 android:authorities="com.facebook.app.FacebookContentProvider711450142632772"
                 android:exported="true"/>
+
+        <provider
+                android:name="androidx.core.content.FileProvider"
+                android:authorities="blog.photo.bildalbum.FileProvider"
+                android:exported="false"
+                android:grantUriPermissions="true">
+            <meta-data
+                    android:name="android.support.FILE_PROVIDER_PATHS"
+                    android:resource="@xml/file_paths"/>
+        </provider>
     </application>
 
 </manifest>

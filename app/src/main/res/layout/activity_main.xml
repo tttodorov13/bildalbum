@@ -3,17 +3,19 @@
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
+        android:background="@color/colorYellow"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:fitsSystemWindows="true"
-        tools:context=".MainActivity" android:background="#FECC00">
+        tools:context=".MainActivity">
 
     <com.google.android.material.appbar.AppBarLayout
             android:id="@+id/app_bar"
             android:fitsSystemWindows="true"
             android:layout_height="@dimen/app_bar_height"
             android:layout_width="match_parent"
-            android:theme="@style/AppTheme.AppBarOverlay" android:background="#016AA7">
+            android:theme="@style/AppTheme.AppBarOverlay"
+            android:background="#016AA7">
 
         <com.google.android.material.appbar.CollapsingToolbarLayout
                 android:id="@+id/toolbar_layout"

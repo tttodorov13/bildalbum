@@ -1,12 +1,16 @@
 package blog.photo.bildalbum
 
 import android.content.Intent
+import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import com.facebook.*
 import com.facebook.login.LoginResult
 import com.facebook.login.widget.LoginButton
+import kotlinx.android.synthetic.main.content_login.*
 
 class LoginActivity : AppCompatActivity() {
 
@@ -43,6 +47,8 @@ class LoginActivity : AppCompatActivity() {
         }
         loginButton.setPermissions("user_photos")
         loginButton.registerCallback(callbackManager, callback)
+
+        getPictures()
     }
 
     override fun onResume() {
@@ -77,6 +83,20 @@ class LoginActivity : AppCompatActivity() {
             main.putExtra("surname", profile.lastName)
             main.putExtra("imageUrl", profile.getProfilePictureUri(200, 200).toString())
             startActivity(main)
+        }
+    }
+
+    private fun getPictures() {
+        val dbHandler = PhotosDBOpenHelper(this, null)
+        val cursor = dbHandler.getAllPhotos()
+        if (cursor!!.moveToFirst()) {
+            while (cursor.moveToNext()) {
+                var view = LayoutInflater.from(this).inflate(R.layout.picture_layout, null)
+                var imageView = view.findViewById<ImageView>(R.id.picture)
+                imageView.setImageBitmap(BitmapFactory.decodeFile(cursor.getString(cursor.getColumnIndex(PhotosDBOpenHelper.COLUMN_NAME))))
+                picturesLogin.addView(view)
+            }
+            cursor.close()
         }
     }
 }
