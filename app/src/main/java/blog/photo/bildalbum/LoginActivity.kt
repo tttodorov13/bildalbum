@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
+import blog.photo.bildalbum.utils.PhotosDBOpenHelper
 import com.facebook.*
 import com.facebook.login.LoginResult
 import com.facebook.login.widget.LoginButton
@@ -57,11 +58,7 @@ class LoginActivity : AppCompatActivity() {
         val profile = Profile.getCurrentProfile()
         nextActivity(profile)
     }
-
-    override fun onPause() {
-        super.onPause()
-    }
-
+    
     override fun onStop() {
         super.onStop()
         //Facebook login
@@ -93,7 +90,15 @@ class LoginActivity : AppCompatActivity() {
             while (cursor.moveToNext()) {
                 var view = LayoutInflater.from(this).inflate(R.layout.picture_layout, null)
                 var imageView = view.findViewById<ImageView>(R.id.picture)
-                imageView.setImageBitmap(BitmapFactory.decodeFile(cursor.getString(cursor.getColumnIndex(PhotosDBOpenHelper.COLUMN_NAME))))
+                imageView.setImageBitmap(
+                    BitmapFactory.decodeFile(
+                        cursor.getString(
+                            cursor.getColumnIndex(
+                                PhotosDBOpenHelper.COLUMN_NAME
+                            )
+                        )
+                    )
+                )
                 picturesLogin.addView(view)
             }
             cursor.close()

@@ -14,6 +14,8 @@ import android.view.MenuItem
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import blog.photo.bildalbum.model.Photo
+import blog.photo.bildalbum.utils.PhotosDBOpenHelper
 import com.facebook.AccessToken
 import com.facebook.GraphRequest
 import com.facebook.login.LoginManager

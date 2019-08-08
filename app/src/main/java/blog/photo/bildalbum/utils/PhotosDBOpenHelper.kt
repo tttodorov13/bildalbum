@@ -1,10 +1,11 @@
-package blog.photo.bildalbum
+package blog.photo.bildalbum.utils
 
 import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import blog.photo.bildalbum.model.Photo
 
 class PhotosDBOpenHelper(
     context: Context,

@@ -1,4 +1,4 @@
-package blog.photo.bildalbum
+package blog.photo.bildalbum.model
 
 class Photo(var path: String?) {
     var id: Int = 0
