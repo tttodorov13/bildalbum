@@ -12,4 +12,6 @@
     <string name="FLICKR_API_LANG">en-us</string>
     <string name="flickr_pictures_download">Flickr Pictures Download</string>
     <string name="my_friend">My Friend</string>
+    <string name="INTERNET_CONNECTION">There is Internet connection!</string>
+    <string name="NO_INTERNET_CONNECTION">There is no Internet connection!</string>
 </resources>

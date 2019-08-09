@@ -29,7 +29,7 @@
                 app:contentScrim="?attr/colorPrimary">
 
             <androidx.appcompat.widget.Toolbar
-                    android:id="@+id/toolbarLogin"
+                    android:id="@+id/toolbar"
                     android:layout_height="?attr/actionBarSize"
                     android:layout_width="match_parent"
                     app:layout_collapseMode="pin"

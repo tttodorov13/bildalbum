@@ -4,16 +4,16 @@ import android.content.Intent
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.View
 import android.widget.ImageView
-import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isInvisible
+import blog.photo.bildalbum.receiver.ConnectivityReceiver
 import blog.photo.bildalbum.utils.PhotosDBOpenHelper
 import com.facebook.*
 import com.facebook.login.LoginResult
-import com.facebook.login.widget.LoginButton
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_login.*
 
-class LoginActivity : AppCompatActivity() {
+class LoginActivity : BaseActivity() {
     private var callbackManager: CallbackManager? = null
     private var accessTokenTracker: AccessTokenTracker? = null
     private var profileTracker: ProfileTracker? = null
@@ -21,6 +21,9 @@ class LoginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
+
+        for(i in getStoredImagesPaths())
+            displayImage(i)
 
         callbackManager = CallbackManager.Factory.create()
         accessTokenTracker = object : AccessTokenTracker() {
@@ -34,7 +37,6 @@ class LoginActivity : AppCompatActivity() {
         accessTokenTracker?.startTracking()
         profileTracker?.startTracking()
 
-        val loginButton = findViewById<View>(R.id.buttonFacebookLogin) as LoginButton
         val callback = object : FacebookCallback<LoginResult> {
             override fun onSuccess(loginResult: LoginResult) {
                 val profile = Profile.getCurrentProfile()
@@ -45,10 +47,8 @@ class LoginActivity : AppCompatActivity() {
 
             override fun onError(e: FacebookException) {}
         }
-        loginButton.setPermissions("user_photos")
-        loginButton.registerCallback(callbackManager, callback)
-
-        getPictures()
+        buttonFacebookLogin.setPermissions("user_photos")
+        buttonFacebookLogin.registerCallback(callbackManager, callback)
     }
 
     override fun onResume() {
@@ -57,7 +57,11 @@ class LoginActivity : AppCompatActivity() {
         val profile = Profile.getCurrentProfile()
         nextActivity(profile)
     }
-    
+
+    override fun onNetworkConnectionChanged(isConnected: Boolean) {
+        buttonFacebookLogin.isInvisible = !ConnectivityReceiver.isConnectedOrConnecting(this)
+    }
+
     override fun onStop() {
         super.onStop()
         //Facebook login
@@ -69,28 +73,6 @@ class LoginActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, responseCode, intent)
         //Facebook login
         callbackManager?.onActivityResult(requestCode, responseCode, intent)
-    }
-
-    private fun getPictures() {
-        val dbHandler = PhotosDBOpenHelper(this, null)
-        val cursor = dbHandler.getAllPhotos()
-        if (cursor!!.moveToFirst()) {
-            while (cursor.moveToNext()) {
-                var view = LayoutInflater.from(this).inflate(R.layout.picture_layout, null)
-                var imageView = view.findViewById<ImageView>(R.id.picture)
-                imageView.setImageBitmap(
-                    BitmapFactory.decodeFile(
-                        cursor.getString(
-                            cursor.getColumnIndex(
-                                PhotosDBOpenHelper.COLUMN_NAME
-                            )
-                        )
-                    )
-                )
-                picturesLogin.addView(view)
-            }
-            cursor.close()
-        }
     }
 
     private fun nextActivity(profile: Profile?) {

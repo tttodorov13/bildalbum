@@ -12,12 +12,11 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
-import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import blog.photo.bildalbum.model.FlickrPhoto
 import blog.photo.bildalbum.model.Image
+import blog.photo.bildalbum.receiver.ConnectivityReceiver
 import blog.photo.bildalbum.utils.*
 import com.facebook.AccessToken
 import com.facebook.GraphRequest
@@ -32,7 +31,7 @@ import java.io.FileOutputStream
 import java.lang.System.currentTimeMillis
 import java.util.*
 
-class MainActivity : AppCompatActivity(), DownloadData.OnDownloadComplete, GetFlickrJsonData.OnDataAvailable {
+class MainActivity : BaseActivity(), DownloadData.OnDownloadComplete, GetFlickrJsonData.OnDataAvailable {
     private val TAG = "MainActivityFlickr"
     private val flickrRVAdapter = FlickrRecyclerViewAdapter(ArrayList())
     private var shareDialog: ShareDialog? = null
@@ -43,7 +42,8 @@ class MainActivity : AppCompatActivity(), DownloadData.OnDownloadComplete, GetFl
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
-        displayImages(getStoredImagesPaths())
+        for(i in getStoredImagesPaths())
+            displayImage(i)
 
         Log.d(TAG, "onCreate called")
 
@@ -52,8 +52,7 @@ class MainActivity : AppCompatActivity(), DownloadData.OnDownloadComplete, GetFl
         shareDialog = ShareDialog(this)
 
         fab.setOnClickListener {
-            val content = ShareLinkContent.Builder().build()
-            shareDialog?.show(content)
+            shareDialog?.show(ShareLinkContent.Builder().build())
         }
 
         val inBundle = intent.extras
@@ -63,16 +62,15 @@ class MainActivity : AppCompatActivity(), DownloadData.OnDownloadComplete, GetFl
 
         nameAndSurname.text = "$name $surname"
 
-//        CreateImage(this, profileImage, false).execute(imageUrl)
-
-        buttonLogoutFacebook?.setOnClickListener {
-            LoginManager.getInstance().logOut()
-            val login = Intent(this@MainActivity, LoginActivity::class.java)
-            startActivity(login)
-            finish()
+        if (ConnectivityReceiver.isConnectedOrConnecting(this)) {
+            CreateImage(this, profileImage, false).execute(imageUrl)
         }
 
-        buttonFacebookPictureDownload?.setOnClickListener {
+        buttonLogoutFacebook?.setOnClickListener {
+            facebookLogout()
+        }
+
+        buttonFacebookPicturesDownload?.setOnClickListener {
             getFacebookPictures()
         }
 
@@ -94,6 +92,19 @@ class MainActivity : AppCompatActivity(), DownloadData.OnDownloadComplete, GetFl
         return when (item.itemId) {
             R.id.action_settings -> true
             else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    fun facebookLogout() {
+        LoginManager.getInstance().logOut()
+        val login = Intent(this@MainActivity, LoginActivity::class.java)
+        startActivity(login)
+        finish()
+    }
+
+    override fun onNetworkConnectionChanged(isConnected: Boolean) {
+        if (!ConnectivityReceiver.isConnectedOrConnecting(this)) {
+            facebookLogout()
         }
     }
 
@@ -120,7 +131,8 @@ class MainActivity : AppCompatActivity(), DownloadData.OnDownloadComplete, GetFl
 
         override fun onPostExecute(result: Bitmap) {
             if (save) {
-                val path = storeImage(result);
+                val path = storeImage(result)
+                displayImage(path)
                 val photo = Image(path)
                 val dbHandler = PhotosDBOpenHelper(context, null)
                 dbHandler.addPhoto(photo)
@@ -136,12 +148,10 @@ class MainActivity : AppCompatActivity(), DownloadData.OnDownloadComplete, GetFl
             )
 
             if (!storageDir.exists()) {
-                storageDir.mkdirs();
+                storageDir.mkdirs()
             }
 
-            val n = System.currentTimeMillis()
-            val fileName = "pic$n.jpg"
-            val file = File(storageDir, fileName)
+            val file = File(storageDir, "pic" + currentTimeMillis() + ".jpg")
             if (file.exists())
                 file.delete()
 
@@ -167,48 +177,6 @@ class MainActivity : AppCompatActivity(), DownloadData.OnDownloadComplete, GetFl
             .build().toString()
     }
 
-    private fun displayImages(imagesPaths: MutableList<String>) {
-        var view = LayoutInflater.from(this).inflate(R.layout.picture_layout, null)
-        var imageView = view.findViewById<ImageView>(R.id.picture)
-
-        for (imagePath in imagesPaths) {
-            imageView.id = currentTimeMillis().toInt()
-            imageView.setImageBitmap(BitmapFactory.decodeFile(imagePath))
-            if (imageView.parent != null) {
-                (imageView.parent as ViewGroup).removeView(imageView)
-            }
-            pictures.addView(imageView)
-        }
-    }
-
-    private fun getStoredImagesPaths(): MutableList<String> {
-        var listStoredImagesPaths = mutableListOf<String>()
-
-        val dbHandler = PhotosDBOpenHelper(this, null)
-        val cursor = dbHandler.getAllPhotos()
-        if (cursor!!.moveToFirst()) {
-            listStoredImagesPaths.add(
-                cursor.getString(
-                    cursor.getColumnIndex(
-                        PhotosDBOpenHelper.COLUMN_NAME
-                    )
-                )
-            )
-            while (cursor.moveToNext()) {
-                listStoredImagesPaths.add(
-                    cursor.getString(
-                        cursor.getColumnIndex(
-                            PhotosDBOpenHelper.COLUMN_NAME
-                        )
-                    )
-                )
-            }
-        }
-        cursor.close()
-
-        return listStoredImagesPaths
-    }
-
     private fun getFacebookPictures() {
         val callback: GraphRequest.Callback = GraphRequest.Callback { response ->
             var listPictures = mutableListOf<String>()
@@ -227,8 +195,6 @@ class MainActivity : AppCompatActivity(), DownloadData.OnDownloadComplete, GetFl
                 val imageView = view.findViewById<ImageView>(R.id.picture)
                 CreateImage(this, imageView).execute(listPictures.get(i))
             }
-
-            displayImages(listPictures)
         }
 
         val request = GraphRequest.newGraphPathRequest(
