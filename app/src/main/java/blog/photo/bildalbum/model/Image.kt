@@ -1,6 +1,6 @@
 package blog.photo.bildalbum.model
 
-class Photo(var path: String?) {
+class Image(var path: String?) {
     var id: Int = 0
     var album: String? = null
 

@@ -14,7 +14,6 @@ import com.facebook.login.widget.LoginButton
 import kotlinx.android.synthetic.main.content_login.*
 
 class LoginActivity : AppCompatActivity() {
-
     private var callbackManager: CallbackManager? = null
     private var accessTokenTracker: AccessTokenTracker? = null
     private var profileTracker: ProfileTracker? = null
@@ -35,7 +34,7 @@ class LoginActivity : AppCompatActivity() {
         accessTokenTracker?.startTracking()
         profileTracker?.startTracking()
 
-        val loginButton = findViewById<View>(R.id.login_button) as LoginButton
+        val loginButton = findViewById<View>(R.id.buttonFacebookLogin) as LoginButton
         val callback = object : FacebookCallback<LoginResult> {
             override fun onSuccess(loginResult: LoginResult) {
                 val profile = Profile.getCurrentProfile()
@@ -70,17 +69,6 @@ class LoginActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, responseCode, intent)
         //Facebook login
         callbackManager?.onActivityResult(requestCode, responseCode, intent)
-
-    }
-
-    private fun nextActivity(profile: Profile?) {
-        if (profile != null) {
-            val main = Intent(this@LoginActivity, MainActivity::class.java)
-            main.putExtra("name", profile.firstName)
-            main.putExtra("surname", profile.lastName)
-            main.putExtra("imageUrl", profile.getProfilePictureUri(200, 200).toString())
-            startActivity(main)
-        }
     }
 
     private fun getPictures() {
@@ -102,6 +90,16 @@ class LoginActivity : AppCompatActivity() {
                 picturesLogin.addView(view)
             }
             cursor.close()
+        }
+    }
+
+    private fun nextActivity(profile: Profile?) {
+        if (profile != null) {
+            val main = Intent(this@LoginActivity, MainActivity::class.java)
+            main.putExtra("name", profile.firstName)
+            main.putExtra("surname", profile.lastName)
+            main.putExtra("imageUrl", profile.getProfilePictureUri(200, 200).toString())
+            startActivity(main)
         }
     }
 }

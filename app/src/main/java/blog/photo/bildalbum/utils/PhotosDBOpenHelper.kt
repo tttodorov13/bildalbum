@@ -5,7 +5,7 @@ import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
-import blog.photo.bildalbum.model.Photo
+import blog.photo.bildalbum.model.Image
 
 class PhotosDBOpenHelper(
     context: Context,
@@ -29,7 +29,7 @@ class PhotosDBOpenHelper(
         onCreate(db)
     }
 
-    fun addPhoto(photo: Photo) {
+    fun addPhoto(photo: Image) {
         val values = ContentValues()
         values.put(COLUMN_NAME, photo.path)
         val db = this.writableDatabase

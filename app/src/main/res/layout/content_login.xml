@@ -7,7 +7,6 @@
         tools:showIn="@layout/activity_main"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="40dp"
         tools:context=".LoginActivity">
 
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -17,14 +16,31 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-                    tools:context="org.testintegration.MainActivity"
+                    tools:context="blog.photo.bildalbum.MainActivity"
                     tools:showIn="@layout/activity_main">
 
         <LinearLayout
                 android:id="@+id/picturesLogin"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:orientation="vertical"/>
+                android:orientation="vertical">
+
+            <com.facebook.login.widget.LoginButton
+                    android:id="@+id/buttonFacebookLogin"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:layout_margin="4dp"
+                    android:gravity="center"
+                    android:paddingTop="12dp"
+                    android:paddingBottom="12dp"
+                    android:layout_marginTop="40dp"
+                    android:layout_marginLeft="4dp"
+                    android:layout_marginStart="4dp"
+                    android:layout_marginEnd="4dp"
+                    android:layout_marginRight="4dp"/>
+
+        </LinearLayout>
 
     </RelativeLayout>
 
