@@ -14,7 +14,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.ImageView
 import android.widget.Toast
-import blog.photo.bildalbum.model.FlickrPhoto
+import blog.photo.bildalbum.model.FlickrImage
 import blog.photo.bildalbum.model.Image
 import blog.photo.bildalbum.receiver.ConnectivityReceiver
 import blog.photo.bildalbum.utils.*
@@ -31,9 +31,8 @@ import java.io.FileOutputStream
 import java.lang.System.currentTimeMillis
 import java.util.*
 
-class MainActivity : BaseActivity(), DownloadData.OnDownloadComplete, GetFlickrJsonData.OnDataAvailable {
+class MainActivity : BaseActivity(), FlickrDownloadData.OnDownloadComplete, FlickrJsonData.OnDataAvailable {
     private val TAG = "MainActivityFlickr"
-    private val flickrRVAdapter = FlickrRecyclerViewAdapter(ArrayList())
     private var shareDialog: ShareDialog? = null
     private val limitDownloadPictures: Int? = 5
 
@@ -95,17 +94,17 @@ class MainActivity : BaseActivity(), DownloadData.OnDownloadComplete, GetFlickrJ
         }
     }
 
+    override fun onNetworkConnectionChanged(isConnected: Boolean) {
+        if (!ConnectivityReceiver.isConnectedOrConnecting(this)) {
+            facebookLogout()
+        }
+    }
+
     fun facebookLogout() {
         LoginManager.getInstance().logOut()
         val login = Intent(this@MainActivity, LoginActivity::class.java)
         startActivity(login)
         finish()
-    }
-
-    override fun onNetworkConnectionChanged(isConnected: Boolean) {
-        if (!ConnectivityReceiver.isConnectedOrConnecting(this)) {
-            facebookLogout()
-        }
     }
 
     inner class CreateImage(context: Context, var bmImage: ImageView, save: Boolean) :
@@ -133,21 +132,15 @@ class MainActivity : BaseActivity(), DownloadData.OnDownloadComplete, GetFlickrJ
             if (save) {
                 val path = storeImage(result)
                 displayImage(path)
-                val photo = Image(path)
-                val dbHandler = PhotosDBOpenHelper(context, null)
-                dbHandler.addPhoto(photo)
+                ImagesDBOpenHelper(context, null).addPhoto(Image(path))
             }
             bmImage.setImageBitmap(result)
         }
 
         private fun storeImage(finalBitmap: Bitmap): String {
-            val storageDir = File(
-                Environment.getExternalStoragePublicDirectory(
-                    Environment.DIRECTORY_PICTURES
-                ), "bildalbum"
-            )
+            val storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
 
-            if (!storageDir.exists()) {
+            if (!storageDir!!.exists()) {
                 storageDir.mkdirs()
             }
 
@@ -168,32 +161,20 @@ class MainActivity : BaseActivity(), DownloadData.OnDownloadComplete, GetFlickrJ
         }
     }
 
-    private fun createFlickrUri(baseUri: String, tags: String, lang: String, matchAll: Boolean): String {
-        Log.d(TAG, "createFlickrUri starts")
-
-        return Uri.parse(baseUri).buildUpon().appendQueryParameter("tags", tags).appendQueryParameter("lang", lang)
-            .appendQueryParameter("tagmode", if (matchAll) "ALL" else "ANY").appendQueryParameter("format", "json")
-            .appendQueryParameter("nojsoncallback", "1")
-            .build().toString()
-    }
-
     private fun getFacebookPictures() {
         val callback: GraphRequest.Callback = GraphRequest.Callback { response ->
-            var listPictures = mutableListOf<String>()
+            var facebookImagesPaths = mutableListOf<String>()
             val data = response.jsonObject.getJSONArray("data")
 
             for (i in 0 until data.length()) {
-                listPictures.add(
+                facebookImagesPaths.add(
                     JSONObject(
                         data.get(
                             i
                         ).toString()
                     ).get("picture").toString()
                 )
-
-                val view = LayoutInflater.from(this).inflate(R.layout.picture_layout, null)
-                val imageView = view.findViewById<ImageView>(R.id.picture)
-                CreateImage(this, imageView).execute(listPictures.get(i))
+                CreateImage(this, LayoutInflater.from(this).inflate(R.layout.picture_layout, null).findViewById(R.id.picture)).execute(facebookImagesPaths.get(i))
             }
         }
 
@@ -218,29 +199,33 @@ class MainActivity : BaseActivity(), DownloadData.OnDownloadComplete, GetFlickrJ
             getString(R.string.FLICKR_API_LANG),
             true
         )
-        val downloadData = DownloadData(this)
-        downloadData.execute(uri)
+        FlickrDownloadData(this).execute(uri)
         Log.d(TAG, "onCreate ended")
     }
 
-    override fun onDownloadComplete(data: String, status: DownloadStatus) {
-        Log.d(TAG, "Flickr Integration onDownloadComplete, status: $status")
-        if (status == DownloadStatus.OK) {
-            val parser = GetFlickrJsonData(this)
-            parser.execute(data)
-        }
+    private fun createFlickrUri(baseUri: String, tags: String, lang: String, matchAll: Boolean): String {
+        Log.d(TAG, "createFlickrUri starts")
+
+        return Uri.parse(baseUri).buildUpon().appendQueryParameter("tags", tags).appendQueryParameter("lang", lang)
+            .appendQueryParameter("tagmode", if (matchAll) "ALL" else "ANY").appendQueryParameter("format", "json")
+            .appendQueryParameter("nojsoncallback", "1")
+            .build().toString()
     }
 
-    override fun onDataAvailable(data: ArrayList<FlickrPhoto>) {
+    override fun onDownloadComplete(data: String, statusFlickr: FlickrDownloadStatus) {
+        Log.d(TAG, "Flickr Integration onDownloadComplete, statusFlickr: $statusFlickr")
+        if (statusFlickr == FlickrDownloadStatus.OK)
+            FlickrJsonData(this).execute(data)
+    }
+
+    override fun onDataAvailable(data: ArrayList<FlickrImage>) {
         Log.d(TAG, "Flickr Integration onDataAvailable starts")
         data.forEach {
-            var view = LayoutInflater.from(this).inflate(R.layout.picture_layout, null)
-            var imageView = view.findViewById<ImageView>(R.id.picture)
-            CreateImage(this, imageView).execute(it.image)
-            pictures.addView(view)
+            CreateImage(
+                this,
+                LayoutInflater.from(this).inflate(R.layout.picture_layout, null).findViewById(R.id.picture)
+            ).execute(it.image)
         }
-
-        flickrRVAdapter.loadNewData(data)
         Log.d(TAG, "Flickr Integration onDataAvailable ends")
     }
 

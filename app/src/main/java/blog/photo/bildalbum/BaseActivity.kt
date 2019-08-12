@@ -11,7 +11,7 @@ import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import blog.photo.bildalbum.receiver.ConnectivityReceiver
-import blog.photo.bildalbum.utils.PhotosDBOpenHelper
+import blog.photo.bildalbum.utils.ImagesDBOpenHelper
 import kotlinx.android.synthetic.main.content_main.*
 
 // THIS IS THE BASE ACTIVITY OF ALL ACTIVITIES OF THE APPLICATION
@@ -55,13 +55,13 @@ open class BaseActivity : AppCompatActivity(), ConnectivityReceiver.Connectivity
 
     fun getStoredImagesPaths(): MutableList<String> {
         var listStoredImagesPaths = mutableListOf<String>()
-        val cursor = PhotosDBOpenHelper(this, null).getAllPhotos()
+        val cursor = ImagesDBOpenHelper(this, null).getAllPhotos()
 
         if (cursor!!.moveToFirst()) {
             listStoredImagesPaths.add(
                 cursor.getString(
                     cursor.getColumnIndex(
-                        PhotosDBOpenHelper.COLUMN_NAME
+                        ImagesDBOpenHelper.COLUMN_NAME
                     )
                 )
             )
@@ -69,7 +69,7 @@ open class BaseActivity : AppCompatActivity(), ConnectivityReceiver.Connectivity
                 listStoredImagesPaths.add(
                     cursor.getString(
                         cursor.getColumnIndex(
-                            PhotosDBOpenHelper.COLUMN_NAME
+                            ImagesDBOpenHelper.COLUMN_NAME
                         )
                     )
                 )

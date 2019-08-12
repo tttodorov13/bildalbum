@@ -2,22 +2,22 @@ package blog.photo.bildalbum.utils
 
 import android.os.AsyncTask
 import android.util.Log
-import blog.photo.bildalbum.model.FlickrPhoto
+import blog.photo.bildalbum.model.FlickrImage
 import org.json.JSONException
 import org.json.JSONObject
 
-class GetFlickrJsonData(private val listener: OnDataAvailable) : AsyncTask<String, Void, ArrayList<FlickrPhoto>>() {
+class FlickrJsonData(private val listener: OnDataAvailable) : AsyncTask<String, Void, ArrayList<FlickrImage>>() {
 
-    private val TAG = "GetFlickrJsonData"
+    private val TAG = "FlickrJsonData"
 
     interface OnDataAvailable {
-        fun onDataAvailable(data: ArrayList<FlickrPhoto>)
+        fun onDataAvailable(data: ArrayList<FlickrImage>)
         fun onError(exception: Exception)
     }
 
-    override fun doInBackground(vararg params: String?): ArrayList<FlickrPhoto> {
+    override fun doInBackground(vararg params: String?): ArrayList<FlickrImage> {
         Log.d(TAG, "doInBackground starts")
-        val photos = ArrayList<FlickrPhoto>()
+        val photos = ArrayList<FlickrImage>()
 
         try {
             val jsonData = JSONObject(params[0].toString())
@@ -33,7 +33,7 @@ class GetFlickrJsonData(private val listener: OnDataAvailable) : AsyncTask<Strin
                 val jsonMedia = jsonObject.getJSONObject("media")
                 val photoUrl = jsonMedia.getString("m")
 
-                val photo = FlickrPhoto(title, author, authorId, link, tags, photoUrl)
+                val photo = FlickrImage(title, author, authorId, link, tags, photoUrl)
                 photos.add(photo)
                 Log.d(TAG, "doInBackground: $photo")
             }
@@ -47,7 +47,7 @@ class GetFlickrJsonData(private val listener: OnDataAvailable) : AsyncTask<Strin
         return photos
     }
 
-    override fun onPostExecute(result: ArrayList<FlickrPhoto>) {
+    override fun onPostExecute(result: ArrayList<FlickrImage>) {
         Log.d(TAG, "onPostExecute starts")
         super.onPostExecute(result)
         listener.onDataAvailable(result)

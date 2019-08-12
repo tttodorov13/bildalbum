@@ -1,16 +1,11 @@
 package blog.photo.bildalbum
 
 import android.content.Intent
-import android.graphics.BitmapFactory
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.widget.ImageView
 import androidx.core.view.isInvisible
 import blog.photo.bildalbum.receiver.ConnectivityReceiver
-import blog.photo.bildalbum.utils.PhotosDBOpenHelper
 import com.facebook.*
 import com.facebook.login.LoginResult
-import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_login.*
 
 class LoginActivity : BaseActivity() {

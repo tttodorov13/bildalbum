@@ -7,7 +7,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import blog.photo.bildalbum.model.Image
 
-class PhotosDBOpenHelper(
+class ImagesDBOpenHelper(
     context: Context,
     factory: SQLiteDatabase.CursorFactory?
 ) : SQLiteOpenHelper(
@@ -16,16 +16,16 @@ class PhotosDBOpenHelper(
 ) {
 
     override fun onCreate(db: SQLiteDatabase) {
-        val CREATE_PRODUCTS_TABLE = ("CREATE TABLE " +
-                TABLE_PHOTO + "("
+        val createTableImages = ("CREATE TABLE " +
+                TABLE_IMAGES + "("
                 + COLUMN_ID + " INTEGER PRIMARY KEY," +
                 COLUMN_NAME
                 + " TEXT" + ")")
-        db.execSQL(CREATE_PRODUCTS_TABLE)
+        db.execSQL(createTableImages)
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_PHOTO)
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_IMAGES)
         onCreate(db)
     }
 
@@ -33,20 +33,20 @@ class PhotosDBOpenHelper(
         val values = ContentValues()
         values.put(COLUMN_NAME, photo.path)
         val db = this.writableDatabase
-        db.insert(TABLE_PHOTO, null, values)
+        db.insert(TABLE_IMAGES, null, values)
         db.close()
     }
 
     fun getAllPhotos(): Cursor? {
         val db = this.readableDatabase
-        return db.rawQuery("SELECT * FROM $TABLE_PHOTO", null)
+        return db.rawQuery("SELECT * FROM $TABLE_IMAGES", null)
     }
 
     companion object {
         private val DATABASE_VERSION = 1
         private val DATABASE_NAME = "bildalbum.db"
-        val TABLE_PHOTO = "photos"
-        val COLUMN_ID = "_id"
-        val COLUMN_NAME = "path"
+        const val TABLE_IMAGES = "images"
+        const val COLUMN_ID = "_id"
+        const val COLUMN_NAME = "path"
     }
 }
