@@ -20,7 +20,7 @@
                     tools:showIn="@layout/activity_main">
 
         <LinearLayout
-                android:id="@+id/pictures"
+                android:id="@+id/content"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical">
@@ -101,6 +101,13 @@
                     android:background="#000"
                     android:textColor="#fff"
                     android:text="@string/flickr_pictures_download"/>
+
+            <LinearLayout
+                    android:id="@+id/pictures"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+            </LinearLayout>
 
         </LinearLayout>
 

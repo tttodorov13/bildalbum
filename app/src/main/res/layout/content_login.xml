@@ -20,7 +20,7 @@
                     tools:showIn="@layout/activity_main">
 
         <LinearLayout
-                android:id="@+id/pictures"
+                android:id="@+id/content"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical">
@@ -39,6 +39,13 @@
                     android:layout_marginStart="4dp"
                     android:layout_marginEnd="4dp"
                     android:layout_marginRight="4dp"/>
+
+            <LinearLayout
+                    android:id="@+id/pictures"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+            </LinearLayout>
 
         </LinearLayout>
 
