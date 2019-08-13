@@ -31,7 +31,7 @@ import java.io.FileOutputStream
 import java.lang.System.currentTimeMillis
 import java.util.*
 
-class MainActivity : BaseActivity(), FlickrDownloadData.OnDownloadComplete, FlickrJsonData.OnDataAvailable {
+class MainActivity : BaseActivity(), FlickrDownloadData.OnFlickrDownloadComplete, FlickrJsonData.OnFlickrDataAvailable {
     private val TAG = "MainActivityFlickr"
     private var shareDialog: ShareDialog? = null
     private val limitDownloadPictures: Int? = 5
@@ -69,12 +69,12 @@ class MainActivity : BaseActivity(), FlickrDownloadData.OnDownloadComplete, Flic
             facebookLogout()
         }
 
-        buttonFacebookPicturesDownload?.setOnClickListener {
-            getFacebookPictures()
+        buttonFacebookImagesDownload?.setOnClickListener {
+            getFacebookImages()
         }
 
-        buttonFlickrPicturesDownload?.setOnClickListener {
-            getFlickrPictures()
+        buttonFlickrImagesDownload?.setOnClickListener {
+            getFlickrImages()
         }
     }
 
@@ -161,20 +161,18 @@ class MainActivity : BaseActivity(), FlickrDownloadData.OnDownloadComplete, Flic
         }
     }
 
-    private fun getFacebookPictures() {
+    private fun getFacebookImages() {
         val callback: GraphRequest.Callback = GraphRequest.Callback { response ->
-            var facebookImagesPaths = mutableListOf<String>()
             val data = response.jsonObject.getJSONArray("data")
 
             for (i in 0 until data.length()) {
-                facebookImagesPaths.add(
+                CreateImage(this, LayoutInflater.from(this).inflate(R.layout.image_layout, null).findViewById(R.id.picture)).execute(
                     JSONObject(
                         data.get(
                             i
                         ).toString()
                     ).get("picture").toString()
                 )
-                CreateImage(this, LayoutInflater.from(this).inflate(R.layout.picture_layout, null).findViewById(R.id.picture)).execute(facebookImagesPaths.get(i))
             }
         }
 
@@ -187,12 +185,13 @@ class MainActivity : BaseActivity(), FlickrDownloadData.OnDownloadComplete, Flic
         val parameters = Bundle()
         parameters.putString("fields", "picture")
         parameters.putString("limit", limitDownloadPictures.toString())
-        request.version = "v4.0"
+        request.version = getString(R.string.FACEBOOK_API_VERSION)
         request.parameters = parameters
         request.executeAsync()
     }
 
-    private fun getFlickrPictures() {
+    private fun getFlickrImages() {
+        Log.d(TAG, "getFlickrImages starts")
         val uri = createFlickrUri(
             getString(R.string.FLICKR_API_URI),
             getString(R.string.FLICKR_API_TAGS),
@@ -200,36 +199,35 @@ class MainActivity : BaseActivity(), FlickrDownloadData.OnDownloadComplete, Flic
             true
         )
         FlickrDownloadData(this).execute(uri)
-        Log.d(TAG, "onCreate ended")
+        Log.d(TAG, "getFlickrImages ended")
     }
 
     private fun createFlickrUri(baseUri: String, tags: String, lang: String, matchAll: Boolean): String {
         Log.d(TAG, "createFlickrUri starts")
-
         return Uri.parse(baseUri).buildUpon().appendQueryParameter("tags", tags).appendQueryParameter("lang", lang)
             .appendQueryParameter("tagmode", if (matchAll) "ALL" else "ANY").appendQueryParameter("format", "json")
             .appendQueryParameter("nojsoncallback", "1")
             .build().toString()
     }
 
-    override fun onDownloadComplete(data: String, statusFlickr: FlickrDownloadStatus) {
-        Log.d(TAG, "Flickr Integration onDownloadComplete, statusFlickr: $statusFlickr")
+    override fun onFlickrDownloadComplete(data: String, statusFlickr: FlickrDownloadStatus) {
+        Log.d(TAG, "Flickr Integration onFlickrDownloadComplete, statusFlickr: $statusFlickr")
         if (statusFlickr == FlickrDownloadStatus.OK)
             FlickrJsonData(this).execute(data)
     }
 
-    override fun onDataAvailable(data: ArrayList<FlickrImage>) {
-        Log.d(TAG, "Flickr Integration onDataAvailable starts")
+    override fun onFlickrDataAvailable(data: ArrayList<FlickrImage>) {
+        Log.d(TAG, "Flickr Integration onFlickrDataAvailable starts")
         data.forEach {
             CreateImage(
                 this,
-                LayoutInflater.from(this).inflate(R.layout.picture_layout, null).findViewById(R.id.picture)
+                LayoutInflater.from(this).inflate(R.layout.image_layout, null).findViewById(R.id.picture)
             ).execute(it.image)
         }
-        Log.d(TAG, "Flickr Integration onDataAvailable ends")
+        Log.d(TAG, "Flickr Integration onFlickrDataAvailable ends")
     }
 
-    override fun onError(exception: Exception) {
-        Log.d(TAG, "Flickr Integration onError starts with exception $exception")
+    override fun onFlickrError(exception: Exception) {
+        Log.d(TAG, "Flickr Integration onFlickrError starts with exception $exception")
     }
 }

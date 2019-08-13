@@ -44,7 +44,7 @@ open class BaseActivity : AppCompatActivity(), ConnectivityReceiver.Connectivity
     }
 
     fun displayImage(imagePath: String) {
-        var imageView = LayoutInflater.from(this).inflate(R.layout.picture_layout, null).findViewById<ImageView>(R.id.picture)
+        var imageView = LayoutInflater.from(this).inflate(R.layout.image_layout, null).findViewById<ImageView>(R.id.picture)
         imageView.id = System.currentTimeMillis().toInt()
         imageView.setImageBitmap(BitmapFactory.decodeFile(imagePath))
         if (imageView.parent != null) {

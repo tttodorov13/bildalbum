@@ -6,18 +6,18 @@ import blog.photo.bildalbum.model.FlickrImage
 import org.json.JSONException
 import org.json.JSONObject
 
-class FlickrJsonData(private val listener: OnDataAvailable) : AsyncTask<String, Void, ArrayList<FlickrImage>>() {
+class FlickrJsonData(private val listener: OnFlickrDataAvailable) : AsyncTask<String, Void, ArrayList<FlickrImage>>() {
 
     private val TAG = "FlickrJsonData"
 
-    interface OnDataAvailable {
-        fun onDataAvailable(data: ArrayList<FlickrImage>)
-        fun onError(exception: Exception)
+    interface OnFlickrDataAvailable {
+        fun onFlickrDataAvailable(data: ArrayList<FlickrImage>)
+        fun onFlickrError(exception: Exception)
     }
 
     override fun doInBackground(vararg params: String?): ArrayList<FlickrImage> {
         Log.d(TAG, "doInBackground starts")
-        val photos = ArrayList<FlickrImage>()
+        val images = ArrayList<FlickrImage>()
 
         try {
             val jsonData = JSONObject(params[0].toString())
@@ -34,23 +34,23 @@ class FlickrJsonData(private val listener: OnDataAvailable) : AsyncTask<String, 
                 val photoUrl = jsonMedia.getString("m")
 
                 val photo = FlickrImage(title, author, authorId, link, tags, photoUrl)
-                photos.add(photo)
+                images.add(photo)
                 Log.d(TAG, "doInBackground: $photo")
             }
         } catch (e: JSONException) {
             Log.e(TAG, "doInBackground: JSON processing exception", e)
             cancel(true)
-            listener.onError(e)
+            listener.onFlickrError(e)
         }
         Log.d(TAG, "doInBackground ends")
 
-        return photos
+        return images
     }
 
     override fun onPostExecute(result: ArrayList<FlickrImage>) {
         Log.d(TAG, "onPostExecute starts")
         super.onPostExecute(result)
-        listener.onDataAvailable(result)
+        listener.onFlickrDataAvailable(result)
         Log.d(TAG, "onPostExecute ends")
     }
 

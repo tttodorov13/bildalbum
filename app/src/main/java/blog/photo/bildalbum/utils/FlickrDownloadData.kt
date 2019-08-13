@@ -10,17 +10,17 @@ enum class FlickrDownloadStatus {
     OK, IDLE, NOT_INITIALIZED, FAILED_OR_EMPTY, PERMISSIONS_ERROR, ERROR
 }
 
-class FlickrDownloadData(private val listener: OnDownloadComplete) : AsyncTask<String, Void, String>() {
+class FlickrDownloadData(private val listener: OnFlickrDownloadComplete) : AsyncTask<String, Void, String>() {
     private val TAG = "FlickrDownloadData"
     private var status = FlickrDownloadStatus.IDLE
 
-    interface OnDownloadComplete {
-        fun onDownloadComplete(data: String, statusFlickr: FlickrDownloadStatus)
+    interface OnFlickrDownloadComplete {
+        fun onFlickrDownloadComplete(data: String, statusFlickr: FlickrDownloadStatus)
     }
 
     override fun onPostExecute(result: String) {
         Log.d(TAG, "onPostExecute called")
-        listener.onDownloadComplete(result, status)
+        listener.onFlickrDownloadComplete(result, status)
     }
 
     override fun doInBackground(vararg params: String?): String {

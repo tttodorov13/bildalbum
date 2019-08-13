@@ -7,6 +7,7 @@
     <string name="facebook_logout">Facebook Logout</string>
     <string name="facebook_pictures_download">Facebook Pictures Download</string>
     <string name="logging_in">Logging in...</string>
+    <string name="FACEBOOK_API_VERSION">"v4.0"</string>
     <string name="FLICKR_API_URI">https://api.flickr.com/services/feeds/photos_public.gne</string>
     <string name="FLICKR_API_TAGS">android,oreo</string>
     <string name="FLICKR_API_LANG">en-us</string>
