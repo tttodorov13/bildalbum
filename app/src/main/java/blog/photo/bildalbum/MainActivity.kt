@@ -1,7 +1,6 @@
 package blog.photo.bildalbum
 
 import android.content.Context
-import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -14,19 +13,14 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.core.view.isGone
 import blog.photo.bildalbum.model.FlickrImage
 import blog.photo.bildalbum.model.Image
 import blog.photo.bildalbum.model.PixabayImage
 import blog.photo.bildalbum.receiver.ConnectivityReceiver
 import blog.photo.bildalbum.utils.*
-import com.facebook.AccessToken
-import com.facebook.GraphRequest
-import com.facebook.login.LoginManager
-import com.facebook.share.model.ShareLinkContent
-import com.facebook.share.widget.ShareDialog
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
-import org.json.JSONObject
 import java.io.File
 import java.io.FileOutputStream
 import java.lang.System.currentTimeMillis
@@ -34,42 +28,18 @@ import java.util.*
 
 class MainActivity : BaseActivity(), FlickrDownloadData.OnFlickrDownloadComplete, FlickrJsonData.OnFlickrDataAvailable,
     PixabayDownloadData.OnPixabayDownloadComplete, PixabayJsonData.OnPixabayDataAvailable{
-    private var shareDialog: ShareDialog? = null
-    private val limitDownloadPictures: Int? = 5
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        setSupportActionBar(toolbar)
 
         for(i in getStoredImagesPaths())
             displayImage(i)
 
-        Toast.makeText(applicationContext, R.string.logging_in, Toast.LENGTH_SHORT).show()
-
-        shareDialog = ShareDialog(this)
+        setSupportActionBar(toolbar)
 
         fab.setOnClickListener {
-            shareDialog?.show(ShareLinkContent.Builder().build())
-        }
-
-        val inBundle = intent.extras
-        val name = inBundle!!.get("name")!!.toString()
-        val surname = inBundle.get("surname")!!.toString()
-        val imageUrl = inBundle.get("imageUrl")!!.toString()
-
-        nameAndSurname.text = "$name $surname"
-
-        if (ConnectivityReceiver.isConnectedOrConnecting(this)) {
-            CreateImage(this, profileImage, false).execute(imageUrl)
-        }
-
-        buttonLogoutFacebook?.setOnClickListener {
-            facebookLogout()
-        }
-
-        buttonFacebookImagesDownload?.setOnClickListener {
-            getFacebookImages()
+            Toast.makeText(applicationContext, "Share", Toast.LENGTH_SHORT).show()
         }
 
         buttonFlickrImagesDownload?.setOnClickListener {
@@ -98,16 +68,9 @@ class MainActivity : BaseActivity(), FlickrDownloadData.OnFlickrDownloadComplete
     }
 
     override fun onNetworkConnectionChanged(isConnected: Boolean) {
-        if (!ConnectivityReceiver.isConnectedOrConnecting(this)) {
-            facebookLogout()
-        }
-    }
-
-    fun facebookLogout() {
-        LoginManager.getInstance().logOut()
-        val login = Intent(this@MainActivity, LoginActivity::class.java)
-        startActivity(login)
-        finish()
+        buttonFlickrImagesDownload.isGone = !ConnectivityReceiver.isConnectedOrConnecting(this)
+        buttonPixabayImagesDownload.isGone = !ConnectivityReceiver.isConnectedOrConnecting(this)
+        noInternetConnection.isGone = ConnectivityReceiver.isConnectedOrConnecting(this)
     }
 
     inner class CreateImage(context: Context, var bmImage: ImageView, save: Boolean) :
@@ -162,35 +125,6 @@ class MainActivity : BaseActivity(), FlickrDownloadData.OnFlickrDownloadComplete
 
             return file.absolutePath
         }
-    }
-
-    private fun getFacebookImages() {
-        val callback: GraphRequest.Callback = GraphRequest.Callback { response ->
-            val data = response.jsonObject.getJSONArray("data")
-
-            for (i in 0 until data.length()) {
-                CreateImage(this, LayoutInflater.from(this).inflate(R.layout.image_layout, null).findViewById(R.id.picture)).execute(
-                    JSONObject(
-                        data.get(
-                            i
-                        ).toString()
-                    ).get("picture").toString()
-                )
-            }
-        }
-
-        val request = GraphRequest.newGraphPathRequest(
-            AccessToken.getCurrentAccessToken(),
-            "/me/photos",
-            callback
-        )
-
-        val parameters = Bundle()
-        parameters.putString("fields", "picture")
-        parameters.putString("limit", limitDownloadPictures.toString())
-        request.version = getString(R.string.FACEBOOK_API_VERSION)
-        request.parameters = parameters
-        request.executeAsync()
     }
 
     private fun getFlickrImages() {

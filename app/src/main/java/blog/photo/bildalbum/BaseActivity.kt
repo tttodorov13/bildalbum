@@ -33,9 +33,9 @@ open class BaseActivity : AppCompatActivity(), ConnectivityReceiver.Connectivity
      */
     override fun onNetworkConnectionChanged(isConnected: Boolean) {
         if (isConnected) {
-            showMessage(getString(R.string.INTERNET_CONNECTION))
+            showMessage(getString(R.string.internet_connection))
         } else {
-            showMessage(getString(R.string.NO_INTERNET_CONNECTION))
+            showMessage(getString(R.string.no_internet_connection))
         }
     }
 
