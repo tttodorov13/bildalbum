@@ -16,6 +16,7 @@ import android.widget.ImageView
 import android.widget.Toast
 import blog.photo.bildalbum.model.FlickrImage
 import blog.photo.bildalbum.model.Image
+import blog.photo.bildalbum.model.PixabayImage
 import blog.photo.bildalbum.receiver.ConnectivityReceiver
 import blog.photo.bildalbum.utils.*
 import com.facebook.AccessToken
@@ -31,8 +32,8 @@ import java.io.FileOutputStream
 import java.lang.System.currentTimeMillis
 import java.util.*
 
-class MainActivity : BaseActivity(), FlickrDownloadData.OnFlickrDownloadComplete, FlickrJsonData.OnFlickrDataAvailable {
-    private val TAG = "MainActivityFlickr"
+class MainActivity : BaseActivity(), FlickrDownloadData.OnFlickrDownloadComplete, FlickrJsonData.OnFlickrDataAvailable,
+    PixabayDownloadData.OnPixabayDownloadComplete, PixabayJsonData.OnPixabayDataAvailable{
     private var shareDialog: ShareDialog? = null
     private val limitDownloadPictures: Int? = 5
 
@@ -43,8 +44,6 @@ class MainActivity : BaseActivity(), FlickrDownloadData.OnFlickrDownloadComplete
 
         for(i in getStoredImagesPaths())
             displayImage(i)
-
-        Log.d(TAG, "onCreate called")
 
         Toast.makeText(applicationContext, R.string.logging_in, Toast.LENGTH_SHORT).show()
 
@@ -75,6 +74,10 @@ class MainActivity : BaseActivity(), FlickrDownloadData.OnFlickrDownloadComplete
 
         buttonFlickrImagesDownload?.setOnClickListener {
             getFlickrImages()
+        }
+
+        buttonPixabayImagesDownload?.setOnClickListener {
+            getPixabayImages()
         }
     }
 
@@ -191,7 +194,6 @@ class MainActivity : BaseActivity(), FlickrDownloadData.OnFlickrDownloadComplete
     }
 
     private fun getFlickrImages() {
-        Log.d(TAG, "getFlickrImages starts")
         val uri = createFlickrUri(
             getString(R.string.FLICKR_API_URI),
             getString(R.string.FLICKR_API_TAGS),
@@ -199,35 +201,65 @@ class MainActivity : BaseActivity(), FlickrDownloadData.OnFlickrDownloadComplete
             true
         )
         FlickrDownloadData(this).execute(uri)
-        Log.d(TAG, "getFlickrImages ended")
+    }
+
+    private fun getPixabayImages() {
+        val uri = createPixabayUri(
+            getString(R.string.PIXABAY_API_URI),
+            getString(R.string.PIXABAY_API_KEY),
+            "",
+            true
+        )
+        PixabayDownloadData(this).execute(uri)
     }
 
     private fun createFlickrUri(baseUri: String, tags: String, lang: String, matchAll: Boolean): String {
-        Log.d(TAG, "createFlickrUri starts")
         return Uri.parse(baseUri).buildUpon().appendQueryParameter("tags", tags).appendQueryParameter("lang", lang)
             .appendQueryParameter("tagmode", if (matchAll) "ALL" else "ANY").appendQueryParameter("format", "json")
             .appendQueryParameter("nojsoncallback", "1")
             .build().toString()
     }
 
+    private fun createPixabayUri(baseUri: String, key: String, param2: String, matchAll: Boolean): String {
+        return Uri.parse(baseUri).buildUpon().appendQueryParameter("key", key).appendQueryParameter("param2", param2)
+            .appendQueryParameter("tagmode", if (matchAll) "ALL" else "ANY").appendQueryParameter("format", "json")
+            .appendQueryParameter("nojsoncallback", "1")
+            .build().toString()
+    }
+
     override fun onFlickrDownloadComplete(data: String, statusFlickr: FlickrDownloadStatus) {
-        Log.d(TAG, "Flickr Integration onFlickrDownloadComplete, statusFlickr: $statusFlickr")
         if (statusFlickr == FlickrDownloadStatus.OK)
             FlickrJsonData(this).execute(data)
     }
 
+    override fun onPixabayDownloadComplete(data: String, statusPixabay: PixabayDownloadStatus) {
+        if (statusPixabay == PixabayDownloadStatus.OK)
+            PixabayJsonData(this).execute(data)
+    }
+
     override fun onFlickrDataAvailable(data: ArrayList<FlickrImage>) {
-        Log.d(TAG, "Flickr Integration onFlickrDataAvailable starts")
         data.forEach {
             CreateImage(
                 this,
                 LayoutInflater.from(this).inflate(R.layout.image_layout, null).findViewById(R.id.picture)
             ).execute(it.image)
         }
-        Log.d(TAG, "Flickr Integration onFlickrDataAvailable ends")
+    }
+
+    override fun onPixabayDataAvailable(data: ArrayList<PixabayImage>) {
+        data.forEach {
+            CreateImage(
+                this,
+                LayoutInflater.from(this).inflate(R.layout.image_layout, null).findViewById(R.id.picture)
+            ).execute(it.image)
+        }
     }
 
     override fun onFlickrError(exception: Exception) {
-        Log.d(TAG, "Flickr Integration onFlickrError starts with exception $exception")
+        Toast.makeText(applicationContext, "Flickr Exception: $exception", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onPixabayError(exception: Exception) {
+        Toast.makeText(applicationContext, "Pixabay Exception: $exception", Toast.LENGTH_SHORT).show()
     }
 }

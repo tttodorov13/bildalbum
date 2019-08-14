@@ -12,6 +12,9 @@
     <string name="FLICKR_API_TAGS">android,oreo</string>
     <string name="FLICKR_API_LANG">en-us</string>
     <string name="flickr_pictures_download">Flickr Pictures Download</string>
+    <string name="PIXABAY_API_URI">https://pixabay.com/api/</string>
+    <string name="PIXABAY_API_KEY">13310406-d6e15cf3e2d5c590fa44a6bea</string>
+    <string name="pixabay_pictures_download">Pixabay Pictures Download</string>
     <string name="my_friend">My Friend</string>
     <string name="INTERNET_CONNECTION">There is Internet connection!</string>
     <string name="NO_INTERNET_CONNECTION">There is no Internet connection!</string>
