@@ -11,7 +11,7 @@ class LoginActivity : BaseActivity() {
         setContentView(R.layout.activity_login)
 
         thread {
-            Thread.sleep((5 * 1000).toLong())
+            Thread.sleep((3 * 1000).toLong())
             startActivity()
         }.priority = Thread.NORM_PRIORITY
     }

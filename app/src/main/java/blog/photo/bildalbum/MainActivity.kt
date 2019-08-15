@@ -19,35 +19,60 @@ import blog.photo.bildalbum.model.Image
 import blog.photo.bildalbum.model.PixabayImage
 import blog.photo.bildalbum.receiver.ConnectivityReceiver
 import blog.photo.bildalbum.utils.*
-import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import java.io.File
 import java.io.FileOutputStream
 import java.lang.System.currentTimeMillis
 import java.util.*
+import android.widget.AdapterView
+import blog.photo.bildalbum.utils.ImagesAdapter
+import android.view.View
+import android.widget.GridView
 
-class MainActivity : BaseActivity(), FlickrDownloadData.OnFlickrDownloadComplete, FlickrJsonData.OnFlickrDataAvailable,
-    PixabayDownloadData.OnPixabayDownloadComplete, PixabayJsonData.OnPixabayDataAvailable{
+class MainActivity() : BaseActivity(), FlickrDownloadData.OnFlickrDownloadComplete,
+    FlickrJsonData.OnFlickrDataAvailable,
+    PixabayDownloadData.OnPixabayDownloadComplete, PixabayJsonData.OnPixabayDataAvailable {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        for(i in getStoredImagesPaths())
-            displayImage(i)
+        val gridView = findViewById<View>(R.id.gridview) as GridView
+        var storedImagesPaths = getStoredImagesPaths()
+        var imagesAdapter = ImagesAdapter(this, storedImagesPaths)
+        gridView.adapter = imagesAdapter
 
-        setSupportActionBar(toolbar)
-
-        fab.setOnClickListener {
-            Toast.makeText(applicationContext, "Share", Toast.LENGTH_SHORT).show()
+        gridView.onItemClickListener = object : AdapterView.OnItemClickListener {
+            override fun onItemClick(parent: AdapterView<*>, view: View, position: Int, id: Long) {
+//                val image = getStoredImagesPaths().get(position)
+                imagesAdapter.notifyDataSetChanged()
+            }
         }
 
         buttonFlickrImagesDownload?.setOnClickListener {
             getFlickrImages()
+            storedImagesPaths = getStoredImagesPaths()
+            if(storedImagesPaths.size > 0)
+                storedImagesPaths.add(storedImagesPaths.get(0));
+
+            imagesAdapter = ImagesAdapter(this, storedImagesPaths)
+
+            // Update the GridView
+            imagesAdapter.notifyDataSetChanged();
+            gridView.adapter = imagesAdapter
         }
 
         buttonPixabayImagesDownload?.setOnClickListener {
             getPixabayImages()
+            storedImagesPaths = getStoredImagesPaths()
+            if(storedImagesPaths.size > 0)
+                storedImagesPaths.add(storedImagesPaths.get(0));
+
+            imagesAdapter = ImagesAdapter(this, storedImagesPaths)
+
+            // Update the GridView
+            imagesAdapter.notifyDataSetChanged();
+            gridView.adapter = imagesAdapter
         }
     }
 
@@ -81,10 +106,10 @@ class MainActivity : BaseActivity(), FlickrDownloadData.OnFlickrDownloadComplete
         constructor(context: Context, bmImage: ImageView) : this(context, bmImage, true)
 
         override fun doInBackground(vararg urls: String): Bitmap? {
-            val urldisplay = urls[0]
+            val urlDisplay = urls[0]
             var bm: Bitmap? = null
             try {
-                val `in` = java.net.URL(urldisplay).openStream()
+                val `in` = java.net.URL(urlDisplay).openStream()
                 bm = BitmapFactory.decodeStream(`in`)
             } catch (e: Exception) {
                 Log.e("Error", e.message.toString())
@@ -97,7 +122,6 @@ class MainActivity : BaseActivity(), FlickrDownloadData.OnFlickrDownloadComplete
         override fun onPostExecute(result: Bitmap) {
             if (save) {
                 val path = storeImage(result)
-                displayImage(path)
                 ImagesDBOpenHelper(context, null).addPhoto(Image(path))
             }
             bmImage.setImageBitmap(result)
@@ -140,9 +164,7 @@ class MainActivity : BaseActivity(), FlickrDownloadData.OnFlickrDownloadComplete
     private fun getPixabayImages() {
         val uri = createPixabayUri(
             getString(R.string.PIXABAY_API_URI),
-            getString(R.string.PIXABAY_API_KEY),
-            "",
-            true
+            getString(R.string.PIXABAY_API_KEY)
         )
         PixabayDownloadData(this).execute(uri)
     }
@@ -154,10 +176,8 @@ class MainActivity : BaseActivity(), FlickrDownloadData.OnFlickrDownloadComplete
             .build().toString()
     }
 
-    private fun createPixabayUri(baseUri: String, key: String, param2: String, matchAll: Boolean): String {
-        return Uri.parse(baseUri).buildUpon().appendQueryParameter("key", key).appendQueryParameter("param2", param2)
-            .appendQueryParameter("tagmode", if (matchAll) "ALL" else "ANY").appendQueryParameter("format", "json")
-            .appendQueryParameter("nojsoncallback", "1")
+    private fun createPixabayUri(baseUri: String, key: String): String {
+        return Uri.parse(baseUri).buildUpon().appendQueryParameter("key", key)
             .build().toString()
     }
 
@@ -195,5 +215,32 @@ class MainActivity : BaseActivity(), FlickrDownloadData.OnFlickrDownloadComplete
 
     override fun onPixabayError(exception: Exception) {
         Toast.makeText(applicationContext, "Pixabay Exception: $exception", Toast.LENGTH_SHORT).show()
+    }
+
+    fun getStoredImagesPaths(): ArrayList<String> {
+        var listStoredImagesPaths = ArrayList<String>()
+        val cursor = ImagesDBOpenHelper(this, null).getAllPhotosReverse()
+
+        if (cursor!!.moveToFirst()) {
+            listStoredImagesPaths.add(
+                cursor.getString(
+                    cursor.getColumnIndex(
+                        ImagesDBOpenHelper.COLUMN_NAME
+                    )
+                )
+            )
+            while (cursor.moveToNext()) {
+                listStoredImagesPaths.add(
+                    cursor.getString(
+                        cursor.getColumnIndex(
+                            ImagesDBOpenHelper.COLUMN_NAME
+                        )
+                    )
+                )
+            }
+        }
+        cursor.close()
+
+        return listStoredImagesPaths
     }
 }

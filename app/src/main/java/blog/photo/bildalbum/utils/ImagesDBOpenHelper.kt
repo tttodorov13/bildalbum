@@ -17,7 +17,7 @@ class ImagesDBOpenHelper(
 
     override fun onCreate(db: SQLiteDatabase) {
         val createTableImages = ("CREATE TABLE " +
-                TABLE_IMAGES + "("
+                DATABASE_TABLE + "("
                 + COLUMN_ID + " INTEGER PRIMARY KEY," +
                 COLUMN_NAME
                 + " TEXT" + ")")
@@ -25,7 +25,7 @@ class ImagesDBOpenHelper(
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_IMAGES)
+        db.execSQL("DROP TABLE IF EXISTS " + DATABASE_TABLE)
         onCreate(db)
     }
 
@@ -33,20 +33,24 @@ class ImagesDBOpenHelper(
         val values = ContentValues()
         values.put(COLUMN_NAME, photo.path)
         val db = this.writableDatabase
-        db.insert(TABLE_IMAGES, null, values)
+        db.insert(DATABASE_TABLE, null, values)
         db.close()
     }
 
-    fun getAllPhotos(): Cursor? {
+    fun getAllPhotosReverse(): Cursor? {
         val db = this.readableDatabase
-        return db.rawQuery("SELECT * FROM $TABLE_IMAGES", null)
+        return db.rawQuery("SELECT * FROM $DATABASE_TABLE ORDER BY $COLUMN_ID DESC", null)
     }
 
     companion object {
-        private val DATABASE_VERSION = 1
-        private val DATABASE_NAME = "bildalbum.db"
-        const val TABLE_IMAGES = "images"
-        const val COLUMN_ID = "_id"
+        private const val DATABASE_VERSION = 1
+        private const val DATABASE_NAME = "bildalbum.db"
+        private const val DATABASE_TABLE = "images"
+        private const val COLUMN_ID = "_id"
         const val COLUMN_NAME = "path"
+
+        fun getInstance(context: Context): ImagesDBOpenHelper {
+            return ImagesDBOpenHelper(context, null)
+        }
     }
 }

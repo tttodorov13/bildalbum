@@ -15,7 +15,7 @@ class PixabayDownloadData(private val listener: OnPixabayDownloadComplete) : Asy
     private var status = PixabayDownloadStatus.IDLE
 
     interface OnPixabayDownloadComplete {
-        fun onPixabayDownloadComplete(data: String, statusFlickr: PixabayDownloadStatus)
+        fun onPixabayDownloadComplete(data: String, statusPixabay: PixabayDownloadStatus)
     }
 
     override fun onPostExecute(result: String) {
