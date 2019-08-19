@@ -7,9 +7,10 @@
 
     <ImageView
             android:id="@+id/picture"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
             android:layout_gravity="center_horizontal"
+            android:background="@color/colorPrimary"
             android:src="@mipmap/ic_launcher"/>
 
 </LinearLayout>

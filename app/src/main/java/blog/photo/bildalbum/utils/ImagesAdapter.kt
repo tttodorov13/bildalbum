@@ -23,8 +23,8 @@ class ImagesAdapter(private val mContext: Context, private val imagesPaths: Arra
         return null
     }
 
-    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View? {
-        var convertView = convertView
+    override fun getView(position: Int, view: View?, parent: ViewGroup): View? {
+        var convertView = view
         val imagePath = imagesPaths[position]
         var viewHolder: ViewHolder
 
@@ -38,7 +38,7 @@ class ImagesAdapter(private val mContext: Context, private val imagesPaths: Arra
             viewHolder = ViewHolder(imageView)
             convertView.tag = viewHolder
         } else {
-            viewHolder = convertView?.tag as ViewHolder
+            viewHolder = convertView.tag as ViewHolder
             viewHolder.imageView.setImageBitmap(BitmapFactory.decodeFile(imagePath))
         }
 

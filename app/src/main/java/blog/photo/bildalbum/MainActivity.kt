@@ -8,6 +8,7 @@ import android.os.AsyncTask
 import android.os.Bundle
 import android.os.Environment
 import android.util.Log
+import android.util.Log.e
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
@@ -30,15 +31,19 @@ import android.widget.GridView
 class MainActivity() : BaseActivity(), DownloadData.OnDownloadComplete,
     JsonData.OnDataAvailable {
 
-
+    companion object {
+        lateinit var gridView: GridView
+        lateinit var storedImagesPaths: ArrayList<String>
+        lateinit var imagesAdapter: ImagesAdapter
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val gridView = findViewById<View>(R.id.gridview) as GridView
-        var storedImagesPaths = getStoredImagesPaths()
-        var imagesAdapter = ImagesAdapter(this, storedImagesPaths)
+        gridView = findViewById<View>(R.id.gridview) as GridView
+        storedImagesPaths = getStoredImagesPaths()
+        imagesAdapter = ImagesAdapter(this, storedImagesPaths)
         gridView.adapter = imagesAdapter
 
         gridView.onItemClickListener = object : AdapterView.OnItemClickListener {
@@ -51,28 +56,10 @@ class MainActivity() : BaseActivity(), DownloadData.OnDownloadComplete,
 
         buttonFlickrImagesDownload?.setOnClickListener {
             getImagesFlickr()
-            storedImagesPaths = getStoredImagesPaths()
-            if(storedImagesPaths.size > 0)
-                storedImagesPaths.add(storedImagesPaths.get(0));
-
-            imagesAdapter = ImagesAdapter(this, storedImagesPaths)
-
-            // Update the GridView
-            imagesAdapter.notifyDataSetChanged();
-            gridView.adapter = imagesAdapter
         }
 
         buttonPixabayImagesDownload?.setOnClickListener {
             getImagesPixabay()
-            storedImagesPaths = getStoredImagesPaths()
-            if(storedImagesPaths.size > 0)
-                storedImagesPaths.add(storedImagesPaths.get(0));
-
-            imagesAdapter = ImagesAdapter(this, storedImagesPaths)
-
-            // Update the GridView
-            imagesAdapter.notifyDataSetChanged();
-            gridView.adapter = imagesAdapter
         }
     }
 
@@ -103,13 +90,12 @@ class MainActivity() : BaseActivity(), DownloadData.OnDownloadComplete,
         val context = context
 
         override fun doInBackground(vararg urls: String): Bitmap? {
-            val urlDisplay = urls[0]
             var bm: Bitmap? = null
             try {
-                val `in` = java.net.URL(urlDisplay).openStream()
+                val `in` = java.net.URL(urls[0]).openStream()
                 bm = BitmapFactory.decodeStream(`in`)
             } catch (e: Exception) {
-                Log.e("Error", e.message)
+                e("Error", e.message.toString())
                 e.printStackTrace()
             }
             return bm
@@ -117,6 +103,11 @@ class MainActivity() : BaseActivity(), DownloadData.OnDownloadComplete,
 
         override fun onPostExecute(result: Bitmap) {
             val path = writeImage(result)
+
+            // Update the images GridView
+            storedImagesPaths.add(0, path)
+            imagesAdapter.notifyDataSetChanged();
+
             ImagesDBOpenHelper(context, null).addImage(Image(path))
             bmImage.setImageBitmap(result)
         }
@@ -141,7 +132,7 @@ class MainActivity() : BaseActivity(), DownloadData.OnDownloadComplete,
                 e.printStackTrace()
             }
 
-            return file.absolutePath
+            return file.canonicalPath
         }
     }
 
