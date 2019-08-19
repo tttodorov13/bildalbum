@@ -14,9 +14,7 @@ import android.view.MenuItem
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.core.view.isGone
-import blog.photo.bildalbum.model.FlickrImage
 import blog.photo.bildalbum.model.Image
-import blog.photo.bildalbum.model.PixabayImage
 import blog.photo.bildalbum.receiver.ConnectivityReceiver
 import blog.photo.bildalbum.utils.*
 import kotlinx.android.synthetic.main.content_main.*
@@ -29,9 +27,10 @@ import blog.photo.bildalbum.utils.ImagesAdapter
 import android.view.View
 import android.widget.GridView
 
-class MainActivity() : BaseActivity(), FlickrDownloadData.OnFlickrDownloadComplete,
-    FlickrJsonData.OnFlickrDataAvailable,
-    PixabayDownloadData.OnPixabayDownloadComplete, PixabayJsonData.OnPixabayDataAvailable {
+class MainActivity() : BaseActivity(), DownloadData.OnDownloadComplete,
+    JsonData.OnDataAvailable {
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,13 +43,14 @@ class MainActivity() : BaseActivity(), FlickrDownloadData.OnFlickrDownloadComple
 
         gridView.onItemClickListener = object : AdapterView.OnItemClickListener {
             override fun onItemClick(parent: AdapterView<*>, view: View, position: Int, id: Long) {
-//                val image = getStoredImagesPaths().get(position)
+                // TODO: open ImageDetailsActivity for edit and share
+                // val photoUri = getStoredImagesPaths().get(position)
                 imagesAdapter.notifyDataSetChanged()
             }
         }
 
         buttonFlickrImagesDownload?.setOnClickListener {
-            getFlickrImages()
+            getImagesFlickr()
             storedImagesPaths = getStoredImagesPaths()
             if(storedImagesPaths.size > 0)
                 storedImagesPaths.add(storedImagesPaths.get(0));
@@ -63,7 +63,7 @@ class MainActivity() : BaseActivity(), FlickrDownloadData.OnFlickrDownloadComple
         }
 
         buttonPixabayImagesDownload?.setOnClickListener {
-            getPixabayImages()
+            getImagesPixabay()
             storedImagesPaths = getStoredImagesPaths()
             if(storedImagesPaths.size > 0)
                 storedImagesPaths.add(storedImagesPaths.get(0));
@@ -98,12 +98,9 @@ class MainActivity() : BaseActivity(), FlickrDownloadData.OnFlickrDownloadComple
         noInternetConnection.isGone = ConnectivityReceiver.isConnectedOrConnecting(this)
     }
 
-    inner class CreateImage(context: Context, var bmImage: ImageView, save: Boolean) :
+    inner class CreateImage(context: Context, var bmImage: ImageView) :
         AsyncTask<String, Void, Bitmap>() {
         val context = context
-        val save = save
-
-        constructor(context: Context, bmImage: ImageView) : this(context, bmImage, true)
 
         override fun doInBackground(vararg urls: String): Bitmap? {
             val urlDisplay = urls[0]
@@ -112,22 +109,19 @@ class MainActivity() : BaseActivity(), FlickrDownloadData.OnFlickrDownloadComple
                 val `in` = java.net.URL(urlDisplay).openStream()
                 bm = BitmapFactory.decodeStream(`in`)
             } catch (e: Exception) {
-                Log.e("Error", e.message.toString())
+                Log.e("Error", e.message)
                 e.printStackTrace()
             }
-
             return bm
         }
 
         override fun onPostExecute(result: Bitmap) {
-            if (save) {
-                val path = storeImage(result)
-                ImagesDBOpenHelper(context, null).addPhoto(Image(path))
-            }
+            val path = writeImage(result)
+            ImagesDBOpenHelper(context, null).addImage(Image(path))
             bmImage.setImageBitmap(result)
         }
 
-        private fun storeImage(finalBitmap: Bitmap): String {
+        private fun writeImage(finalBitmap: Bitmap): String {
             val storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
 
             if (!storageDir!!.exists()) {
@@ -151,70 +145,52 @@ class MainActivity() : BaseActivity(), FlickrDownloadData.OnFlickrDownloadComple
         }
     }
 
-    private fun getFlickrImages() {
-        val uri = createFlickrUri(
+    private fun getImagesFlickr() {
+        val uri = createUriFlickr(
             getString(R.string.FLICKR_API_URI),
             getString(R.string.FLICKR_API_TAGS),
             getString(R.string.FLICKR_API_LANG),
             true
         )
-        FlickrDownloadData(this).execute(uri)
+        DownloadData(this, DownloadSource.FLICKR).execute(uri)
     }
 
-    private fun getPixabayImages() {
-        val uri = createPixabayUri(
+    private fun getImagesPixabay() {
+        val uri = createUriPixabay(
             getString(R.string.PIXABAY_API_URI),
             getString(R.string.PIXABAY_API_KEY)
         )
-        PixabayDownloadData(this).execute(uri)
+        DownloadData(this, DownloadSource.PIXABAY).execute(uri)
     }
 
-    private fun createFlickrUri(baseUri: String, tags: String, lang: String, matchAll: Boolean): String {
+    private fun createUriFlickr(baseUri: String, tags: String, lang: String, matchAll: Boolean): String {
         return Uri.parse(baseUri).buildUpon().appendQueryParameter("tags", tags).appendQueryParameter("lang", lang)
             .appendQueryParameter("tagmode", if (matchAll) "ALL" else "ANY").appendQueryParameter("format", "json")
             .appendQueryParameter("nojsoncallback", "1")
             .build().toString()
     }
 
-    private fun createPixabayUri(baseUri: String, key: String): String {
+    private fun createUriPixabay(baseUri: String, key: String): String {
         return Uri.parse(baseUri).buildUpon().appendQueryParameter("key", key)
             .build().toString()
     }
 
-    override fun onFlickrDownloadComplete(data: String, statusFlickr: FlickrDownloadStatus) {
-        if (statusFlickr == FlickrDownloadStatus.OK)
-            FlickrJsonData(this).execute(data)
+    override fun onDownloadComplete(data: String, status: DownloadStatus, source: DownloadSource) {
+        if (status == DownloadStatus.OK)
+            JsonData(this, source).execute(data)
     }
 
-    override fun onPixabayDownloadComplete(data: String, statusPixabay: PixabayDownloadStatus) {
-        if (statusPixabay == PixabayDownloadStatus.OK)
-            PixabayJsonData(this).execute(data)
-    }
-
-    override fun onFlickrDataAvailable(data: ArrayList<FlickrImage>) {
+    override fun onDataAvailable(data: ArrayList<String>) {
         data.forEach {
             CreateImage(
                 this,
                 LayoutInflater.from(this).inflate(R.layout.image_layout, null).findViewById(R.id.picture)
-            ).execute(it.image)
+            ).execute(it)
         }
     }
 
-    override fun onPixabayDataAvailable(data: ArrayList<PixabayImage>) {
-        data.forEach {
-            CreateImage(
-                this,
-                LayoutInflater.from(this).inflate(R.layout.image_layout, null).findViewById(R.id.picture)
-            ).execute(it.image)
-        }
-    }
-
-    override fun onFlickrError(exception: Exception) {
+    override fun onError(exception: Exception) {
         Toast.makeText(applicationContext, "Flickr Exception: $exception", Toast.LENGTH_SHORT).show()
-    }
-
-    override fun onPixabayError(exception: Exception) {
-        Toast.makeText(applicationContext, "Pixabay Exception: $exception", Toast.LENGTH_SHORT).show()
     }
 
     fun getStoredImagesPaths(): ArrayList<String> {
@@ -225,7 +201,7 @@ class MainActivity() : BaseActivity(), FlickrDownloadData.OnFlickrDownloadComple
             listStoredImagesPaths.add(
                 cursor.getString(
                     cursor.getColumnIndex(
-                        ImagesDBOpenHelper.COLUMN_NAME
+                        ImagesDBOpenHelper.COLUMN_PATH
                     )
                 )
             )
@@ -233,7 +209,7 @@ class MainActivity() : BaseActivity(), FlickrDownloadData.OnFlickrDownloadComple
                 listStoredImagesPaths.add(
                     cursor.getString(
                         cursor.getColumnIndex(
-                            ImagesDBOpenHelper.COLUMN_NAME
+                            ImagesDBOpenHelper.COLUMN_PATH
                         )
                     )
                 )

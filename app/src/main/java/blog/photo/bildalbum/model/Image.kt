@@ -1,14 +1,9 @@
 package blog.photo.bildalbum.model
 
-class Image(var path: String?) {
-    var id: Int = 0
-    var album: String? = null
+open class Image(var path: String) {
+    var uri: String = ""
 
-    constructor(id: Int, path: String) : this(path) {
-        this.id = id
-    }
-
-    constructor(id: Int, path: String, album: String) : this(id, path) {
-        this.album = album
+    override fun toString(): String {
+        return "Image(path='$path', uri='$uri')"
     }
 }

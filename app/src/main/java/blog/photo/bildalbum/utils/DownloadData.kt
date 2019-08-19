@@ -6,48 +6,52 @@ import java.io.IOException
 import java.net.MalformedURLException
 import java.net.URL
 
-enum class PixabayDownloadStatus {
+enum class DownloadSource {
+    FLICKR, PIXABAY
+}
+
+enum class DownloadStatus {
     OK, IDLE, NOT_INITIALIZED, FAILED_OR_EMPTY, PERMISSIONS_ERROR, ERROR
 }
 
-class PixabayDownloadData(private val listener: OnPixabayDownloadComplete) : AsyncTask<String, Void, String>() {
-    private val TAG = "PixabayDownloadData"
-    private var status = PixabayDownloadStatus.IDLE
+class DownloadData(private val listener: OnDownloadComplete, private val source: DownloadSource) : AsyncTask<String, Void, String>() {
+    private val TAG = "DownloadData"
+    private var status = DownloadStatus.IDLE
 
-    interface OnPixabayDownloadComplete {
-        fun onPixabayDownloadComplete(data: String, statusPixabay: PixabayDownloadStatus)
+    interface OnDownloadComplete {
+        fun onDownloadComplete(data: String, status: DownloadStatus, source: DownloadSource)
     }
 
     override fun onPostExecute(result: String) {
         Log.d(TAG, "onPostExecute called")
-        listener.onPixabayDownloadComplete(result, status)
+        listener.onDownloadComplete(result, status, source)
     }
 
     override fun doInBackground(vararg params: String?): String {
         if (params[0] == null) {
-            status = PixabayDownloadStatus.NOT_INITIALIZED
+            status = DownloadStatus.NOT_INITIALIZED
             return "No URL specified"
         }
 
         try {
-            status = PixabayDownloadStatus.OK
+            status = DownloadStatus.OK
             return URL(params[0]).readText()
         } catch (e: Exception) {
             val errorMessage = when (e) {
                 is MalformedURLException -> {
-                    status = PixabayDownloadStatus.NOT_INITIALIZED
+                    status = DownloadStatus.NOT_INITIALIZED
                     "doInBackground: Invalid URL: ${e.message}"
                 }
                 is IOException -> {
-                    status = PixabayDownloadStatus.FAILED_OR_EMPTY
+                    status = DownloadStatus.FAILED_OR_EMPTY
                     "doInBackground: IO Exception reading data: ${e.message}"
                 }
                 is SecurityException -> {
-                    status = PixabayDownloadStatus.PERMISSIONS_ERROR
+                    status = DownloadStatus.PERMISSIONS_ERROR
                     "doInBackground: Security exception: ${e.message}"
                 }
                 else -> {
-                    status = PixabayDownloadStatus.ERROR
+                    status = DownloadStatus.ERROR
                     "doInBackground: Unknown exception: $e"
                 }
             }

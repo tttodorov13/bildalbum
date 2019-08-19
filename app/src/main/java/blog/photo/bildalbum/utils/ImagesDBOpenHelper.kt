@@ -19,7 +19,7 @@ class ImagesDBOpenHelper(
         val createTableImages = ("CREATE TABLE " +
                 DATABASE_TABLE + "("
                 + COLUMN_ID + " INTEGER PRIMARY KEY," +
-                COLUMN_NAME
+                COLUMN_PATH
                 + " TEXT" + ")")
         db.execSQL(createTableImages)
     }
@@ -29,9 +29,9 @@ class ImagesDBOpenHelper(
         onCreate(db)
     }
 
-    fun addPhoto(photo: Image) {
+    fun addImage(image: Image) {
         val values = ContentValues()
-        values.put(COLUMN_NAME, photo.path)
+        values.put(COLUMN_PATH, image.path)
         val db = this.writableDatabase
         db.insert(DATABASE_TABLE, null, values)
         db.close()
@@ -47,10 +47,6 @@ class ImagesDBOpenHelper(
         private const val DATABASE_NAME = "bildalbum.db"
         private const val DATABASE_TABLE = "images"
         private const val COLUMN_ID = "_id"
-        const val COLUMN_NAME = "path"
-
-        fun getInstance(context: Context): ImagesDBOpenHelper {
-            return ImagesDBOpenHelper(context, null)
-        }
+        const val COLUMN_PATH = "path"
     }
 }
