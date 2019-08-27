@@ -15,8 +15,5 @@
     <string name="PIXABAY_API_URI">https://pixabay.com/api/</string>
     <string name="PIXABAY_API_KEY">13310406-d6e15cf3e2d5c590fa44a6bea</string>
     <string name="pixabay_images_download">Pixabay images Download</string>
-    <string name="my_friend">My Friend</string>
-    <string name="internet_connection">There is Internet connection!</string>
-    <string name="no_internet_connection">There is no Internet connection!</string>
-    <string name="turn_on_internet">Turn On Internet to enable image download functionality!</string>
+    <string name="check_internet_connection">Check Internet Connection and try again!</string>
 </resources>

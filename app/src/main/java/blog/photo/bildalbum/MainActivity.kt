@@ -7,28 +7,27 @@ import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
 import android.os.Environment
-import android.util.Log
 import android.util.Log.e
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
+import android.widget.AdapterView
+import android.widget.GridView
 import android.widget.ImageView
 import android.widget.Toast
-import androidx.core.view.isGone
+import androidx.appcompat.app.AppCompatActivity
 import blog.photo.bildalbum.model.Image
-import blog.photo.bildalbum.receiver.ConnectivityReceiver
 import blog.photo.bildalbum.utils.*
+import blog.photo.bildalbum.utils.DownloadStatus.NETWORK_ERROR
+import blog.photo.bildalbum.utils.DownloadStatus.OK
 import kotlinx.android.synthetic.main.content_main.*
 import java.io.File
 import java.io.FileOutputStream
 import java.lang.System.currentTimeMillis
 import java.util.*
-import android.widget.AdapterView
-import blog.photo.bildalbum.utils.ImagesAdapter
-import android.view.View
-import android.widget.GridView
 
-class MainActivity() : BaseActivity(), DownloadData.OnDownloadComplete,
+class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     JsonData.OnDataAvailable {
 
     companion object {
@@ -77,12 +76,6 @@ class MainActivity() : BaseActivity(), DownloadData.OnDownloadComplete,
             R.id.action_settings -> true
             else -> super.onOptionsItemSelected(item)
         }
-    }
-
-    override fun onNetworkConnectionChanged(isConnected: Boolean) {
-        buttonFlickrImagesDownload.isGone = !ConnectivityReceiver.isConnectedOrConnecting(this)
-        buttonPixabayImagesDownload.isGone = !ConnectivityReceiver.isConnectedOrConnecting(this)
-        noInternetConnection.isGone = ConnectivityReceiver.isConnectedOrConnecting(this)
     }
 
     inner class CreateImage(context: Context, var bmImage: ImageView) :
@@ -167,8 +160,10 @@ class MainActivity() : BaseActivity(), DownloadData.OnDownloadComplete,
     }
 
     override fun onDownloadComplete(data: String, status: DownloadStatus, source: DownloadSource) {
-        if (status == DownloadStatus.OK)
+        if (status == OK)
             JsonData(this, source).execute(data)
+        if (status == NETWORK_ERROR)
+            Toast.makeText(applicationContext, R.string.check_internet_connection, Toast.LENGTH_SHORT).show()
     }
 
     override fun onDataAvailable(data: ArrayList<String>) {
@@ -181,7 +176,7 @@ class MainActivity() : BaseActivity(), DownloadData.OnDownloadComplete,
     }
 
     override fun onError(exception: Exception) {
-        Toast.makeText(applicationContext, "Flickr Exception: $exception", Toast.LENGTH_SHORT).show()
+        Toast.makeText(applicationContext, "DownloadData Exception: $exception", Toast.LENGTH_SHORT).show()
     }
 
     fun getStoredImagesPaths(): ArrayList<String> {
