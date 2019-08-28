@@ -1,13 +1,7 @@
 <resources>
     <string name="app_name">Bildalbum</string>
+    <string name="app_desc">The laziest way to build photo album</string>
     <string name="action_share">Share</string>
-    <string name="actionLogoutFacebook">Facebook Logout</string>
-    <string name="facebook_app_id">711450142632772</string>
-    <string name="hello">Hello:</string>
-    <string name="facebook_logout">Facebook Logout</string>
-    <string name="facebook_pictures_download">Facebook Pictures Download</string>
-    <string name="logging_in">Logging in...</string>
-    <string name="FACEBOOK_API_VERSION">"v4.0"</string>
     <string name="FLICKR_API_URI">https://api.flickr.com/services/feeds/photos_public.gne</string>
     <string name="FLICKR_API_TAGS">android,oreo</string>
     <string name="FLICKR_API_LANG">en-us</string>
