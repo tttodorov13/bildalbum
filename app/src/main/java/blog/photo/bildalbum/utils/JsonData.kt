@@ -6,16 +6,27 @@ import blog.photo.bildalbum.model.Image
 import org.json.JSONException
 import org.json.JSONObject
 
+/**
+ * Class that manages the download of images' URIs.
+ */
 class JsonData(private val listener: OnDataAvailable, private val source: DownloadSource) : AsyncTask<String, Void, ArrayList<String>>() {
     private val TAG = "JsonData"
 
+    /**
+     * Interface for image uri download completed.
+     */
     interface OnDataAvailable {
         fun onDataAvailable(data: ArrayList<String>)
         fun onError(exception: Exception)
     }
 
+    /**
+     * Method to override AsyncTask doInBackground.
+     *
+     * @param params
+     * @return list of image URIs
+     */
     override fun doInBackground(vararg params: String?): ArrayList<String> {
-        Log.d(TAG, "doInBackground starts")
         val imagesUris = ArrayList<String>()
 
         try {
@@ -41,14 +52,16 @@ class JsonData(private val listener: OnDataAvailable, private val source: Downlo
             cancel(true)
             listener.onError(e)
         }
-        Log.d(TAG, "doInBackground ends")
         return imagesUris
     }
 
+    /**
+     * Method to override AsyncTask onPostExecute.
+     *
+     * @param result
+     */
     override fun onPostExecute(result: ArrayList<String>) {
-        Log.d(TAG, "onPostExecute starts")
         super.onPostExecute(result)
         listener.onDataAvailable(result)
-        Log.d(TAG, "onPostExecute ends")
     }
 }

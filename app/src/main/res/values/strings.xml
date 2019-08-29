@@ -10,4 +10,17 @@
     <string name="PIXABAY_API_KEY">13310406-d6e15cf3e2d5c590fa44a6bea</string>
     <string name="pixabay_images_download">Pixabay images Download</string>
     <string name="check_internet_connection">Check Internet Connection and try again!</string>
+    <string name="choice_frame">Choice Frame</string>
+    <string name="add_frame">Add Frame</string>
+    <string name="save">Save</string>
+	<string name="facebook_share">Facebook Share</string>
+    <string name="install_facebook">Install Facebook for optimal experience.</string>
+    <string name="image_created">Image created.</string>
+    <string name="image_edited">Image edited.</string>
+    <string name="image_not_found">Image not found.</string>
+    <string name="frame_dark_brown">Frame Dark Brown</string>
+    <string name="frame_golden">Frame Golden</string>
+    <string name="frame_light_brown">Frame Light Brown</string>
+    <string name="frame_silver">Frame Silver</string>
+    <string name="frame_white">Frame White</string>
 </resources>

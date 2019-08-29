@@ -1,6 +1,7 @@
 package blog.photo.bildalbum
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
@@ -13,7 +14,6 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.AdapterView
-import android.widget.GridView
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -27,29 +27,38 @@ import java.io.FileOutputStream
 import java.lang.System.currentTimeMillis
 import java.util.*
 
+/**
+ * Class that manages the main screen.
+ */
 class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     JsonData.OnDataAvailable {
 
+    /**
+     * A companion object to declare variables for displaying images
+     */
     companion object {
-        lateinit var gridView: GridView
         lateinit var storedImagesPaths: ArrayList<String>
         lateinit var imagesAdapter: ImagesAdapter
     }
 
+    /**
+     * OnCreate Activity
+     *
+     * @param savedInstanceState
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        gridView = findViewById<View>(R.id.gridview) as GridView
         storedImagesPaths = getStoredImagesPaths()
         imagesAdapter = ImagesAdapter(this, storedImagesPaths)
         gridView.adapter = imagesAdapter
 
         gridView.onItemClickListener = object : AdapterView.OnItemClickListener {
             override fun onItemClick(parent: AdapterView<*>, view: View, position: Int, id: Long) {
-                // TODO: open ImageDetailsActivity for edit and share
-                // val photoUri = getStoredImagesPaths().get(position)
-                imagesAdapter.notifyDataSetChanged()
+                val intent = Intent(applicationContext, ImageActivity::class.java)
+                intent.putExtra("imageUri", storedImagesPaths[position])
+                startActivity(intent)
             }
         }
 
@@ -62,12 +71,22 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
         }
     }
 
+    /**
+     * OnCreate Options Menu
+     *
+     * @param menu
+     */
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_scrolling, menu)
         return true
     }
 
+    /**
+     * On Options Menu's item selected
+     *
+     * @param item
+     */
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
@@ -78,7 +97,13 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
         }
     }
 
-    inner class CreateImage(context: Context, var bmImage: ImageView) :
+    /**
+     * Helper class for creating new image
+     *
+     * @param context
+     * @param imageView
+     */
+    inner class CreateImage(context: Context, var imageView: ImageView) :
         AsyncTask<String, Void, Bitmap>() {
         val context = context
 
@@ -102,7 +127,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
             imagesAdapter.notifyDataSetChanged();
 
             ImagesDBOpenHelper(context, null).addImage(Image(path))
-            bmImage.setImageBitmap(result)
+            imageView.setImageBitmap(result)
         }
 
         private fun writeImage(finalBitmap: Bitmap): String {
@@ -112,7 +137,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
                 storageDir.mkdirs()
             }
 
-            val file = File(storageDir, "pic" + currentTimeMillis() + ".jpg")
+            val file = File(storageDir, "img" + currentTimeMillis() + ".jpg")
             if (file.exists())
                 file.delete()
 
@@ -129,6 +154,9 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
         }
     }
 
+    /**
+     * Method to download images from Flickr
+     */
     private fun getImagesFlickr() {
         val uri = createUriFlickr(
             getString(R.string.FLICKR_API_URI),
@@ -139,6 +167,31 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
         DownloadData(this, DownloadSource.FLICKR).execute(uri)
     }
 
+    /**
+     * Method to create Flickr download URI
+     *
+     * @param baseUri
+     * @param tags
+     * @param lang
+     * @param matchAll
+     */
+    private fun createUriFlickr(
+        baseUri: String,
+        tags: String,
+        lang: String,
+        matchAll: Boolean
+    ): String {
+        return Uri.parse(baseUri).buildUpon().appendQueryParameter("tags", tags)
+            .appendQueryParameter("lang", lang)
+            .appendQueryParameter("tagmode", if (matchAll) "ALL" else "ANY")
+            .appendQueryParameter("format", "json")
+            .appendQueryParameter("nojsoncallback", "1")
+            .build().toString()
+    }
+
+    /**
+     * Method to download images from Pixabay
+     */
     private fun getImagesPixabay() {
         val uri = createUriPixabay(
             getString(R.string.PIXABAY_API_URI),
@@ -147,38 +200,62 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
         DownloadData(this, DownloadSource.PIXABAY).execute(uri)
     }
 
-    private fun createUriFlickr(baseUri: String, tags: String, lang: String, matchAll: Boolean): String {
-        return Uri.parse(baseUri).buildUpon().appendQueryParameter("tags", tags).appendQueryParameter("lang", lang)
-            .appendQueryParameter("tagmode", if (matchAll) "ALL" else "ANY").appendQueryParameter("format", "json")
-            .appendQueryParameter("nojsoncallback", "1")
-            .build().toString()
-    }
-
+    /**
+     * Method to create Pixabay download URI
+     *
+     * @param baseUri
+     * @param key
+     */
     private fun createUriPixabay(baseUri: String, key: String): String {
         return Uri.parse(baseUri).buildUpon().appendQueryParameter("key", key)
             .build().toString()
     }
 
-    override fun onDownloadComplete(data: String, status: DownloadStatus, source: DownloadSource) {
-        if (status == OK)
-            JsonData(this, source).execute(data)
-        if (status == NETWORK_ERROR)
-            Toast.makeText(applicationContext, R.string.check_internet_connection, Toast.LENGTH_SHORT).show()
-    }
-
+    /**
+     * Method to download images
+     *
+     * @param data - images' URIs
+     */
     override fun onDataAvailable(data: ArrayList<String>) {
         data.forEach {
             CreateImage(
                 this,
-                LayoutInflater.from(this).inflate(R.layout.image_layout, null).findViewById(R.id.picture)
+                LayoutInflater.from(this).inflate(
+                    R.layout.image_layout,
+                    null
+                ).findViewById(R.id.picture)
             ).execute(it)
         }
     }
 
-    override fun onError(exception: Exception) {
-        Toast.makeText(applicationContext, "DownloadData Exception: $exception", Toast.LENGTH_SHORT).show()
+    /**
+     * Method to mark image download completion
+     *
+     * @param data
+     * @param source
+     * @param status
+     */
+    override fun onDownloadComplete(data: String, source: DownloadSource, status: DownloadStatus) {
+        if (status == OK)
+            JsonData(this, source).execute(data)
+        if (status == NETWORK_ERROR)
+            toast(getString(R.string.check_internet_connection))
     }
 
+    /**
+     * Method to display error message on image download unsuccessful
+     *
+     * @param exception
+     */
+    override fun onError(exception: Exception) {
+        toast("DownloadData Exception: $exception")
+    }
+
+    /**
+     * Method to get images paths from database
+     *
+     * @return paths of stored images
+     */
     fun getStoredImagesPaths(): ArrayList<String> {
         var listStoredImagesPaths = ArrayList<String>()
         val cursor = ImagesDBOpenHelper(this, null).getAllPhotosReverse()
@@ -204,5 +281,12 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
         cursor.close()
 
         return listStoredImagesPaths
+    }
+
+    /**
+     * Extension function to show toast message
+     */
+    fun Context.toast(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 }

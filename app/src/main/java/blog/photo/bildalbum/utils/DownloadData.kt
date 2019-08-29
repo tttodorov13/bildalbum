@@ -6,27 +6,40 @@ import java.io.IOException
 import java.net.MalformedURLException
 import java.net.URL
 
+/**
+ * Enum for image's download sources.
+ */
 enum class DownloadSource {
     FLICKR, PIXABAY
 }
 
+/**
+ * Enum for image's download statuses.
+ */
 enum class DownloadStatus {
     OK, IDLE, NOT_INITIALIZED, FAILED_OR_EMPTY, NETWORK_ERROR, PERMISSIONS_ERROR, ERROR
 }
 
+/**
+ * Class that manages the download of images.
+ */
 class DownloadData(private val listener: OnDownloadComplete, private val source: DownloadSource) : AsyncTask<String, Void, String>() {
     private val TAG = "DownloadData"
     private var status = DownloadStatus.IDLE
 
+    /**
+     * Interface for image download completed.
+     */
     interface OnDownloadComplete {
-        fun onDownloadComplete(data: String, status: DownloadStatus, source: DownloadSource)
+        fun onDownloadComplete(data: String, source: DownloadSource, status: DownloadStatus)
     }
 
-    override fun onPostExecute(result: String) {
-        Log.d(TAG, "onPostExecute called")
-        listener.onDownloadComplete(result, status, source)
-    }
-
+    /**
+     * Method to override AsyncTask doInBackground.
+     *
+     * @param params
+     * @return result or appropriate error message
+     */
     override fun doInBackground(vararg params: String?): String {
         if (params[0] == null) {
             status = DownloadStatus.NOT_INITIALIZED
@@ -60,5 +73,14 @@ class DownloadData(private val listener: OnDownloadComplete, private val source:
             Log.e(TAG, errorMessage)
             return errorMessage
         }
+    }
+
+    /**
+     * Method to override AsyncTask onPostExecute.
+     *
+     * @param result
+     */
+    override fun onPostExecute(result: String) {
+        listener.onDownloadComplete(result, source, status)
     }
 }
