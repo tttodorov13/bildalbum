@@ -107,7 +107,7 @@ class ImageActivity : Activity() {
                 val urlToShare = "https://bildalbum.photo.blog"
                 val sharerUrl = "https://www.facebook.com/sharer/sharer.php?u=$urlToShare"
                 intent = Intent(Intent.ACTION_VIEW, Uri.parse(sharerUrl))
-                toast(getString(R.string.install_facebook))
+                toast(getString(R.string.install_facebook_for_optimal_experience))
             }
 
             startActivity(intent)

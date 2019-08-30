@@ -99,7 +99,7 @@
                     android:paddingTop="12dp"
                     android:paddingBottom="12dp"
                     android:text="@string/add_frame"
-                    android:textColor="#fff" />
+                    android:textColor="@color/colorWhite" />
 
             <Button
                     android:id="@+id/buttonSave"
@@ -117,7 +117,7 @@
                     android:paddingTop="12dp"
                     android:paddingBottom="12dp"
                     android:text="@string/save"
-                    android:textColor="#fff"
+                    android:textColor="@color/colorWhite"
                     android:visibility="gone" />
 
             <Button
@@ -135,8 +135,8 @@
                     android:gravity="center"
                     android:paddingTop="12dp"
                     android:paddingBottom="12dp"
-                    android:text="@string/facebook_share"
-                    android:textColor="#fff"
+                    android:text="@string/share"
+                    android:textColor="@color/colorWhite"
                     android:visibility="gone" />
 
             <ImageView
