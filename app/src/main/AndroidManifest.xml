@@ -11,11 +11,10 @@
             android:label="@string/app_name"
             android:roundIcon="@mipmap/ic_launcher_round"
             android:supportsRtl="true"
-            android:theme="@style/AppTheme">
+            android:theme="@style/BuildalbumTheme">
 
         <activity
-                android:name=".ImageActivity"
-                android:theme="@style/AppTheme.NoActionBar" />
+                android:name=".ImageActivity" />
 
         <activity android:name=".LoginActivity">
             <intent-filter>
@@ -26,8 +25,7 @@
         </activity>
 
         <activity
-                android:name=".MainActivity"
-                android:theme="@style/AppTheme.NoActionBar" />
+                android:name=".MainActivity" />
 
         <provider
                 android:name="androidx.core.content.FileProvider"
@@ -38,6 +36,7 @@
                     android:name="android.support.FILE_PROVIDER_PATHS"
                     android:resource="@xml/file_paths" />
         </provider>
+
     </application>
 
 </manifest>

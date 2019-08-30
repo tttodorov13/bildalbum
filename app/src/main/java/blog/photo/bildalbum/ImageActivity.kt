@@ -1,6 +1,5 @@
 package blog.photo.bildalbum
 
-import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
@@ -14,16 +13,19 @@ import android.os.Environment
 import android.view.LayoutInflater
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isGone
 import blog.photo.bildalbum.model.Image
 import blog.photo.bildalbum.utils.ImagesDBOpenHelper
 import kotlinx.android.synthetic.main.activity_image.*
-import java.io.*
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 
 /**
  * Class that manages the image screen.
  */
-class ImageActivity : Activity() {
+class ImageActivity : AppCompatActivity() {
 
     private val frameDarkBrown = "frameDarkBrown.png"
     private val frameGolden = "frameGolden.png"
@@ -104,9 +106,7 @@ class ImageActivity : Activity() {
 
             // As fallback, launch sharer.php in a browser
             if (!facebookAppFound) {
-                val urlToShare = "https://bildalbum.photo.blog"
-                val sharerUrl = "https://www.facebook.com/sharer/sharer.php?u=$urlToShare"
-                intent = Intent(Intent.ACTION_VIEW, Uri.parse(sharerUrl))
+                intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.facebook.com/sharer/sharer.php?u=" + R.string.app_web))
                 toast(getString(R.string.install_facebook_for_optimal_experience))
             }
 
