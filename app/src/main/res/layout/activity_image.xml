@@ -31,6 +31,15 @@
                     android:layout_marginTop="10dp"
                     app:srcCompat="@mipmap/ic_launcher" />
 
+            <ImageView
+                    android:id="@+id/imageNew"
+                    android:layout_width="@dimen/edited_image_size"
+                    android:layout_height="@dimen/edited_image_size"
+                    android:layout_gravity="center_horizontal"
+                    android:scaleType="center"
+                    app:srcCompat="@mipmap/ic_launcher"
+                    android:visibility="gone" />
+
             <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -138,15 +147,6 @@
                     android:paddingBottom="12dp"
                     android:text="@string/share"
                     android:textColor="@color/colorWhite"
-                    android:visibility="gone" />
-
-            <ImageView
-                    android:id="@+id/imageNew"
-                    android:layout_width="@dimen/edited_image_size"
-                    android:layout_height="@dimen/edited_image_size"
-                    android:layout_gravity="center_horizontal"
-                    android:scaleType="center"
-                    app:srcCompat="@mipmap/ic_launcher"
                     android:visibility="gone" />
 
         </LinearLayout>

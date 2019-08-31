@@ -65,6 +65,7 @@ class ImageActivity : AppCompatActivity() {
                     frame
                 )
                 imageNew.setImageBitmap(bitmapNew)
+                imageOriginal.isGone = true
                 imageNew.isGone = false
                 buttonSave.isGone = false
 
