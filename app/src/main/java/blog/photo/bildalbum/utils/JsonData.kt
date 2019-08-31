@@ -36,14 +36,12 @@ class JsonData(private val listener: OnDataAvailable, private val source: Downlo
                     val itemsArray = jsonData.getJSONArray("items")
                     for (i in 0 until itemsArray.length()) {
                         imagesUris.add(itemsArray.getJSONObject(i).getJSONObject("media").getString("m"))
-                        Log.d(TAG, "doInBackground: " + imagesUris[i])
                     }
                 }
                 DownloadSource.PIXABAY -> {
                     val itemsArray = jsonData.getJSONArray("hits")
                     for (i in 0 until itemsArray.length()) {
                         imagesUris.add(itemsArray.getJSONObject(i).getString("previewURL"))
-                        Log.d(TAG, "doInBackground: " + imagesUris[i])
                     }
                 }
             }
