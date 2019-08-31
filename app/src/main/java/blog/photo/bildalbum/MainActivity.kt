@@ -98,7 +98,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
             storedImagesPaths.add(0, path)
             imagesAdapter.notifyDataSetChanged();
 
-            ImagesDBOpenHelper(context, null).addImage(Image(path))
+            BuildAlbumDBOpenHelper(context, null).addImage(Image(path))
             imageView.setImageBitmap(result)
         }
 
@@ -230,13 +230,13 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
      */
     fun getStoredImagesPaths(): ArrayList<String> {
         var listStoredImagesPaths = ArrayList<String>()
-        val cursor = ImagesDBOpenHelper(this, null).getAllPhotosReverse()
+        val cursor = BuildAlbumDBOpenHelper(this, null).getAllImagesReverse()
 
         if (cursor!!.moveToFirst()) {
             listStoredImagesPaths.add(
                 cursor.getString(
                     cursor.getColumnIndex(
-                        ImagesDBOpenHelper.COLUMN_PATH
+                        BuildAlbumDBOpenHelper.COLUMN_PATH
                     )
                 )
             )
@@ -244,7 +244,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
                 listStoredImagesPaths.add(
                     cursor.getString(
                         cursor.getColumnIndex(
-                            ImagesDBOpenHelper.COLUMN_PATH
+                            BuildAlbumDBOpenHelper.COLUMN_PATH
                         )
                     )
                 )

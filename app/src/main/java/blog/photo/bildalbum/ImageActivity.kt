@@ -16,7 +16,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isGone
 import blog.photo.bildalbum.model.Image
-import blog.photo.bildalbum.utils.ImagesDBOpenHelper
+import blog.photo.bildalbum.utils.BuildAlbumDBOpenHelper
 import kotlinx.android.synthetic.main.activity_image.*
 import java.io.File
 import java.io.FileOutputStream
@@ -182,7 +182,7 @@ class ImageActivity : AppCompatActivity() {
             MainActivity.storedImagesPaths.add(0, imageNewFilePath)
             MainActivity.imagesAdapter.notifyDataSetChanged();
 
-            ImagesDBOpenHelper(context, null).addImage(Image(imageNewFilePath))
+            BuildAlbumDBOpenHelper(context, null).addImage(Image(imageNewFilePath))
             toast(getString(R.string.image_created))
         }
 

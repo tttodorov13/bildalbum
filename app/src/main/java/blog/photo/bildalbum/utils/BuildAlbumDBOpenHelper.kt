@@ -7,7 +7,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import blog.photo.bildalbum.model.Image
 
-class ImagesDBOpenHelper(
+class BuildAlbumDBOpenHelper(
     context: Context,
     factory: SQLiteDatabase.CursorFactory?
 ) : SQLiteOpenHelper(
@@ -16,37 +16,34 @@ class ImagesDBOpenHelper(
 ) {
 
     override fun onCreate(db: SQLiteDatabase) {
-        val createTableImages = ("CREATE TABLE " +
-                DATABASE_TABLE + "("
-                + COLUMN_ID + " INTEGER PRIMARY KEY," +
-                COLUMN_PATH
-                + " TEXT" + ")")
-        db.execSQL(createTableImages)
+        db.execSQL(("CREATE TABLE $TABLE_IMAGES ($COLUMN_ID INTEGER PRIMARY KEY, $COLUMN_PATH TEXT,$COLUMN_URI TEXT)"))
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        db.execSQL("DROP TABLE IF EXISTS " + DATABASE_TABLE)
+        db.execSQL("DROP TABLE IF EXISTS $TABLE_IMAGES")
         onCreate(db)
     }
 
     fun addImage(image: Image) {
         val values = ContentValues()
         values.put(COLUMN_PATH, image.path)
+        values.put(COLUMN_URI, image.uri)
         val db = this.writableDatabase
-        db.insert(DATABASE_TABLE, null, values)
+        db.insert(TABLE_IMAGES, null, values)
         db.close()
     }
 
-    fun getAllPhotosReverse(): Cursor? {
+    fun getAllImagesReverse(): Cursor? {
         val db = this.readableDatabase
-        return db.rawQuery("SELECT * FROM $DATABASE_TABLE ORDER BY $COLUMN_ID DESC", null)
+        return db.rawQuery("SELECT * FROM $TABLE_IMAGES ORDER BY $COLUMN_ID DESC", null)
     }
 
     companion object {
         private const val DATABASE_VERSION = 1
-        private const val DATABASE_NAME = "bildalbum.db"
-        private const val DATABASE_TABLE = "images"
+        private const val DATABASE_NAME = "buildalbum.db"
+        private const val TABLE_IMAGES = "images"
         private const val COLUMN_ID = "_id"
         const val COLUMN_PATH = "path"
+        const val COLUMN_URI = "uri"
     }
 }
