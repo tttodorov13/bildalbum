@@ -23,22 +23,26 @@
                 android:layout_height="match_parent"
                 android:orientation="vertical">
 
-            <ImageView
-                    android:id="@+id/imageOriginal"
-                    android:layout_width="match_parent"
-                    android:layout_height="200dp"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_marginTop="10dp"
-                    app:srcCompat="@mipmap/ic_launcher" />
+            <TextView
+                    android:id="@+id/imageNewName"
+                    android:layout_width="@dimen/edited_image_size"
+                    android:layout_height="@dimen/edited_image_size"
+                    android:visibility="gone" />
 
             <ImageView
                     android:id="@+id/imageNew"
                     android:layout_width="@dimen/edited_image_size"
                     android:layout_height="@dimen/edited_image_size"
                     android:layout_gravity="center_horizontal"
-                    android:scaleType="center"
-                    app:srcCompat="@mipmap/ic_launcher"
-                    android:visibility="gone" />
+                    android:visibility="gone"
+                    app:srcCompat="@mipmap/ic_launcher" />
+
+            <ImageView
+                    android:id="@+id/imageOriginal"
+                    android:layout_width="@dimen/edited_image_size"
+                    android:layout_height="@dimen/edited_image_size"
+                    android:layout_gravity="center_horizontal"
+                    app:srcCompat="@mipmap/ic_launcher" />
 
             <TextView
                     android:layout_width="wrap_content"
@@ -112,26 +116,7 @@
                     android:textColor="@color/colorWhite" />
 
             <Button
-                    android:id="@+id/buttonSave"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:layout_margin="4dp"
-                    android:layout_marginStart="4dp"
-                    android:layout_marginLeft="4dp"
-                    android:layout_marginTop="0dp"
-                    android:layout_marginEnd="4dp"
-                    android:layout_marginRight="4dp"
-                    android:background="@color/colorPrimary"
-                    android:gravity="center"
-                    android:paddingTop="12dp"
-                    android:paddingBottom="12dp"
-                    android:text="@string/save"
-                    android:textColor="@color/colorWhite"
-                    android:visibility="gone" />
-
-            <Button
-                    android:id="@+id/buttonFacebookShare"
+                    android:id="@+id/buttonShare"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
@@ -146,8 +131,7 @@
                     android:paddingTop="12dp"
                     android:paddingBottom="12dp"
                     android:text="@string/share"
-                    android:textColor="@color/colorWhite"
-                    android:visibility="gone" />
+                    android:textColor="@color/colorWhite" />
 
         </LinearLayout>
 

@@ -5,6 +5,7 @@ import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import blog.photo.bildalbum.model.Frame
 import blog.photo.bildalbum.model.Image
 
 class BuildAlbumDBOpenHelper(
@@ -16,7 +17,7 @@ class BuildAlbumDBOpenHelper(
 ) {
 
     override fun onCreate(db: SQLiteDatabase) {
-        db.execSQL(("CREATE TABLE $TABLE_IMAGES ($COLUMN_ID INTEGER PRIMARY KEY, $COLUMN_PATH TEXT,$COLUMN_URI TEXT)"))
+        db.execSQL("CREATE TABLE $TABLE_IMAGES ($COLUMN_ID INTEGER PRIMARY KEY, $COLUMN_PATH TEXT,$COLUMN_URI TEXT)")
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {

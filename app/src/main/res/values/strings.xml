@@ -13,11 +13,9 @@
     <string name="check_internet_connection">Check Internet connection and try again!</string>
     <string name="choice_frame">Choice Frame</string>
     <string name="add_frame">Add Frame</string>
-    <string name="save">Save</string>
 	<string name="share">Share</string>
     <string name="install_facebook_for_optimal_experience">Install Facebook for optimal experience!</string>
-    <string name="image_created">Image created</string>
-    <string name="image_edited">Image edited</string>
+    <string name="image_saved">Image saved</string>
     <string name="image_not_found">Image not found.</string>
     <string name="frame_dark_brown">Frame Dark Brown</string>
     <string name="frame_golden">Frame Golden</string>

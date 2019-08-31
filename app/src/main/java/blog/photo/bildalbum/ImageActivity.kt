@@ -10,6 +10,7 @@ import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
 import android.os.Environment
+import android.util.Log
 import android.view.LayoutInflater
 import android.widget.ImageView
 import android.widget.Toast
@@ -34,6 +35,7 @@ class ImageActivity : AppCompatActivity() {
     private val frameWhite = "frameWhite.png"
     private val imageSize = 400
     private val imageBorderSize = 100
+    private lateinit var imageOriginalFilePath: String
     private lateinit var imageNewFilePath: String
 
     /**
@@ -45,9 +47,10 @@ class ImageActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_image)
 
-        val bitmap = BitmapFactory.decodeFile(intent.extras!!.get("imageUri").toString())
+        imageOriginalFilePath = intent.extras!!.get("imageFilePath").toString()
+        val bitmap = BitmapFactory.decodeFile(imageOriginalFilePath)
         imageOriginal.setImageBitmap(bitmap)
-        var bitmapNew: Bitmap? = null
+        var bitmapNew: Bitmap?
 
         // Click listener for edit button add frame
         buttonAddFrame.setOnClickListener {
@@ -64,35 +67,37 @@ class ImageActivity : AppCompatActivity() {
                     bitmap,
                     frame
                 )
-                imageNew.setImageBitmap(bitmapNew)
-                imageOriginal.isGone = true
-                imageNew.isGone = false
-                buttonSave.isGone = false
+                var new = "false"
+                if (imageNewName.text.isBlank()) {
+                    imageNewName.text = "img" + System.currentTimeMillis() + ".jpg"
+                    new = "true"
+                }
 
-                toast(getString(R.string.image_edited))
+                SaveImage(
+                    this,
+                    LayoutInflater.from(this).inflate(
+                        R.layout.activity_image,
+                        null
+                    ).findViewById(R.id.imageNew)
+                ).execute(new)
+
+                imageNew.setImageBitmap(bitmapNew)
+                imageNew.isGone = false
+                imageOriginal.isGone = true
             } else {
                 toast(getString(R.string.image_not_found))
             }
         }
 
-        // Click listener for save button
-        buttonSave.setOnClickListener {
-            CreateImage(
-                this,
-                LayoutInflater.from(this).inflate(
-                    R.layout.activity_image,
-                    null
-                ).findViewById(R.id.imageNew)
-            ).execute()
-            buttonFacebookShare.isGone = false
-        }
-
         // Click listener for share button
-        buttonFacebookShare.setOnClickListener {
+        buttonShare.setOnClickListener {
             var intent = Intent(Intent.ACTION_SEND)
             intent.type = "image/*"
             intent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
-            intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(File(imageNewFilePath)))
+            if (::imageNewFilePath.isInitialized)
+                intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(File(imageNewFilePath)))
+            else
+                intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(File(imageOriginalFilePath)))
 
             // See if official Facebook app is found
             var facebookAppFound = false
@@ -107,7 +112,10 @@ class ImageActivity : AppCompatActivity() {
 
             // As fallback, launch sharer.php in a browser
             if (!facebookAppFound) {
-                intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.facebook.com/sharer/sharer.php?u=" + R.string.app_web))
+                intent = Intent(
+                    Intent.ACTION_VIEW,
+                    Uri.parse("https://www.facebook.com/sharer/sharer.php?u=" + R.string.app_web)
+                )
                 toast(getString(R.string.install_facebook_for_optimal_experience))
             }
 
@@ -168,23 +176,31 @@ class ImageActivity : AppCompatActivity() {
      * @param context
      * @param imageView
      */
-    inner class CreateImage(context: Context, var imageView: ImageView) :
+    inner class SaveImage(context: Context, var imageView: ImageView) :
         AsyncTask<String, Void, Bitmap>() {
         val context = context
+        var new = false
 
-        override fun doInBackground(vararg arg: String?): Bitmap? {
+        override fun doInBackground(vararg args: String?): Bitmap? {
+            try {
+                new = args[0].toString().toBoolean()
+            } catch (e: IndexOutOfBoundsException) {
+                Log.e("Error", e.message.toString())
+            }
             return convertImageViewToBitmap(imageNew)
         }
 
         override fun onPostExecute(result: Bitmap) {
             imageNewFilePath = writeImage(result)
 
-            // Update the images GridView in main screen
-            MainActivity.storedImagesPaths.add(0, imageNewFilePath)
+            if (new) {
+                // Update the images GridView in main screen
+                MainActivity.storedImagesPaths.add(0, imageNewFilePath)
+                BuildAlbumDBOpenHelper(context, null).addImage(Image(imageNewFilePath))
+            }
             MainActivity.imagesAdapter.notifyDataSetChanged();
 
-            BuildAlbumDBOpenHelper(context, null).addImage(Image(imageNewFilePath))
-            toast(getString(R.string.image_created))
+            toast(getString(R.string.image_saved))
         }
 
         private fun writeImage(finalBitmap: Bitmap): String {
@@ -194,7 +210,7 @@ class ImageActivity : AppCompatActivity() {
                 storageDir.mkdirs()
             }
 
-            val file = File(storageDir, "img" + System.currentTimeMillis() + ".jpg")
+            val file = File(storageDir, imageNewName.text.toString())
             if (file.exists())
                 file.delete()
 

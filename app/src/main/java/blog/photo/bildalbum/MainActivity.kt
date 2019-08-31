@@ -55,7 +55,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
         gridView.onItemClickListener = object : AdapterView.OnItemClickListener {
             override fun onItemClick(parent: AdapterView<*>, view: View, position: Int, id: Long) {
                 val intent = Intent(applicationContext, ImageActivity::class.java)
-                intent.putExtra("imageUri", storedImagesPaths[position])
+                intent.putExtra("imageFilePath", storedImagesPaths[position])
                 startActivity(intent)
             }
         }
@@ -75,14 +75,14 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
      * @param context
      * @param imageView
      */
-    inner class CreateImage(context: Context, var imageView: ImageView) :
+    inner class SaveImage(context: Context, var imageView: ImageView) :
         AsyncTask<String, Void, Bitmap>() {
         val context = context
 
-        override fun doInBackground(vararg urls: String): Bitmap? {
+        override fun doInBackground(vararg args: String): Bitmap? {
             var bm: Bitmap? = null
             try {
-                val `in` = java.net.URL(urls[0]).openStream()
+                val `in` = java.net.URL(args[0]).openStream()
                 bm = BitmapFactory.decodeStream(`in`)
             } catch (e: Exception) {
                 e("Error", e.message.toString())
@@ -190,7 +190,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
      */
     override fun onDataAvailable(data: ArrayList<String>) {
         data.forEach {
-            CreateImage(
+            SaveImage(
                 this,
                 LayoutInflater.from(this).inflate(
                     R.layout.image_layout,
