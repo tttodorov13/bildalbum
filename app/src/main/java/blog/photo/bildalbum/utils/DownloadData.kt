@@ -10,7 +10,7 @@ import java.net.URL
  * Enum for image's download sources.
  */
 enum class DownloadSource {
-    FLICKR, PIXABAY
+    FLICKR, PIXABAY, FRAMES
 }
 
 /**
@@ -23,7 +23,8 @@ enum class DownloadStatus {
 /**
  * Class that manages the download of images.
  */
-class DownloadData(private val listener: OnDownloadComplete, private val source: DownloadSource) : AsyncTask<String, Void, String>() {
+class DownloadData(private val listener: OnDownloadComplete, private val source: DownloadSource) :
+    AsyncTask<String, Void, String>() {
     private val TAG = "DownloadData"
     private var status = DownloadStatus.IDLE
 
@@ -48,6 +49,8 @@ class DownloadData(private val listener: OnDownloadComplete, private val source:
 
         try {
             status = DownloadStatus.OK
+            if (source == DownloadSource.FRAMES)
+                return URL(params[0]).toString()
             return URL(params[0]).readText()
         } catch (e: Exception) {
             val errorMessage = when (e) {
@@ -57,7 +60,7 @@ class DownloadData(private val listener: OnDownloadComplete, private val source:
                 }
                 is IOException -> {
                     status = DownloadStatus.FAILED_OR_EMPTY
-                    if(e.message.toString().startsWith("Unable to resolve host"))
+                    if (e.message.toString().startsWith("Unable to resolve host"))
                         status = DownloadStatus.NETWORK_ERROR
                     "doInBackground: IO Exception reading data: ${e.message}"
                 }

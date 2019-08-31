@@ -17,7 +17,7 @@
             android:orientation="vertical">
 
         <Button
-                android:id="@+id/buttonFlickrImagesDownload"
+                android:id="@+id/buttonDownloadFromFlickr"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
@@ -35,7 +35,7 @@
                 android:textColor="@color/colorWhite" />
 
         <Button
-                android:id="@+id/buttonPixabayImagesDownload"
+                android:id="@+id/buttonDownloadFromPixabay"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_vertical"
@@ -53,7 +53,7 @@
                 android:textColor="@color/colorWhite" />
 
         <GridView
-                android:id="@+id/gridView"
+                android:id="@+id/images"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:columnWidth="110dp"

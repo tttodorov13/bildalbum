@@ -10,33 +10,38 @@ import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
 import android.os.Environment
-import android.util.Log
+import android.util.Log.e
 import android.view.LayoutInflater
+import android.widget.AdapterView
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isGone
-import blog.photo.bildalbum.model.Image
+import blog.photo.bildalbum.MainActivity.Companion.storedFramesPaths
+import blog.photo.bildalbum.MainActivity.Companion.storedImagesPaths
 import blog.photo.bildalbum.utils.BuildAlbumDBOpenHelper
+import blog.photo.bildalbum.utils.PicturesAdapter
 import kotlinx.android.synthetic.main.activity_image.*
 import java.io.File
 import java.io.FileOutputStream
-import java.io.IOException
 
 /**
  * Class that manages the image screen.
  */
 class ImageActivity : AppCompatActivity() {
 
-    private val frameDarkBrown = "frameDarkBrown.png"
-    private val frameGolden = "frameGolden.png"
-    private val frameLightBrown = "frameLightBrown.png"
-    private val frameSilver = "frameSilver.png"
-    private val frameWhite = "frameWhite.png"
-    private val imageSize = 400
-    private val imageBorderSize = 100
+    private val TAG = "ImageActivity"
+    private var imageSize = 400
+    private var imageSizeBorder = 100
     private lateinit var imageOriginalFilePath: String
     private lateinit var imageNewFilePath: String
+
+    /**
+     * A companion object to declare variables for displaying frames
+     */
+    companion object {
+        lateinit var framesAdapter: PicturesAdapter
+    }
 
     /**
      * OnCreate Activity
@@ -48,52 +53,50 @@ class ImageActivity : AppCompatActivity() {
         setContentView(R.layout.activity_image)
 
         imageOriginalFilePath = intent.extras!!.get("imageFilePath").toString()
-        val bitmap = BitmapFactory.decodeFile(imageOriginalFilePath)
-        imageOriginal.setImageBitmap(bitmap)
-        var bitmapNew: Bitmap?
+        imageSize = getString(R.string.image_size).toInt()
+        imageSizeBorder = getString(R.string.image_size_border).toInt()
+        imageOriginal.setImageURI(Uri.parse(imageOriginalFilePath))
 
-        // Click listener for edit button add frame
-        buttonAddFrame.setOnClickListener {
-            val frame = when (radioFrame.checkedRadioButtonId) {
-                buttonFrameDarkBrown.id -> frameDarkBrown
-                buttonFrameGolden.id -> frameGolden
-                buttonFrameLightBrown.id -> frameLightBrown
-                buttonFrameSilver.id -> frameSilver
-                buttonFrameWhite.id -> frameWhite
-                else -> null
-            }
-            if (bitmap != null) {
-                bitmapNew = addBitmapFrame(
-                    bitmap,
-                    frame
-                )
-                var new = "false"
-                if (imageNewName.text.isBlank()) {
-                    imageNewName.text = "img" + System.currentTimeMillis() + ".jpg"
-                    new = "true"
+        framesAdapter = PicturesAdapter(this, storedFramesPaths)
+        frames.adapter = framesAdapter
+
+        frames.onItemClickListener =
+            AdapterView.OnItemClickListener { _, _, position, _ ->
+                try {
+                    val bitmapNew = addFrame(
+                        imageOriginalFilePath,
+                        storedFramesPaths[position]
+                    )
+                    imageNew.setImageBitmap(bitmapNew)
+                    imageNew.isGone = false
+                    imageOriginal.isGone = true
+                    var new = false
+                    if (imageNewName.text.isBlank()) {
+                        imageNewName.text = "img" + System.currentTimeMillis() + ".jpg"
+                        new = true
+                    }
+
+                    SaveImage(
+                        applicationContext,
+                        LayoutInflater.from(applicationContext).inflate(
+                            R.layout.activity_image,
+                            null
+                        ).findViewById(R.id.imageNew)
+                        , new
+                    ).execute()
+                } catch (e: Exception) {
+                    toast(getString(R.string.internal_error))
+                    e(TAG, e.message.toString())
+                    e.printStackTrace()
                 }
-
-                SaveImage(
-                    this,
-                    LayoutInflater.from(this).inflate(
-                        R.layout.activity_image,
-                        null
-                    ).findViewById(R.id.imageNew)
-                ).execute(new)
-
-                imageNew.setImageBitmap(bitmapNew)
-                imageNew.isGone = false
-                imageOriginal.isGone = true
-            } else {
-                toast(getString(R.string.image_not_found))
             }
-        }
 
         // Click listener for share button
         buttonShare.setOnClickListener {
             var intent = Intent(Intent.ACTION_SEND)
             intent.type = "image/*"
             intent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+
             if (::imageNewFilePath.isInitialized)
                 intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(File(imageNewFilePath)))
             else
@@ -114,7 +117,7 @@ class ImageActivity : AppCompatActivity() {
             if (!facebookAppFound) {
                 intent = Intent(
                     Intent.ACTION_VIEW,
-                    Uri.parse("https://www.facebook.com/sharer/sharer.php?u=" + R.string.app_web)
+                    Uri.parse("https://www.facebook.com/sharer/sharer.php?u=${getString(R.string.app_web)}")
                 )
                 toast(getString(R.string.install_facebook_for_optimal_experience))
             }
@@ -126,48 +129,26 @@ class ImageActivity : AppCompatActivity() {
     /**
      * Method to add a bitmap frame
      */
-    private fun addBitmapFrame(bitmap: Bitmap, frame: String?): Bitmap? {
-        var scaledBitmap = Bitmap.createScaledBitmap(bitmap, imageSize, imageSize, false);
-        val editedBitmap: Bitmap?
+    private fun addFrame(imageOriginalFilePath: String, frame: String): Bitmap? {
+        var scaledBitmap = Bitmap.createScaledBitmap(
+            BitmapFactory.decodeFile(imageOriginalFilePath),
+            imageSize,
+            imageSize,
+            false
+        );
         val canvas: Canvas
-        if (frame != null) {
-            editedBitmap = assetsToBitmap(frame)?.copy(Bitmap.Config.ARGB_8888, true)
-            canvas = Canvas(editedBitmap!!)
-            canvas.drawBitmap(
-                scaledBitmap,
-                imageBorderSize.toFloat(),
-                imageBorderSize.toFloat(),
-                null
-            )
-        } else {
-            editedBitmap = Bitmap.createBitmap(
-                scaledBitmap.width + imageBorderSize * 2,
-                scaledBitmap.height + imageBorderSize * 2,
-                scaledBitmap.config
-            )
-            canvas = Canvas(editedBitmap)
-            canvas.drawColor(resources.getColor(R.color.colorPrimary))
-            canvas.drawBitmap(
-                scaledBitmap,
-                imageBorderSize.toFloat(),
-                imageBorderSize.toFloat(),
-                null
-            )
-        }
-        return editedBitmap
-    }
-
-    /**
-     * Method to get a bitmap from assets
-     */
-    private fun assetsToBitmap(fileName: String): Bitmap? {
-        return try {
-            val stream = assets.open(fileName)
-            BitmapFactory.decodeStream(stream)
-        } catch (e: IOException) {
-            e.printStackTrace()
+        val imageNewBitmap = BitmapFactory.decodeFile(frame).copy(
+            Bitmap.Config.ARGB_8888,
+            true
+        )
+        canvas = Canvas(imageNewBitmap!!)
+        canvas.drawBitmap(
+            scaledBitmap,
+            imageSizeBorder.toFloat(),
+            imageSizeBorder.toFloat(),
             null
-        }
+        )
+        return imageNewBitmap
     }
 
     /**
@@ -176,17 +157,11 @@ class ImageActivity : AppCompatActivity() {
      * @param context
      * @param imageView
      */
-    inner class SaveImage(context: Context, var imageView: ImageView) :
+    inner class SaveImage(context: Context, var imageView: ImageView, private var new: Boolean) :
         AsyncTask<String, Void, Bitmap>() {
         val context = context
-        var new = false
 
         override fun doInBackground(vararg args: String?): Bitmap? {
-            try {
-                new = args[0].toString().toBoolean()
-            } catch (e: IndexOutOfBoundsException) {
-                Log.e("Error", e.message.toString())
-            }
             return convertImageViewToBitmap(imageNew)
         }
 
@@ -195,8 +170,13 @@ class ImageActivity : AppCompatActivity() {
 
             if (new) {
                 // Update the images GridView in main screen
-                MainActivity.storedImagesPaths.add(0, imageNewFilePath)
-                BuildAlbumDBOpenHelper(context, null).addImage(Image(imageNewFilePath))
+                storedImagesPaths.add(0, imageNewFilePath)
+                BuildAlbumDBOpenHelper(context, null).addImage(
+                    Image(
+                        imageNewFilePath,
+                        ""
+                    )
+                )
             }
             MainActivity.imagesAdapter.notifyDataSetChanged();
 
@@ -216,10 +196,11 @@ class ImageActivity : AppCompatActivity() {
 
             try {
                 val out = FileOutputStream(file)
-                finalBitmap.compress(Bitmap.CompressFormat.JPEG, 90, out)
+                finalBitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
                 out.flush()
                 out.close()
             } catch (e: Exception) {
+                e(TAG, e.message.toString())
                 e.printStackTrace()
             }
 

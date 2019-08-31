@@ -2,7 +2,8 @@
     <string name="app_name">BuildAlbum</string>
     <string name="app_info">Build Your Photo Album</string>
     <string name="app_web">https://buildalbum.photo.blog</string>
-    <string name="action_share">Share</string>
+    <string name="FRAMES_COUNT">5</string>
+    <string name="FRAMES_URI">https://buildalbumphoto.files.wordpress.com/2019/08/</string>
     <string name="FLICKR_API_URI">https://api.flickr.com/services/feeds/photos_public.gne</string>
     <string name="FLICKR_API_TAGS">android,oreo</string>
     <string name="FLICKR_API_LANG">en-us</string>
@@ -11,15 +12,10 @@
     <string name="download_from_flickr">Download from Flickr</string>
     <string name="download_from_pixabay">Download from Pixabay</string>
     <string name="check_internet_connection">Check Internet connection and try again!</string>
-    <string name="choice_frame">Choice Frame</string>
-    <string name="add_frame">Add Frame</string>
-	<string name="share">Share</string>
+    <string name="image_size">400</string>
+    <string name="image_size_border">100</string>
+    <string name="share">Share</string>
     <string name="install_facebook_for_optimal_experience">Install Facebook for optimal experience!</string>
-    <string name="image_saved">Image saved</string>
-    <string name="image_not_found">Image not found.</string>
-    <string name="frame_dark_brown">Frame Dark Brown</string>
-    <string name="frame_golden">Frame Golden</string>
-    <string name="frame_light_brown">Frame Light Brown</string>
-    <string name="frame_silver">Frame Silver</string>
-    <string name="frame_white">Frame White</string>
+    <string name="image_saved">Image saved!</string>
+    <string name="internal_error">Internal Error!</string>
 </resources>

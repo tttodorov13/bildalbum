@@ -2,17 +2,19 @@ package blog.photo.bildalbum.utils
 
 import android.content.Context
 import android.graphics.BitmapFactory
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.ImageView
 import blog.photo.bildalbum.R
+import java.io.File
 
-class ImagesAdapter(private val mContext: Context, private val imagesPaths: ArrayList<String>) : BaseAdapter() {
+class PicturesAdapter(private val mContext: Context, private val picturesPaths: ArrayList<String>) : BaseAdapter() {
 
     override fun getCount(): Int {
-        return imagesPaths.size
+        return picturesPaths.size
     }
 
     override fun getItemId(position: Int): Long {
@@ -25,7 +27,7 @@ class ImagesAdapter(private val mContext: Context, private val imagesPaths: Arra
 
     override fun getView(position: Int, view: View?, parent: ViewGroup): View? {
         var convertView = view
-        val imagePath = imagesPaths[position]
+        val picturePath = picturesPaths[position]
         var viewHolder: ViewHolder
 
         if (convertView == null) {
@@ -33,13 +35,13 @@ class ImagesAdapter(private val mContext: Context, private val imagesPaths: Arra
             convertView = layoutInflater.inflate(R.layout.image_layout, null)
 
             val imageView = convertView.findViewById(R.id.picture) as ImageView
-            imageView.setImageBitmap(BitmapFactory.decodeFile(imagePath))
+            imageView.setImageURI(Uri.parse(picturePath))
 
             viewHolder = ViewHolder(imageView)
             convertView.tag = viewHolder
         } else {
             viewHolder = convertView.tag as ViewHolder
-            viewHolder.imageView.setImageBitmap(BitmapFactory.decodeFile(imagePath))
+            viewHolder.imageView.setImageURI(Uri.parse(picturePath))
         }
 
         return convertView
