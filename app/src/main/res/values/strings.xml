@@ -3,7 +3,7 @@
     <string name="app_info">Build Your Photo Album</string>
     <string name="app_web">https://buildalbum.photo.blog</string>
     <string name="FRAMES_COUNT">5</string>
-    <string name="FRAMES_URI">https://buildalbumphoto.files.wordpress.com/2019/08/</string>
+    <string name="FRAMES_URI">https://buildalbumphoto.files.wordpress.com/2019/09/</string>
     <string name="FLICKR_API_URI">https://api.flickr.com/services/feeds/photos_public.gne</string>
     <string name="FLICKR_API_TAGS">android,oreo</string>
     <string name="FLICKR_API_LANG">en-us</string>
