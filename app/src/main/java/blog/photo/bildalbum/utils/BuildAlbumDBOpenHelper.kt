@@ -17,8 +17,8 @@ class BuildAlbumDBOpenHelper(
 ) {
 
     override fun onCreate(db: SQLiteDatabase) {
-        db.execSQL("CREATE TABLE $TABLE_FRAMES ($COLUMN_ID INTEGER PRIMARY KEY, $COLUMN_PATH TEXT,$COLUMN_URI TEXT)")
-        db.execSQL("CREATE TABLE $TABLE_IMAGES ($COLUMN_ID INTEGER PRIMARY KEY, $COLUMN_PATH TEXT,$COLUMN_URI TEXT)")
+        db.execSQL("CREATE TABLE $TABLE_FRAMES ($COLUMN_ID INTEGER PRIMARY KEY, $COLUMN_NAME TEXT,$COLUMN_URI TEXT)")
+        db.execSQL("CREATE TABLE $TABLE_IMAGES ($COLUMN_ID INTEGER PRIMARY KEY, $COLUMN_NAME TEXT,$COLUMN_URI TEXT)")
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
@@ -30,7 +30,7 @@ class BuildAlbumDBOpenHelper(
 
     fun addFrame(frame: Frame) {
         val values = ContentValues()
-        values.put(COLUMN_PATH, frame.path)
+        values.put(COLUMN_NAME, frame.name)
         values.put(COLUMN_URI, frame.uri)
         val db = this.writableDatabase
         db.insert(TABLE_FRAMES, null, values)
@@ -39,7 +39,7 @@ class BuildAlbumDBOpenHelper(
 
     fun addImage(image: Image) {
         val values = ContentValues()
-        values.put(COLUMN_PATH, image.path)
+        values.put(COLUMN_NAME, image.name)
         values.put(COLUMN_URI, image.uri)
         val db = this.writableDatabase
         db.insert(TABLE_IMAGES, null, values)
@@ -62,7 +62,7 @@ class BuildAlbumDBOpenHelper(
         private const val TABLE_IMAGES = "images"
         private const val TABLE_FRAMES = "frames"
         private const val COLUMN_ID = "_id"
-        const val COLUMN_PATH = "path"
+        const val COLUMN_NAME = "name"
         const val COLUMN_URI = "uri"
     }
 }

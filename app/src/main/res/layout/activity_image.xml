@@ -39,7 +39,7 @@
                         android:textColor="@color/colorWhite" />
 
                 <ImageView
-                        android:id="@+id/imageNew"
+                        android:id="@+id/imageViewImageNew"
                         android:layout_width="@dimen/edited_image_size"
                         android:layout_height="@dimen/edited_image_size"
                         android:layout_gravity="center_horizontal"
@@ -49,7 +49,7 @@
                         app:srcCompat="@mipmap/ic_launcher" />
 
                 <ImageView
-                        android:id="@+id/imageOriginal"
+                        android:id="@+id/imageViewImageOriginal"
                         android:layout_width="@dimen/edited_image_size"
                         android:layout_height="@dimen/edited_image_size"
                         android:layout_gravity="center_horizontal"
@@ -58,7 +58,7 @@
                         app:srcCompat="@mipmap/ic_launcher" />
 
                 <blog.photo.bildalbum.utils.ExpandableHeightGridView
-                        android:id="@+id/frames"
+                        android:id="@+id/gridViewFrames"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:columnWidth="110dp"

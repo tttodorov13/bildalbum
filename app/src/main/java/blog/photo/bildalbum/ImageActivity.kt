@@ -18,8 +18,7 @@ import android.widget.ScrollView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isGone
-import blog.photo.bildalbum.MainActivity.Companion.storedFramesPaths
-import blog.photo.bildalbum.MainActivity.Companion.storedImagesPaths
+import blog.photo.bildalbum.MainActivity.Companion.images
 import blog.photo.bildalbum.model.Image
 import blog.photo.bildalbum.utils.BuildAlbumDBOpenHelper
 import blog.photo.bildalbum.utils.PicturesAdapter
@@ -32,30 +31,17 @@ import java.io.FileOutputStream
  */
 class ImageActivity : AppCompatActivity() {
 
-    private val tag = "ImageActivity"
     private var imageSize = 400
     private var imageSizeBorder = 100
-    private var imageNewFilePath: String? = null
-    private var imageNewName: String? = null
+    private var imageNew: String? = null
 
     /**
      * A companion object to declare variables for displaying frames
      */
     companion object {
+        private const val tag = "ImageActivity"
         private lateinit var framesAdapter: PicturesAdapter
-        private lateinit var imageOriginalFilePath: String
-        /**
-         * Method to get picture from file system
-         */
-        fun getPicture(imageActivity: ImageActivity, name: String): File {
-            val storageDir = imageActivity.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-
-            if (!storageDir!!.exists()) {
-                storageDir.mkdirs()
-            }
-
-            return File(storageDir, name)
-        }
+        private lateinit var imageOriginal: String
     }
 
     /**
@@ -67,30 +53,34 @@ class ImageActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_image)
 
-        imageOriginalFilePath = intent.extras!!.get("imageFilePath").toString()
+        imageOriginal = intent.extras!!.get("imageOriginal").toString()
         imageSize = getString(R.string.image_size).toInt()
         imageSizeBorder = getString(R.string.image_size_border).toInt()
-        imageOriginal.setImageURI(Uri.parse(imageOriginalFilePath))
+        imageViewImageOriginal.setImageURI(
+            Uri.parse(getPicture(imageOriginal).canonicalPath)
+        )
 
-        framesAdapter = PicturesAdapter(this, storedFramesPaths)
-        frames.isExpanded = true
-        frames.adapter = framesAdapter
+        framesAdapter = PicturesAdapter(
+            this, MainActivity.frames
+        )
+        gridViewFrames.isExpanded = true
+        gridViewFrames.adapter = framesAdapter
 
         imageScreenScroll.fullScroll(ScrollView.FOCUS_UP)
 
-        frames.onItemClickListener =
+        gridViewFrames.onItemClickListener =
             AdapterView.OnItemClickListener { _, _, position, _ ->
                 try {
                     val bitmapNew = addFrame(
-                        imageOriginalFilePath,
-                        storedFramesPaths[position]
+                        imageOriginal,
+                        MainActivity.frames[position]
                     )
-                    imageNew.setImageBitmap(bitmapNew)
-                    imageNew.isGone = false
-                    imageOriginal.isGone = true
+                    imageViewImageNew.setImageBitmap(bitmapNew)
+                    imageViewImageNew.isGone = false
+                    imageViewImageOriginal.isGone = true
                     var new = false
-                    if (imageNewName == null) {
-                        imageNewName = "img" + System.currentTimeMillis() + ".jpg"
+                    if (imageNew == null) {
+                        imageNew = "img" + System.currentTimeMillis() + ".jpg"
                         new = true
                     }
 
@@ -99,7 +89,7 @@ class ImageActivity : AppCompatActivity() {
                         LayoutInflater.from(applicationContext).inflate(
                             R.layout.activity_image,
                             null
-                        ).findViewById(R.id.imageNew)
+                        ).findViewById(R.id.imageViewImageNew)
                         , new
                     ).execute()
                 } catch (e: Exception) {
@@ -115,10 +105,16 @@ class ImageActivity : AppCompatActivity() {
             intent.type = "image/*"
             intent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
 
-            if (imageNewFilePath != null)
-                intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(File(imageNewFilePath)))
+            if (imageNew != null)
+                intent.putExtra(
+                    Intent.EXTRA_STREAM,
+                    Uri.fromFile(File(getPicture(imageNew.toString()).canonicalPath))
+                )
             else
-                intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(File(imageOriginalFilePath)))
+                intent.putExtra(
+                    Intent.EXTRA_STREAM,
+                    Uri.fromFile(File(getPicture(imageOriginal).canonicalPath))
+                )
 
             // See if official Facebook app is found
             var facebookAppFound = false
@@ -150,8 +146,7 @@ class ImageActivity : AppCompatActivity() {
      * @param outState
      */
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putString("imageNewFilePath", imageNewFilePath)
-        outState.putString("imageNewName", imageNewName)
+        outState.putString("imageNew", imageNew)
         super.onSaveInstanceState(outState)
     }
 
@@ -162,27 +157,26 @@ class ImageActivity : AppCompatActivity() {
      */
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
-        imageNewName = savedInstanceState.getString("imageNewName")
-        imageNewFilePath = savedInstanceState.getString("imageNewFilePath")
-        if (imageNewFilePath != null) {
-            imageNew.setImageURI(Uri.parse(imageNewFilePath))
-            imageNew.isGone = false
-            imageOriginal.isGone = true
+        imageNew = savedInstanceState.getString("imageNew")
+        if (imageNew != null) {
+            imageViewImageNew.setImageURI(Uri.parse(getPicture(imageNew.toString()).canonicalPath))
+            imageViewImageNew.isGone = false
+            imageViewImageOriginal.isGone = true
         }
     }
 
     /**
-     * Method to add a bitmap frame
+     * Method to add a bitmap frames
      */
-    private fun addFrame(imageOriginalFilePath: String, frame: String): Bitmap? {
+    private fun addFrame(imageOriginal: String, frame: String): Bitmap? {
         var scaledBitmap = Bitmap.createScaledBitmap(
-            BitmapFactory.decodeFile(imageOriginalFilePath),
+            BitmapFactory.decodeFile(getPicture(imageOriginal).canonicalPath),
             imageSize,
             imageSize,
             false
         );
         val canvas: Canvas
-        val imageNewBitmap = BitmapFactory.decodeFile(frame).copy(
+        val imageNewBitmap = BitmapFactory.decodeFile(getPicture(frame).canonicalPath).copy(
             Bitmap.Config.ARGB_8888,
             true
         )
@@ -207,18 +201,18 @@ class ImageActivity : AppCompatActivity() {
         val context = context
 
         override fun doInBackground(vararg args: String?): Bitmap? {
-            return convertImageViewToBitmap(imageNew)
+            return convertImageViewToBitmap(imageViewImageNew)
         }
 
         override fun onPostExecute(result: Bitmap) {
-            imageNewFilePath = writeImage(result)
+            writeImage(result)
 
             if (new) {
                 // Update the images GridView in main screen
-                storedImagesPaths.add(0, imageNewFilePath.toString())
+                images.add(0, imageNew.toString())
                 BuildAlbumDBOpenHelper(context, null).addImage(
                     Image(
-                        imageNewFilePath.toString(),
+                        imageNew.toString(),
                         ""
                     )
                 )
@@ -228,8 +222,8 @@ class ImageActivity : AppCompatActivity() {
             toast(getString(R.string.image_saved))
         }
 
-        private fun writeImage(finalBitmap: Bitmap): String {
-            val file = Companion.getPicture(this@ImageActivity, imageNewName.toString())
+        private fun writeImage(finalBitmap: Bitmap) {
+            val file = getPicture(imageNew.toString())
             if (file.exists())
                 file.delete()
 
@@ -242,8 +236,6 @@ class ImageActivity : AppCompatActivity() {
                 e(tag, e.message.toString())
                 e.printStackTrace()
             }
-
-            return file.canonicalPath
         }
     }
 
@@ -259,5 +251,18 @@ class ImageActivity : AppCompatActivity() {
      */
     fun Context.toast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
+    /**
+     * Method to get picture from file system
+     */
+    fun getPicture(name: String): File {
+        val storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+
+        if (!storageDir!!.exists()) {
+            storageDir.mkdirs()
+        }
+
+        return File(storageDir, name)
     }
 }

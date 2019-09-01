@@ -3,24 +3,24 @@ package blog.photo.bildalbum.model
 /**
  * Base class that manages the picture model.
  */
-open class Picture(var path: String, var uri: String)
+open class Picture(var name: String, var uri: String)
 
 /**
- * Class that manages the frame model.
+ * Class that manages the frames model.
  */
-class Frame(path: String, uri: String) : Picture(path, uri) {
+class Frame(name: String, uri: String) : Picture(name, uri) {
 
     override fun toString(): String {
-        return "Frame(path='$path', uri='$uri')"
+        return "Frame(name='$name', uri='$uri')"
     }
 }
 
 /**
  * Class that manages the image model.
  */
-class Image(path: String, uri: String) : Picture(path, uri) {
+class Image(name: String, uri: String) : Picture(name, uri) {
 
     override fun toString(): String {
-        return "Image(path='$path', uri='$uri')"
+        return "Image(name='$name', uri='$uri')"
     }
 }

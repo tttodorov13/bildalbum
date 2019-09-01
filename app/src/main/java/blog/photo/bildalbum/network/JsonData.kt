@@ -8,7 +8,8 @@ import org.json.JSONObject
 /**
  * Class that manages the download of images' URIs.
  */
-class JsonData(private val listener: OnDataAvailable, private val source: DownloadSource) : AsyncTask<String, Void, ArrayList<String>>() {
+class JsonData(private val listener: OnDataAvailable, private val source: DownloadSource) :
+    AsyncTask<String, Void, ArrayList<String>>() {
     private val tag = "JsonData"
 
     /**
@@ -38,7 +39,11 @@ class JsonData(private val listener: OnDataAvailable, private val source: Downlo
                     jsonData = JSONObject(params[0].toString())
                     val itemsArray = jsonData.getJSONArray("items")
                     for (i in 0 until itemsArray.length()) {
-                        imagesUris.add(itemsArray.getJSONObject(i).getJSONObject("media").getString("m"))
+                        imagesUris.add(
+                            itemsArray.getJSONObject(i).getJSONObject("media").getString(
+                                "m"
+                            )
+                        )
                     }
                 }
                 DownloadSource.PIXABAY -> {

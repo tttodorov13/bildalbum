@@ -40,7 +40,7 @@
                 android:textColor="@color/colorWhite" />
 
         <GridView
-                android:id="@+id/images"
+                android:id="@+id/girdViewImages"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:columnWidth="110dp"

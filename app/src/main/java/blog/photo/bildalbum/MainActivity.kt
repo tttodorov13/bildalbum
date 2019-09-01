@@ -19,10 +19,11 @@ import blog.photo.bildalbum.model.Image
 import blog.photo.bildalbum.network.DownloadData
 import blog.photo.bildalbum.network.DownloadSource
 import blog.photo.bildalbum.network.DownloadStatus
-import blog.photo.bildalbum.utils.*
 import blog.photo.bildalbum.network.DownloadStatus.NETWORK_ERROR
 import blog.photo.bildalbum.network.DownloadStatus.OK
 import blog.photo.bildalbum.network.JsonData
+import blog.photo.bildalbum.utils.BuildAlbumDBOpenHelper
+import blog.photo.bildalbum.utils.PicturesAdapter
 import kotlinx.android.synthetic.main.content_main.*
 import java.io.File
 import java.io.FileOutputStream
@@ -35,28 +36,14 @@ import java.util.*
 class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     JsonData.OnDataAvailable {
 
-    private val tag = "MainActivity"
-
     /**
      * A companion object to declare variables for displaying images
      */
     companion object {
-        lateinit var storedFramesPaths: ArrayList<String>
-        lateinit var storedImagesPaths: ArrayList<String>
+        private const val tag = "MainActivity"
+        lateinit var frames: ArrayList<String>
+        lateinit var images: ArrayList<String>
         lateinit var imagesAdapter: PicturesAdapter
-
-        /**
-         * Method to get picture from file system
-         */
-        fun getPicture(mainActivity: MainActivity, name: String): File {
-            val storageDir = mainActivity.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-
-            if (!storageDir!!.exists()) {
-                storageDir.mkdirs()
-            }
-
-            return File(storageDir, name)
-        }
     }
 
     /**
@@ -68,27 +55,27 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        storedFramesPaths = getStoredFramesPaths()
-        storedImagesPaths = getStoredImagesPaths()
-        imagesAdapter = PicturesAdapter(this, storedImagesPaths)
-        images.adapter = imagesAdapter
+        frames = getFrames()
+        images = getImages()
+        imagesAdapter = PicturesAdapter(this, images)
+        girdViewImages.adapter = imagesAdapter
 
-        images.onItemClickListener =
+        girdViewImages.onItemClickListener =
             AdapterView.OnItemClickListener { _, _, position, _ ->
                 val intent = Intent(applicationContext, ImageActivity::class.java)
-                intent.putExtra("imageFilePath", storedImagesPaths[position])
+                intent.putExtra("imageOriginal", images[position])
                 startActivity(intent)
             }
 
-        if (storedFramesPaths.size == 0)
-            getFrames()
+        if (frames.size == 0)
+            downloadFrames()
 
         buttonDownloadFromFlickr?.setOnClickListener {
-            getImagesFlickr()
+            downloadImagesFromFlickr()
         }
 
         buttonDownloadFromPixabay?.setOnClickListener {
-            getImagesPixabay()
+            downloadImagesFromPixabay()
         }
     }
 
@@ -98,7 +85,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
      * @param context
      * @param imageView
      */
-    inner class SaveImage(context: Context, var imageView: ImageView) :
+    inner class SavePicture(context: Context, var imageView: ImageView) :
         AsyncTask<String, Void, Bitmap>() {
         val context = context
         var uri = ""
@@ -117,32 +104,32 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
         }
 
         override fun onPostExecute(result: Bitmap) {
-            val path = writeImage(result)
+            val name = writeImage(result)
 
             if (uri.contains(getString(R.string.FRAMES_URI))) {
-                storedFramesPaths.add(0, path)
+                frames.add(0, name)
                 BuildAlbumDBOpenHelper(context, null).addFrame(
                     Frame(
-                        path,
+                        name,
                         uri
                     )
                 )
             } else {
                 // Update the images GridView
-                storedImagesPaths.add(0, path)
+                images.add(0, name)
                 imagesAdapter.notifyDataSetChanged();
                 BuildAlbumDBOpenHelper(context, null).addImage(
                     Image(
-                        path,
+                        name,
                         uri
                     )
                 )
-                imageView.setImageURI(Uri.parse(path))
             }
         }
 
         private fun writeImage(finalBitmap: Bitmap): String {
-            val file = Companion.getPicture(this@MainActivity, "img" + currentTimeMillis() + ".jpg")
+            val name = "img" + currentTimeMillis() + ".jpg"
+            val file = getPicture(name)
             if (file.exists())
                 file.delete()
 
@@ -156,14 +143,14 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
                 e.printStackTrace()
             }
 
-            return file.canonicalPath
+            return name
         }
     }
 
     /**
      * Method to download frames
      */
-    private fun getFrames() {
+    private fun downloadFrames() {
         for (i in 1..getString(R.string.FRAMES_COUNT).toInt()) {
             val frame = "frame$i.png"
             DownloadData(
@@ -176,7 +163,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     /**
      * Method to download images from Flickr
      */
-    private fun getImagesFlickr() {
+    private fun downloadImagesFromFlickr() {
         val uri = createUriFlickr(
             getString(R.string.FLICKR_API_URI),
             getString(R.string.FLICKR_API_TAGS),
@@ -214,7 +201,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     /**
      * Method to download images from Pixabay
      */
-    private fun getImagesPixabay() {
+    private fun downloadImagesFromPixabay() {
         val uri = createUriPixabay(
             getString(R.string.PIXABAY_API_URI),
             getString(R.string.PIXABAY_API_KEY)
@@ -243,7 +230,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
      */
     override fun onDataAvailable(data: ArrayList<String>) {
         data.forEach {
-            SaveImage(
+            SavePicture(
                 this,
                 LayoutInflater.from(this).inflate(
                     R.layout.image_layout,
@@ -281,23 +268,23 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
      *
      * @return paths of stored images
      */
-    private fun getStoredFramesPaths(): ArrayList<String> {
-        var storedFramesPaths = ArrayList<String>()
+    private fun getFrames(): ArrayList<String> {
+        var frames = ArrayList<String>()
         val cursor = BuildAlbumDBOpenHelper(this, null).getAllFrames()
 
         if (cursor!!.moveToFirst()) {
-            storedFramesPaths.add(
+            frames.add(
                 cursor.getString(
                     cursor.getColumnIndex(
-                        BuildAlbumDBOpenHelper.COLUMN_PATH
+                        BuildAlbumDBOpenHelper.COLUMN_NAME
                     )
                 )
             )
             while (cursor.moveToNext()) {
-                storedFramesPaths.add(
+                frames.add(
                     cursor.getString(
                         cursor.getColumnIndex(
-                            BuildAlbumDBOpenHelper.COLUMN_PATH
+                            BuildAlbumDBOpenHelper.COLUMN_NAME
                         )
                     )
                 )
@@ -305,7 +292,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
         }
         cursor.close()
 
-        return storedFramesPaths
+        return frames
     }
 
     /**
@@ -313,23 +300,23 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
      *
      * @return paths of stored images
      */
-    private fun getStoredImagesPaths(): ArrayList<String> {
-        var storedImagesPaths = ArrayList<String>()
+    private fun getImages(): ArrayList<String> {
+        val images = ArrayList<String>()
         val cursor = BuildAlbumDBOpenHelper(this, null).getAllImagesReverse()
 
         if (cursor!!.moveToFirst()) {
-            storedImagesPaths.add(
+            images.add(
                 cursor.getString(
                     cursor.getColumnIndex(
-                        BuildAlbumDBOpenHelper.COLUMN_PATH
+                        BuildAlbumDBOpenHelper.COLUMN_NAME
                     )
                 )
             )
             while (cursor.moveToNext()) {
-                storedImagesPaths.add(
+                images.add(
                     cursor.getString(
                         cursor.getColumnIndex(
-                            BuildAlbumDBOpenHelper.COLUMN_PATH
+                            BuildAlbumDBOpenHelper.COLUMN_NAME
                         )
                     )
                 )
@@ -337,7 +324,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
         }
         cursor.close()
 
-        return storedImagesPaths
+        return images
     }
 
     /**
@@ -345,5 +332,18 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
      */
     private fun Context.toast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
+    /**
+     * Method to get picture from file system
+     */
+    fun getPicture(name: String): File {
+        val storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+
+        if (!storageDir!!.exists()) {
+            storageDir.mkdirs()
+        }
+
+        return File(storageDir, name)
     }
 }
