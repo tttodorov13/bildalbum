@@ -13,8 +13,7 @@
             android:supportsRtl="true"
             android:theme="@style/BuildalbumTheme">
 
-        <activity
-                android:name=".ImageActivity" />
+        <activity android:name=".ImageActivity" />
 
         <activity android:name=".LoginActivity">
             <intent-filter>
@@ -24,8 +23,7 @@
             </intent-filter>
         </activity>
 
-        <activity
-                android:name=".MainActivity" />
+        <activity android:name=".MainActivity" />
 
         <provider
                 android:name="androidx.core.content.FileProvider"

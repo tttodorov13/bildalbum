@@ -14,6 +14,7 @@ import android.util.Log.e
 import android.view.LayoutInflater
 import android.widget.AdapterView
 import android.widget.ImageView
+import android.widget.ScrollView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isGone
@@ -71,7 +72,10 @@ class ImageActivity : AppCompatActivity() {
         imageOriginal.setImageURI(Uri.parse(imageOriginalFilePath))
 
         framesAdapter = PicturesAdapter(this, storedFramesPaths)
+        frames.isExpanded = true
         frames.adapter = framesAdapter
+
+        imageScreenScroll.fullScroll(ScrollView.FOCUS_UP)
 
         frames.onItemClickListener =
             AdapterView.OnItemClickListener { _, _, position, _ ->
