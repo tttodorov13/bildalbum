@@ -33,16 +33,15 @@ class ImageActivity : AppCompatActivity() {
     private val tag = "ImageActivity"
     private var imageSize = 400
     private var imageSizeBorder = 100
-    private lateinit var imageNewFilePath: String
+    private var imageNewFilePath: String? = null
     private var imageNewName: String? = null
 
     /**
      * A companion object to declare variables for displaying frames
      */
     companion object {
-        private lateinit var imageOriginalFilePath: String
         private lateinit var framesAdapter: PicturesAdapter
-
+        private lateinit var imageOriginalFilePath: String
         /**
          * Method to get picture from file system
          */
@@ -111,7 +110,7 @@ class ImageActivity : AppCompatActivity() {
             intent.type = "image/*"
             intent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
 
-            if (::imageNewFilePath.isInitialized)
+            if (imageNewFilePath != null)
                 intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(File(imageNewFilePath)))
             else
                 intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(File(imageOriginalFilePath)))
@@ -146,8 +145,7 @@ class ImageActivity : AppCompatActivity() {
      * @param outState
      */
     override fun onSaveInstanceState(outState: Bundle) {
-        if (::imageNewFilePath.isInitialized)
-            outState.putString("imageNewFilePath", imageNewFilePath)
+        outState.putString("imageNewFilePath", imageNewFilePath)
         outState.putString("imageNewName", imageNewName)
         super.onSaveInstanceState(outState)
     }
@@ -159,9 +157,10 @@ class ImageActivity : AppCompatActivity() {
      */
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
-        imageNewName = savedInstanceState.getString("imageNewName").toString()
-        if (savedInstanceState.getString("imageNewFilePath") != null) {
-            imageNew.setImageURI(Uri.parse(savedInstanceState.getString("imageNewFilePath")))
+        imageNewName = savedInstanceState.getString("imageNewName")
+        imageNewFilePath = savedInstanceState.getString("imageNewFilePath")
+        if (imageNewFilePath != null) {
+            imageNew.setImageURI(Uri.parse(imageNewFilePath))
             imageNew.isGone = false
             imageOriginal.isGone = true
         }
@@ -211,10 +210,10 @@ class ImageActivity : AppCompatActivity() {
 
             if (new) {
                 // Update the images GridView in main screen
-                storedImagesPaths.add(0, imageNewFilePath)
+                storedImagesPaths.add(0, imageNewFilePath.toString())
                 BuildAlbumDBOpenHelper(context, null).addImage(
                     Image(
-                        imageNewFilePath,
+                        imageNewFilePath.toString(),
                         ""
                     )
                 )
