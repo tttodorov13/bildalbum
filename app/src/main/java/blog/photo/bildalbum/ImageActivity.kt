@@ -42,6 +42,19 @@ class ImageActivity : AppCompatActivity() {
     companion object {
         private lateinit var imageOriginalFilePath: String
         private lateinit var framesAdapter: PicturesAdapter
+
+        /**
+         * Method to get picture from file system
+         */
+        fun getPicture(imageActivity: ImageActivity, name: String): File {
+            val storageDir = imageActivity.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+
+            if (!storageDir!!.exists()) {
+                storageDir.mkdirs()
+            }
+
+            return File(storageDir, name)
+        }
     }
 
     /**
@@ -72,7 +85,7 @@ class ImageActivity : AppCompatActivity() {
                     imageNew.isGone = false
                     imageOriginal.isGone = true
                     var new = false
-                    if (imageNewName != null) {
+                    if (imageNewName == null) {
                         imageNewName = "img" + System.currentTimeMillis() + ".jpg"
                         new = true
                     }
@@ -212,13 +225,7 @@ class ImageActivity : AppCompatActivity() {
         }
 
         private fun writeImage(finalBitmap: Bitmap): String {
-            val storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-
-            if (!storageDir!!.exists()) {
-                storageDir.mkdirs()
-            }
-
-            val file = File(storageDir, imageNewName)
+            val file = Companion.getPicture(this@ImageActivity, imageNewName.toString())
             if (file.exists())
                 file.delete()
 

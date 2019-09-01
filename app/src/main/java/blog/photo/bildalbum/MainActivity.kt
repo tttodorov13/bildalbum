@@ -38,6 +38,19 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
         lateinit var storedFramesPaths: ArrayList<String>
         lateinit var storedImagesPaths: ArrayList<String>
         lateinit var imagesAdapter: PicturesAdapter
+
+        /**
+         * Method to get picture from file system
+         */
+        fun getPicture(mainActivity: MainActivity, name: String): File {
+            val storageDir = mainActivity.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+
+            if (!storageDir!!.exists()) {
+                storageDir.mkdirs()
+            }
+
+            return File(storageDir, name)
+        }
     }
 
     /**
@@ -123,13 +136,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
         }
 
         private fun writeImage(finalBitmap: Bitmap): String {
-            val storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-
-            if (!storageDir!!.exists()) {
-                storageDir.mkdirs()
-            }
-
-            val file = File(storageDir, "img" + currentTimeMillis() + ".jpg")
+            val file = Companion.getPicture(this@MainActivity, "img" + currentTimeMillis() + ".jpg")
             if (file.exists())
                 file.delete()
 
@@ -262,7 +269,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
      *
      * @return paths of stored images
      */
-    protected fun getStoredFramesPaths(): ArrayList<String> {
+    private fun getStoredFramesPaths(): ArrayList<String> {
         var storedFramesPaths = ArrayList<String>()
         val cursor = BuildAlbumDBOpenHelper(this, null).getAllFrames()
 
@@ -294,7 +301,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
      *
      * @return paths of stored images
      */
-    protected fun getStoredImagesPaths(): ArrayList<String> {
+    private fun getStoredImagesPaths(): ArrayList<String> {
         var storedImagesPaths = ArrayList<String>()
         val cursor = BuildAlbumDBOpenHelper(this, null).getAllImagesReverse()
 
@@ -322,7 +329,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     }
 
     /**
-     * Extension function to show toast message
+     * Extension method to show toast message
      */
     fun Context.toast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
