@@ -5,8 +5,8 @@ import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
-import blog.photo.bildalbum.Frame
-import blog.photo.bildalbum.Image
+import blog.photo.bildalbum.model.Frame
+import blog.photo.bildalbum.model.Image
 
 class BuildAlbumDBOpenHelper(
     context: Context,

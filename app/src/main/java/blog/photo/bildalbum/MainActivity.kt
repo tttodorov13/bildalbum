@@ -14,9 +14,15 @@ import android.widget.AdapterView
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import blog.photo.bildalbum.model.Frame
+import blog.photo.bildalbum.model.Image
+import blog.photo.bildalbum.network.DownloadData
+import blog.photo.bildalbum.network.DownloadSource
+import blog.photo.bildalbum.network.DownloadStatus
 import blog.photo.bildalbum.utils.*
-import blog.photo.bildalbum.utils.DownloadStatus.NETWORK_ERROR
-import blog.photo.bildalbum.utils.DownloadStatus.OK
+import blog.photo.bildalbum.network.DownloadStatus.NETWORK_ERROR
+import blog.photo.bildalbum.network.DownloadStatus.OK
+import blog.photo.bildalbum.network.JsonData
 import kotlinx.android.synthetic.main.content_main.*
 import java.io.File
 import java.io.FileOutputStream
@@ -177,7 +183,10 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
             getString(R.string.FLICKR_API_LANG),
             true
         )
-        DownloadData(this, DownloadSource.FLICKR).execute(uri)
+        DownloadData(
+            this,
+            DownloadSource.FLICKR
+        ).execute(uri)
     }
 
     /**
@@ -210,7 +219,10 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
             getString(R.string.PIXABAY_API_URI),
             getString(R.string.PIXABAY_API_KEY)
         )
-        DownloadData(this, DownloadSource.PIXABAY).execute(uri)
+        DownloadData(
+            this,
+            DownloadSource.PIXABAY
+        ).execute(uri)
     }
 
     /**
@@ -331,7 +343,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     /**
      * Extension method to show toast message
      */
-    fun Context.toast(message: String) {
+    private fun Context.toast(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 }

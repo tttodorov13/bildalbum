@@ -1,4 +1,4 @@
-package blog.photo.bildalbum
+package blog.photo.bildalbum.model
 
 /**
  * Base class that manages the picture model.

@@ -20,6 +20,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isGone
 import blog.photo.bildalbum.MainActivity.Companion.storedFramesPaths
 import blog.photo.bildalbum.MainActivity.Companion.storedImagesPaths
+import blog.photo.bildalbum.model.Image
 import blog.photo.bildalbum.utils.BuildAlbumDBOpenHelper
 import blog.photo.bildalbum.utils.PicturesAdapter
 import kotlinx.android.synthetic.main.activity_image.*
