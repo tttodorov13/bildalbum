@@ -14,7 +14,6 @@ import android.util.Log.e
 import android.view.LayoutInflater
 import android.widget.AdapterView
 import android.widget.ImageView
-import android.widget.ScrollView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isGone
@@ -66,7 +65,7 @@ class ImageActivity : AppCompatActivity() {
         gridViewFrames.isExpanded = true
         gridViewFrames.adapter = framesAdapter
 
-        imageScreenScroll.fullScroll(ScrollView.FOCUS_UP)
+        imageScreenScroll.smoothScrollTo(0, 0)
 
         gridViewFrames.onItemClickListener =
             AdapterView.OnItemClickListener { _, _, position, _ ->
