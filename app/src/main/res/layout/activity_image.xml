@@ -38,12 +38,6 @@
                         android:text="@string/share"
                         android:textColor="@color/colorWhite" />
 
-                <TextView
-                        android:id="@+id/imageNewName"
-                        android:layout_width="@dimen/edited_image_size"
-                        android:layout_height="@dimen/edited_image_size"
-                        android:visibility="gone" />
-
                 <ImageView
                         android:id="@+id/imageNew"
                         android:layout_width="@dimen/edited_image_size"

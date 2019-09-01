@@ -30,17 +30,18 @@ import java.io.FileOutputStream
  */
 class ImageActivity : AppCompatActivity() {
 
-    private val TAG = "ImageActivity"
+    private val tag = "ImageActivity"
     private var imageSize = 400
     private var imageSizeBorder = 100
-    private lateinit var imageOriginalFilePath: String
     private lateinit var imageNewFilePath: String
+    private var imageNewName: String? = null
 
     /**
      * A companion object to declare variables for displaying frames
      */
     companion object {
-        lateinit var framesAdapter: PicturesAdapter
+        private lateinit var imageOriginalFilePath: String
+        private lateinit var framesAdapter: PicturesAdapter
     }
 
     /**
@@ -71,8 +72,8 @@ class ImageActivity : AppCompatActivity() {
                     imageNew.isGone = false
                     imageOriginal.isGone = true
                     var new = false
-                    if (imageNewName.text.isBlank()) {
-                        imageNewName.text = "img" + System.currentTimeMillis() + ".jpg"
+                    if (imageNewName != null) {
+                        imageNewName = "img" + System.currentTimeMillis() + ".jpg"
                         new = true
                     }
 
@@ -86,7 +87,7 @@ class ImageActivity : AppCompatActivity() {
                     ).execute()
                 } catch (e: Exception) {
                     toast(getString(R.string.internal_error))
-                    e(TAG, e.message.toString())
+                    e(tag, e.message.toString())
                     e.printStackTrace()
                 }
             }
@@ -123,6 +124,33 @@ class ImageActivity : AppCompatActivity() {
             }
 
             startActivity(intent)
+        }
+    }
+
+    /**
+     * OnSaveInstanceState Activity
+     *
+     * @param outState
+     */
+    override fun onSaveInstanceState(outState: Bundle) {
+        if (::imageNewFilePath.isInitialized)
+            outState.putString("imageNewFilePath", imageNewFilePath)
+        outState.putString("imageNewName", imageNewName)
+        super.onSaveInstanceState(outState)
+    }
+
+    /**
+     * OnRestoreInstanceState Activity
+     *
+     * @param savedInstanceState
+     */
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+        imageNewName = savedInstanceState.getString("imageNewName").toString()
+        if (savedInstanceState.getString("imageNewFilePath") != null) {
+            imageNew.setImageURI(Uri.parse(savedInstanceState.getString("imageNewFilePath")))
+            imageNew.isGone = false
+            imageOriginal.isGone = true
         }
     }
 
@@ -190,7 +218,7 @@ class ImageActivity : AppCompatActivity() {
                 storageDir.mkdirs()
             }
 
-            val file = File(storageDir, imageNewName.text.toString())
+            val file = File(storageDir, imageNewName)
             if (file.exists())
                 file.delete()
 
@@ -200,7 +228,7 @@ class ImageActivity : AppCompatActivity() {
                 out.flush()
                 out.close()
             } catch (e: Exception) {
-                e(TAG, e.message.toString())
+                e(tag, e.message.toString())
                 e.printStackTrace()
             }
 

@@ -25,7 +25,7 @@ enum class DownloadStatus {
  */
 class DownloadData(private val listener: OnDownloadComplete, private val source: DownloadSource) :
     AsyncTask<String, Void, String>() {
-    private val TAG = "DownloadData"
+    private val tag = "DownloadData"
     private var status = DownloadStatus.IDLE
 
     /**
@@ -73,7 +73,7 @@ class DownloadData(private val listener: OnDownloadComplete, private val source:
                     "doInBackground: Unknown exception: $e"
                 }
             }
-            Log.e(TAG, errorMessage)
+            Log.e(tag, errorMessage)
             return errorMessage
         }
     }

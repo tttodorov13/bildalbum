@@ -29,7 +29,7 @@ import java.util.*
 class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     JsonData.OnDataAvailable {
 
-    private val TAG = "MainActivity"
+    private val tag = "MainActivity"
 
     /**
      * A companion object to declare variables for displaying images
@@ -91,7 +91,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
                 val `in` = java.net.URL(uri).openStream()
                 bm = BitmapFactory.decodeStream(`in`)
             } catch (e: Exception) {
-                e(TAG, e.message.toString())
+                e(tag, e.message.toString())
                 e.printStackTrace()
             }
             return bm
@@ -139,7 +139,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
                 out.flush()
                 out.close()
             } catch (e: Exception) {
-                e(TAG, e.message.toString())
+                e(tag, e.message.toString())
                 e.printStackTrace()
             }
 

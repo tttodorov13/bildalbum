@@ -9,7 +9,7 @@ import org.json.JSONObject
  * Class that manages the download of images' URIs.
  */
 class JsonData(private val listener: OnDataAvailable, private val source: DownloadSource) : AsyncTask<String, Void, ArrayList<String>>() {
-    private val TAG = "JsonData"
+    private val tag = "JsonData"
 
     /**
      * Interface for image uri download completed.
@@ -50,7 +50,7 @@ class JsonData(private val listener: OnDataAvailable, private val source: Downlo
                 }
             }
         } catch (e: JSONException) {
-            Log.e(TAG, "doInBackground: JSON processing exception", e)
+            Log.e(tag, "doInBackground: JSON processing exception", e)
             cancel(true)
             listener.onError(e)
         }
