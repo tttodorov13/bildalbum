@@ -14,6 +14,7 @@ import android.widget.AdapterView
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import blog.photo.bildalbum.R.string.*
 import blog.photo.bildalbum.model.Frame
 import blog.photo.bildalbum.model.Image
 import blog.photo.bildalbum.model.Picture
@@ -108,9 +109,9 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
         }
 
         override fun onPostExecute(result: Bitmap) {
-            if (picture.uri.contains(getString(R.string.FRAMES_URI))) {
+            if (picture.uri.contains(getString(FRAMES_URI))) {
                 if (picture !in frames) {
-                    picture.name = "frame" + currentTimeMillis() + ".png"
+                    picture.name = "frame".plus(currentTimeMillis()).plus(".png")
                     writeImage(result)
                     frames.add(0, picture)
                     BuildAlbumDBOpenHelper(context, null).addFrame(
@@ -121,7 +122,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
             }
 
             if (picture !in images) {
-                picture.name = "img" + currentTimeMillis() + ".png"
+                picture.name = "img".plus(currentTimeMillis()).plus(".png")
                 writeImage(result)
                 images.add(0, picture)
                 imagesAdapter.notifyDataSetChanged();
@@ -143,7 +144,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
                 out.flush()
                 out.close()
             } catch (e: Exception) {
-                toast(getString(R.string.internal_error))
+                toast(getString(internal_error))
                 e(tag, e.message.toString())
                 e.printStackTrace()
             }
@@ -154,12 +155,12 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
      * Method to download framesNames
      */
     private fun downloadFrames() {
-        for (i in 1..getString(R.string.FRAMES_COUNT).toInt()) {
+        for (i in 1..getString(FRAMES_COUNT).toInt()) {
             val frame = "frame$i.png"
             DownloadData(
                 this,
                 DownloadSource.FRAMES
-            ).execute(getString(R.string.FRAMES_URI) + frame)
+            ).execute(getString(FRAMES_URI).plus(frame))
         }
     }
 
@@ -168,9 +169,9 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
      */
     private fun downloadImagesFromFlickr() {
         val uri = createUriFlickr(
-            getString(R.string.FLICKR_API_URI),
-            getString(R.string.FLICKR_API_TAGS),
-            getString(R.string.FLICKR_API_LANG),
+            getString(FLICKR_API_URI),
+            getString(FLICKR_API_TAGS),
+            getString(FLICKR_API_LANG),
             true
         )
         DownloadData(
@@ -206,8 +207,8 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
      */
     private fun downloadImagesFromPixabay() {
         val uri = createUriPixabay(
-            getString(R.string.PIXABAY_API_URI),
-            getString(R.string.PIXABAY_API_KEY)
+            getString(PIXABAY_API_URI),
+            getString(PIXABAY_API_KEY)
         )
         DownloadData(
             this,
@@ -256,7 +257,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
         if (status == OK)
             JsonData(this, source).execute(data)
         if (status == NETWORK_ERROR)
-            toast(getString(R.string.check_internet_connection))
+            toast(getString(check_internet_connection))
     }
 
     /**

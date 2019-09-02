@@ -15,6 +15,8 @@
     <string name="image_size">400</string>
     <string name="image_size_border">100</string>
     <string name="share">Share</string>
+    <string name="com_facebook_katana">com.facebook.katana</string>
+    <string name="facebook_sharer">https://www.facebook.com/sharer/sharer.php?u=</string>
     <string name="install_facebook_for_optimal_experience">Install Facebook for optimal experience!</string>
     <string name="image_saved">Image saved!</string>
     <string name="internal_error">Internal Error!</string>

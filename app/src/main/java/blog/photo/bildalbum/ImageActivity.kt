@@ -18,6 +18,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isGone
 import blog.photo.bildalbum.MainActivity.Companion.images
+import blog.photo.bildalbum.R.string.*
 import blog.photo.bildalbum.model.Image
 import blog.photo.bildalbum.utils.BuildAlbumDBOpenHelper
 import blog.photo.bildalbum.utils.PicturesAdapter
@@ -53,8 +54,8 @@ class ImageActivity : AppCompatActivity() {
         setContentView(R.layout.activity_image)
 
         imageOriginal = intent.extras!!.get("imageOriginal").toString()
-        imageSize = getString(R.string.image_size).toInt()
-        imageSizeBorder = getString(R.string.image_size_border).toInt()
+        imageSize = getString(image_size).toInt()
+        imageSizeBorder = getString(image_size_border).toInt()
         imageViewImageOriginal.setImageURI(
             Uri.parse(getPicture(imageOriginal).canonicalPath)
         )
@@ -92,7 +93,7 @@ class ImageActivity : AppCompatActivity() {
                         , new
                     ).execute()
                 } catch (e: Exception) {
-                    toast(getString(R.string.internal_error))
+                    toast(getString(internal_error))
                     e(tag, e.message.toString())
                     e.printStackTrace()
                 }
@@ -119,7 +120,12 @@ class ImageActivity : AppCompatActivity() {
             var facebookAppFound = false
             val matches = packageManager.queryIntentActivities(intent, 0)
             for (info in matches) {
-                if (info.activityInfo.packageName.toLowerCase().startsWith("com.facebook.katana")) {
+                if (info.activityInfo.packageName.toLowerCase().startsWith(
+                        getString(
+                            com_facebook_katana
+                        )
+                    )
+                ) {
                     intent.setPackage(info.activityInfo.packageName)
                     facebookAppFound = true
                     break
@@ -130,9 +136,9 @@ class ImageActivity : AppCompatActivity() {
             if (!facebookAppFound) {
                 intent = Intent(
                     Intent.ACTION_VIEW,
-                    Uri.parse("https://www.facebook.com/sharer/sharer.php?u=${getString(R.string.app_web)}")
+                    Uri.parse(getString(facebook_sharer).plus(getString(app_web)))
                 )
-                toast(getString(R.string.install_facebook_for_optimal_experience))
+                toast(getString(install_facebook_for_optimal_experience))
             }
 
             startActivity(intent)
@@ -198,7 +204,7 @@ class ImageActivity : AppCompatActivity() {
     inner class SaveImage(context: Context, var imageView: ImageView, private var new: Boolean) :
         AsyncTask<String, Void, Bitmap>() {
         val context = context
-        private var image = Image("","")
+        private var image = Image("", "")
 
         override fun doInBackground(vararg args: String?): Bitmap? {
             return convertImageViewToBitmap(imageViewImageNew)
@@ -210,7 +216,7 @@ class ImageActivity : AppCompatActivity() {
             if (new) {
                 // Update the imagesNames GridView in main screen
                 image.name = imageNew.toString()
-                images.add(0,  image)
+                images.add(0, image)
                 BuildAlbumDBOpenHelper(context, null).addImage(
                     Image(
                         imageNew.toString(),
@@ -219,7 +225,7 @@ class ImageActivity : AppCompatActivity() {
                 )
             }
             MainActivity.imagesAdapter.notifyDataSetChanged();
-            toast(getString(R.string.image_saved))
+            toast(getString(image_saved))
         }
 
         private fun writeImage(finalBitmap: Bitmap) {
