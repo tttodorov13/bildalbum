@@ -253,13 +253,6 @@ class ImageActivity : AppCompatActivity() {
     }
 
     /**
-     * Extension function to show toast message
-     */
-    fun Context.toast(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-    }
-
-    /**
      * Method to get picture from file system
      */
     fun getPicture(name: String): File {
@@ -270,5 +263,12 @@ class ImageActivity : AppCompatActivity() {
         }
 
         return File(storageDir, name)
+    }
+
+    /**
+     * Extension function to show toast message
+     */
+    fun Context.toast(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 }

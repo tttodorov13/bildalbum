@@ -13,32 +13,6 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
-        <Button
-                android:id="@+id/buttonDownloadFromFlickr"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:layout_margin="@dimen/inner_margin"
-                android:background="@color/colorPrimary"
-                android:gravity="center"
-                android:paddingTop="12dp"
-                android:paddingBottom="12dp"
-                android:text="@string/download_from_flickr"
-                android:textColor="@color/colorWhite" />
-
-        <Button
-                android:id="@+id/buttonDownloadFromPixabay"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:layout_margin="@dimen/inner_margin"
-                android:background="@color/colorPrimary"
-                android:gravity="center"
-                android:paddingTop="12dp"
-                android:paddingBottom="12dp"
-                android:text="@string/download_from_pixabay"
-                android:textColor="@color/colorWhite" />
-
         <GridView
                 android:id="@+id/girdViewImages"
                 android:layout_width="match_parent"

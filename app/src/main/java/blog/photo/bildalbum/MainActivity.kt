@@ -30,7 +30,6 @@ import kotlinx.android.synthetic.main.content_main.*
 import java.io.File
 import java.io.FileOutputStream
 import java.lang.System.currentTimeMillis
-import java.util.*
 
 /**
  * Class that manages the main screen.
@@ -58,8 +57,11 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Get imagesNames to display
-        getImages()
+        // Get images to display
+        if (getImages().size == 0) {
+            downloadImagesFromFlickr()
+            downloadImagesFromPixabay()
+        }
         imagesAdapter = PicturesAdapter(this, images)
         girdViewImages.adapter = imagesAdapter
 
@@ -70,18 +72,9 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
                 startActivity(intent)
             }
 
-        // Get framesNames for adding
-        getFrames()
-        if (frames.size == 0)
+        // Get frames to add
+        if (getFrames().size == 0)
             downloadFrames()
-
-        buttonDownloadFromFlickr?.setOnClickListener {
-            downloadImagesFromFlickr()
-        }
-
-        buttonDownloadFromPixabay?.setOnClickListener {
-            downloadImagesFromPixabay()
-        }
     }
 
     /**
@@ -124,12 +117,13 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
             if (picture !in images) {
                 picture.name = "img".plus(currentTimeMillis()).plus(".png")
                 writeImage(result)
-                images.add(0, picture)
-                imagesAdapter.notifyDataSetChanged();
                 BuildAlbumDBOpenHelper(context, null).addImage(
                     Image(picture)
                 )
                 downloadImagesCount++
+                toast("$downloadImagesCount ".plus(getString(new_images_downloaded)))
+                images.add(0, picture)
+                imagesAdapter.notifyDataSetChanged();
             }
         }
 
@@ -242,7 +236,6 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
                 ).findViewById(R.id.picture)
             ).execute(it)
         }
-        toast("$downloadImagesCount ".plus(getString(new_images_downloaded)))
         downloadImagesCount = 0
     }
 
@@ -274,7 +267,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
      *
      * @return paths of stored imagesNames
      */
-    private fun getFrames() {
+    private fun getFrames(): ArrayList<Picture> {
         val cursor = BuildAlbumDBOpenHelper(this, null).getAllFrames()
         var frame: Frame
 
@@ -308,6 +301,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
             }
         }
         cursor.close()
+        return frames
     }
 
     /**
@@ -315,7 +309,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
      *
      * @return paths of stored imagesNames
      */
-    private fun getImages() {
+    private fun getImages(): ArrayList<Picture> {
         val cursor = BuildAlbumDBOpenHelper(this, null).getAllImagesReverse()
         var image: Image
 
@@ -348,19 +342,13 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
             }
         }
         cursor.close()
-    }
-
-    /**
-     * Extension method to show toast message
-     */
-    private fun Context.toast(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+        return images
     }
 
     /**
      * Method to get picture from file system
      */
-    fun getPicture(name: String): File {
+    private fun getPicture(name: String): File {
         val storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
 
         if (!storageDir!!.exists()) {
@@ -368,5 +356,12 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
         }
 
         return File(storageDir, name)
+    }
+
+    /**
+     * Extension method to show toast message
+     */
+    private fun Context.toast(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
     }
 }
