@@ -42,7 +42,6 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
      */
     companion object {
         private const val tag = "MainActivity"
-        var downloadImagesCount = 0
         var frames = ArrayList<Picture>()
         var images = ArrayList<Picture>()
         lateinit var imagesAdapter: PicturesAdapter
@@ -57,13 +56,13 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        imagesAdapter = PicturesAdapter(this, images)
+        girdViewImages.adapter = imagesAdapter
         // Get images to display
         if (getImages().size == 0) {
             downloadImagesFromFlickr()
             downloadImagesFromPixabay()
         }
-        imagesAdapter = PicturesAdapter(this, images)
-        girdViewImages.adapter = imagesAdapter
 
         girdViewImages.onItemClickListener =
             AdapterView.OnItemClickListener { _, _, position, _ ->
@@ -120,8 +119,6 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
                 BuildAlbumDBOpenHelper(context, null).addImage(
                     Image(picture)
                 )
-                downloadImagesCount++
-                toast("$downloadImagesCount ".plus(getString(new_images_downloaded)))
                 images.add(0, picture)
                 imagesAdapter.notifyDataSetChanged();
             }
@@ -236,7 +233,6 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
                 ).findViewById(R.id.picture)
             ).execute(it)
         }
-        downloadImagesCount = 0
     }
 
     /**
