@@ -42,6 +42,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
      */
     companion object {
         private const val tag = "MainActivity"
+        var downloadImagesCount = 0
         var frames = ArrayList<Picture>()
         var images = ArrayList<Picture>()
         lateinit var imagesAdapter: PicturesAdapter
@@ -127,6 +128,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
                 BuildAlbumDBOpenHelper(context, null).addImage(
                     Image(picture)
                 )
+                downloadImagesCount++
             }
         }
 
@@ -141,7 +143,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
                 out.flush()
                 out.close()
             } catch (e: Exception) {
-                toast(getString(R.string.picture_not_saved))
+                toast(getString(R.string.internal_error))
                 e(tag, e.message.toString())
                 e.printStackTrace()
             }
@@ -239,6 +241,8 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
                 ).findViewById(R.id.picture)
             ).execute(it)
         }
+        toast("$downloadImagesCount ".plus(getString(new_images_downloaded)))
+        downloadImagesCount = 0
     }
 
     /**
