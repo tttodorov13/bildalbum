@@ -21,7 +21,7 @@ enum class DownloadStatus {
 }
 
 /**
- * Class that manages the download of images.
+ * Class that manages the download of imagesNames.
  */
 class DownloadData(private val listener: OnDownloadComplete, private val source: DownloadSource) :
     AsyncTask<String, Void, String>() {

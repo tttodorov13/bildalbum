@@ -6,7 +6,7 @@ import org.json.JSONException
 import org.json.JSONObject
 
 /**
- * Class that manages the download of images' URIs.
+ * Class that manages the download of imagesNames' URIs.
  */
 class JsonData(private val listener: OnDataAvailable, private val source: DownloadSource) :
     AsyncTask<String, Void, ArrayList<String>>() {

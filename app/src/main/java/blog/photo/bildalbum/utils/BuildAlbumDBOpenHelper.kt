@@ -49,11 +49,42 @@ class BuildAlbumDBOpenHelper(
     fun getAllFrames(): Cursor? {
         val db = this.readableDatabase
         return db.rawQuery("SELECT * FROM $TABLE_FRAMES ORDER BY $COLUMN_ID ASC", null)
+        db.close()
     }
+
+//    fun getAllFramesNames(): ArrayList<String> {
+//        var frameName = ""
+//        val framesNames = ArrayList<String>()
+//        val db = this.readableDatabase
+//        val cursor = db.rawQuery("SELECT * FROM $TABLE_FRAMES ORDER BY $COLUMN_ID ASC", null)
+//        if (cursor!!.moveToFirst()) {
+//            frameName =
+//                cursor.getString(
+//                    cursor.getColumnIndex(
+//                        BuildAlbumDBOpenHelper.COLUMN_NAME
+//                    )
+//                )
+//            if (!frameName.isBlank())
+//                framesNames.add(frameName)
+//            while (cursor.moveToNext()) {
+//                frameName =
+//                    cursor.getString(
+//                        cursor.getColumnIndex(
+//                            BuildAlbumDBOpenHelper.COLUMN_NAME
+//                        )
+//                    )
+//                if (!frameName.isBlank())
+//                    framesNames.add(frameName)
+//            }
+//        }
+//        db.close()
+//        return framesNames
+//    }
 
     fun getAllImagesReverse(): Cursor? {
         val db = this.readableDatabase
         return db.rawQuery("SELECT * FROM $TABLE_IMAGES ORDER BY $COLUMN_ID DESC", null)
+        db.close()
     }
 
     companion object {

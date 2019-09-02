@@ -35,7 +35,7 @@ class ImageActivity : AppCompatActivity() {
     private var imageNew: String? = null
 
     /**
-     * A companion object to declare variables for displaying frames
+     * A companion object to declare variables for displaying framesNames
      */
     companion object {
         private const val tag = "ImageActivity"
@@ -72,7 +72,7 @@ class ImageActivity : AppCompatActivity() {
                 try {
                     val bitmapNew = addFrame(
                         imageOriginal,
-                        MainActivity.frames[position]
+                        MainActivity.frames[position].name
                     )
                     imageViewImageNew.setImageBitmap(bitmapNew)
                     imageViewImageNew.isGone = false
@@ -165,7 +165,7 @@ class ImageActivity : AppCompatActivity() {
     }
 
     /**
-     * Method to add a bitmap frames
+     * Method to add a bitmap framesNames
      */
     private fun addFrame(imageOriginal: String, frame: String): Bitmap? {
         var scaledBitmap = Bitmap.createScaledBitmap(
@@ -198,6 +198,7 @@ class ImageActivity : AppCompatActivity() {
     inner class SaveImage(context: Context, var imageView: ImageView, private var new: Boolean) :
         AsyncTask<String, Void, Bitmap>() {
         val context = context
+        private var image = Image("","")
 
         override fun doInBackground(vararg args: String?): Bitmap? {
             return convertImageViewToBitmap(imageViewImageNew)
@@ -207,8 +208,9 @@ class ImageActivity : AppCompatActivity() {
             writeImage(result)
 
             if (new) {
-                // Update the images GridView in main screen
-                images.add(0, imageNew.toString())
+                // Update the imagesNames GridView in main screen
+                image.name = imageNew.toString()
+                images.add(0,  image)
                 BuildAlbumDBOpenHelper(context, null).addImage(
                     Image(
                         imageNew.toString(),
@@ -217,7 +219,6 @@ class ImageActivity : AppCompatActivity() {
                 )
             }
             MainActivity.imagesAdapter.notifyDataSetChanged();
-
             toast(getString(R.string.image_saved))
         }
 

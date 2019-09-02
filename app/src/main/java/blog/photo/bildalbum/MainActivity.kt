@@ -16,6 +16,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import blog.photo.bildalbum.model.Frame
 import blog.photo.bildalbum.model.Image
+import blog.photo.bildalbum.model.Picture
 import blog.photo.bildalbum.network.DownloadData
 import blog.photo.bildalbum.network.DownloadSource
 import blog.photo.bildalbum.network.DownloadStatus
@@ -37,12 +38,12 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     JsonData.OnDataAvailable {
 
     /**
-     * A companion object to declare variables for displaying images
+     * A companion object to declare variables for displaying imagesNames
      */
     companion object {
         private const val tag = "MainActivity"
-        lateinit var frames: ArrayList<String>
-        lateinit var images: ArrayList<String>
+        var frames = ArrayList<Picture>()
+        var images = ArrayList<Picture>()
         lateinit var imagesAdapter: PicturesAdapter
     }
 
@@ -55,18 +56,20 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        frames = getFrames()
-        images = getImages()
+        // Get imagesNames to display
+        getImages()
         imagesAdapter = PicturesAdapter(this, images)
         girdViewImages.adapter = imagesAdapter
 
         girdViewImages.onItemClickListener =
             AdapterView.OnItemClickListener { _, _, position, _ ->
                 val intent = Intent(applicationContext, ImageActivity::class.java)
-                intent.putExtra("imageOriginal", images[position])
+                intent.putExtra("imageOriginal", images[position].name)
                 startActivity(intent)
             }
 
+        // Get framesNames for adding
+        getFrames()
         if (frames.size == 0)
             downloadFrames()
 
@@ -88,13 +91,13 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     inner class SavePicture(context: Context, var imageView: ImageView) :
         AsyncTask<String, Void, Bitmap>() {
         val context = context
-        var uri = ""
+        private var picture = Picture("", "")
 
         override fun doInBackground(vararg params: String): Bitmap? {
             var bm: Bitmap? = null
             try {
-                uri = params[0]
-                val `in` = java.net.URL(uri).openStream()
+                picture.uri = params[0]
+                val `in` = java.net.URL(picture.uri).openStream()
                 bm = BitmapFactory.decodeStream(`in`)
             } catch (e: Exception) {
                 e(tag, e.message.toString())
@@ -104,32 +107,31 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
         }
 
         override fun onPostExecute(result: Bitmap) {
-            val name = writeImage(result)
-
-            if (uri.contains(getString(R.string.FRAMES_URI))) {
-                frames.add(0, name)
-                BuildAlbumDBOpenHelper(context, null).addFrame(
-                    Frame(
-                        name,
-                        uri
+            if (picture.uri.contains(getString(R.string.FRAMES_URI))) {
+                if (picture !in frames) {
+                    picture.name = "frame" + currentTimeMillis() + ".png"
+                    writeImage(result)
+                    frames.add(0, picture)
+                    BuildAlbumDBOpenHelper(context, null).addFrame(
+                        Frame(picture)
                     )
-                )
-            } else {
-                // Update the images GridView
-                images.add(0, name)
+                }
+                return
+            }
+
+            if (picture !in images) {
+                picture.name = "img" + currentTimeMillis() + ".png"
+                writeImage(result)
+                images.add(0, picture)
                 imagesAdapter.notifyDataSetChanged();
                 BuildAlbumDBOpenHelper(context, null).addImage(
-                    Image(
-                        name,
-                        uri
-                    )
+                    Image(picture)
                 )
             }
         }
 
-        private fun writeImage(finalBitmap: Bitmap): String {
-            val name = "img" + currentTimeMillis() + ".jpg"
-            val file = getPicture(name)
+        private fun writeImage(finalBitmap: Bitmap) {
+            val file = getPicture(picture.name)
             if (file.exists())
                 file.delete()
 
@@ -139,16 +141,15 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
                 out.flush()
                 out.close()
             } catch (e: Exception) {
+                toast(getString(R.string.picture_not_saved))
                 e(tag, e.message.toString())
                 e.printStackTrace()
             }
-
-            return name
         }
     }
 
     /**
-     * Method to download frames
+     * Method to download framesNames
      */
     private fun downloadFrames() {
         for (i in 1..getString(R.string.FRAMES_COUNT).toInt()) {
@@ -161,7 +162,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     }
 
     /**
-     * Method to download images from Flickr
+     * Method to download imagesNames from Flickr
      */
     private fun downloadImagesFromFlickr() {
         val uri = createUriFlickr(
@@ -199,7 +200,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     }
 
     /**
-     * Method to download images from Pixabay
+     * Method to download imagesNames from Pixabay
      */
     private fun downloadImagesFromPixabay() {
         val uri = createUriPixabay(
@@ -224,9 +225,9 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     }
 
     /**
-     * Method to download images
+     * Method to download imagesNames
      *
-     * @param data - images' URIs
+     * @param data - imagesNames' URIs
      */
     override fun onDataAvailable(data: ArrayList<String>) {
         data.forEach {
@@ -264,67 +265,84 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     }
 
     /**
-     * Method to get images paths from database
+     * Method to get imagesNames paths from database
      *
-     * @return paths of stored images
+     * @return paths of stored imagesNames
      */
-    private fun getFrames(): ArrayList<String> {
-        var frames = ArrayList<String>()
+    private fun getFrames() {
         val cursor = BuildAlbumDBOpenHelper(this, null).getAllFrames()
+        var frame: Frame
 
         if (cursor!!.moveToFirst()) {
-            frames.add(
+            frame = Frame(
                 cursor.getString(
                     cursor.getColumnIndex(
                         BuildAlbumDBOpenHelper.COLUMN_NAME
                     )
+                ), cursor.getString(
+                    cursor.getColumnIndex(
+                        BuildAlbumDBOpenHelper.COLUMN_URI
+                    )
                 )
             )
+            frames.add(frame)
             while (cursor.moveToNext()) {
-                frames.add(
+                frame = Frame(
                     cursor.getString(
                         cursor.getColumnIndex(
                             BuildAlbumDBOpenHelper.COLUMN_NAME
                         )
+                    ),
+                    cursor.getString(
+                        cursor.getColumnIndex(
+                            BuildAlbumDBOpenHelper.COLUMN_URI
+                        )
                     )
                 )
+                frames.add(frame)
             }
         }
         cursor.close()
-
-        return frames
     }
 
     /**
-     * Method to get images paths from database
+     * Method to get imagesNames paths from database
      *
-     * @return paths of stored images
+     * @return paths of stored imagesNames
      */
-    private fun getImages(): ArrayList<String> {
-        val images = ArrayList<String>()
+    private fun getImages() {
         val cursor = BuildAlbumDBOpenHelper(this, null).getAllImagesReverse()
+        var image: Image
 
         if (cursor!!.moveToFirst()) {
-            images.add(
+            image = Image(
                 cursor.getString(
                     cursor.getColumnIndex(
                         BuildAlbumDBOpenHelper.COLUMN_NAME
                     )
+                ), cursor.getString(
+                    cursor.getColumnIndex(
+                        BuildAlbumDBOpenHelper.COLUMN_URI
+                    )
                 )
             )
+            images.add(image)
             while (cursor.moveToNext()) {
-                images.add(
+                image = Image(
                     cursor.getString(
                         cursor.getColumnIndex(
                             BuildAlbumDBOpenHelper.COLUMN_NAME
                         )
+                    ), cursor.getString(
+                        cursor.getColumnIndex(
+                            BuildAlbumDBOpenHelper.COLUMN_URI
+                        )
                     )
                 )
+                images.add(image)
             }
         }
         cursor.close()
-
-        return images
     }
 
     /**

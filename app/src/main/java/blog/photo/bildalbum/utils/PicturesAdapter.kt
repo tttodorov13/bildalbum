@@ -9,9 +9,10 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.ImageView
 import blog.photo.bildalbum.R
+import blog.photo.bildalbum.model.Picture
 import java.io.File
 
-class PicturesAdapter(private val mContext: Context, private val pictures: ArrayList<String>) :
+class PicturesAdapter(private val mContext: Context, private val pictures: ArrayList<Picture>) :
     BaseAdapter() {
 
     override fun getCount(): Int {
@@ -28,7 +29,6 @@ class PicturesAdapter(private val mContext: Context, private val pictures: Array
 
     override fun getView(position: Int, view: View?, parent: ViewGroup): View? {
         var convertView = view
-        val picture = pictures[position]
         var viewHolder: ViewHolder
 
         if (convertView == null) {
@@ -36,7 +36,7 @@ class PicturesAdapter(private val mContext: Context, private val pictures: Array
             convertView = layoutInflater.inflate(R.layout.image_layout, null)
 
             val imageView = convertView.findViewById(R.id.picture) as ImageView
-            imageView.setImageURI(Uri.parse(getPictureCanonicalPath(picture)))
+            imageView.setImageURI(Uri.parse(getPictureCanonicalPath(pictures[position].name)))
 
             viewHolder = ViewHolder(imageView)
             convertView.tag = viewHolder
@@ -45,7 +45,7 @@ class PicturesAdapter(private val mContext: Context, private val pictures: Array
             viewHolder.imageView.setImageURI(
                 Uri.parse(
                     getPictureCanonicalPath(
-                        picture
+                        pictures[position].name
                     )
                 )
             )
