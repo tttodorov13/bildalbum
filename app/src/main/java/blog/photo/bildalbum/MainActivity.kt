@@ -4,12 +4,14 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
 import android.os.Environment
 import android.util.Log.e
 import android.widget.AdapterView
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import blog.photo.bildalbum.R.string.*
@@ -73,87 +75,23 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
         // Get frames to add
         if (getFrames().size == 0)
             downloadFrames()
-
-        if (ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.CAMERA
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            buttonCreateImage.setEnabled(false)
-            ActivityCompat.requestPermissions(
-                this,
-                arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                0
-            )
-        }
-
-        buttonCreateImage.setOnClickListener {
-            buttonCreateImage.isEnabled = false
-            val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-            intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(getOutputMediaFile()))
-            startActivityForResult(intent, 100)
-        }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == 100 && resultCode == Activity.RESULT_OK && file.exists()) {
-            val image = Image(file.name, "")
-            BuildAlbumDBOpenHelper(applicationContext, null).addImage(
-                image
-            )
-            images.add(image)
-            imagesAdapter.notifyDataSetChanged()
-        }
-    }
-
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        if (requestCode == 0 &&
-            (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED
-                    && grantResults[1] == PackageManager.PERMISSION_GRANTED)
-        ) {
-            buttonCreateImage.isEnabled = true
-        }
-    }
-
-    private fun getOutputMediaFile(): File? {
-        file = getPicture("img".plus(currentTimeMillis()).plus(".png"))
-        if (file.exists())
-            file.delete()
-
-        try {
-            val out = FileOutputStream(file)
-            out.flush()
-            out.close()
-        } catch (e: Exception) {
-            toast(getString(internal_error))
-            e(tag, e.message.toString())
-            e.printStackTrace()
-        }
-        return file
     }
 
     /**
      * Helper class for creating new picture
      */
-    inner class SavePicture() :
+    inner class SavePicture(private val picture: Picture) :
         AsyncTask<String, Void, Bitmap>() {
-        private var picture = Picture("", "")
 
         override fun doInBackground(vararg params: String): Bitmap? {
-            var bm: Bitmap? = null
             try {
-                picture.uri = params[0]
                 val `in` = java.net.URL(picture.uri).openStream()
-                bm = BitmapFactory.decodeStream(`in`)
+                return BitmapFactory.decodeStream(`in`)
             } catch (e: Exception) {
                 e(tag, e.message.toString())
                 e.printStackTrace()
             }
-            return bm
+            return convertImageViewToBitmap(imageViewImageNew)
         }
 
         override fun onPostExecute(result: Bitmap) {
@@ -281,7 +219,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
      */
     override fun onDataAvailable(data: ArrayList<String>) {
         data.forEach {
-            SavePicture().execute(it)
+            SavePicture(Picture("", it)).execute()
         }
     }
 
@@ -402,6 +340,13 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
         }
 
         return File(storageDir, name)
+    }
+
+    /**
+     * Method to get a bitmap from ImageView
+     */
+    private fun convertImageViewToBitmap(view: ImageView): Bitmap {
+        return (view.drawable as BitmapDrawable).bitmap
     }
 
     /**

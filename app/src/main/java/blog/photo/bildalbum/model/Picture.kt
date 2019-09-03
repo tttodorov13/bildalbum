@@ -1,9 +1,23 @@
 package blog.photo.bildalbum.model
 
+import java.lang.System.currentTimeMillis
+
 /**
  * Base class that manages the picture model.
  */
-open class Picture(var name: String, var uri: String) {
+open class Picture() {
+    var name: String = "img".plus(currentTimeMillis()).plus(".png")
+    var uri: String = ""
+
+    constructor(name: String) : this() {
+        this.name = name
+    }
+
+    constructor(name: String, uri: String) : this(name) {
+        this.name = name
+        this.uri = uri
+    }
+
     override fun equals(other: Any?): Boolean {
         if (other == null ||
             other !is Picture ||

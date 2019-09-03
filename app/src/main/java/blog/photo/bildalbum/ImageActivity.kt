@@ -19,6 +19,7 @@ import androidx.core.view.isGone
 import blog.photo.bildalbum.MainActivity.Companion.images
 import blog.photo.bildalbum.R.string.*
 import blog.photo.bildalbum.model.Image
+import blog.photo.bildalbum.model.Picture
 import blog.photo.bildalbum.utils.BuildAlbumDBOpenHelper
 import blog.photo.bildalbum.utils.PicturesAdapter
 import kotlinx.android.synthetic.main.activity_image.*
@@ -32,7 +33,8 @@ class ImageActivity : AppCompatActivity() {
 
     private var imageSize = 400
     private var imageSizeBorder = 100
-    private var imageNew: String? = null
+    private var imageNewName: String? = null
+    private var image = Picture()
 
     /**
      * A companion object to declare variables for displaying framesNames
@@ -77,10 +79,11 @@ class ImageActivity : AppCompatActivity() {
                     imageViewImageNew.setImageBitmap(bitmapNew)
                     imageViewImageNew.isGone = false
                     imageViewImageOriginal.isGone = true
-                    if (imageNew == null) {
-                        imageNew = "img" + System.currentTimeMillis() + ".jpg"
-                    }
-                    SaveImage().execute()
+                    if (imageNewName == null)
+                        imageNewName = image.name
+                    else
+                        image.name = imageNewName.toString()
+                    SaveImage(image).execute()
                 } catch (e: Exception) {
                     toast(getString(internal_error))
                     e(tag, e.message.toString())
@@ -94,10 +97,10 @@ class ImageActivity : AppCompatActivity() {
             intent.type = "image/*"
             intent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
 
-            if (imageNew != null)
+            if (imageNewName != null)
                 intent.putExtra(
                     Intent.EXTRA_STREAM,
-                    Uri.fromFile(File(getPicture(imageNew.toString()).canonicalPath))
+                    Uri.fromFile(File(getPicture(imageNewName.toString()).canonicalPath))
                 )
             else
                 intent.putExtra(
@@ -140,7 +143,7 @@ class ImageActivity : AppCompatActivity() {
      * @param outState
      */
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putString("imageNew", imageNew)
+        outState.putString("imageNewName", imageNewName)
         super.onSaveInstanceState(outState)
     }
 
@@ -151,9 +154,9 @@ class ImageActivity : AppCompatActivity() {
      */
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
-        imageNew = savedInstanceState.getString("imageNew")
-        if (imageNew != null) {
-            imageViewImageNew.setImageURI(Uri.parse(getPicture(imageNew.toString()).canonicalPath))
+        imageNewName = savedInstanceState.getString("imageNewName")
+        if (imageNewName != null) {
+            imageViewImageNew.setImageURI(Uri.parse(getPicture(imageNewName.toString()).canonicalPath))
             imageViewImageNew.isGone = false
             imageViewImageOriginal.isGone = true
         }
@@ -187,7 +190,7 @@ class ImageActivity : AppCompatActivity() {
     /**
      * Helper class for creating new image
      */
-    inner class SaveImage() :
+    inner class SaveImage(private val picture: Picture) :
         AsyncTask<String, Void, Bitmap>() {
 
         override fun doInBackground(vararg args: String?): Bitmap? {
@@ -196,14 +199,10 @@ class ImageActivity : AppCompatActivity() {
 
         override fun onPostExecute(result: Bitmap) {
             writeImage(result)
-            val image = Image(imageNew.toString(), "")
-            if (image !in images) {
-                images.add(0, image)
+            if (picture !in images) {
+                images.add(0, picture)
                 BuildAlbumDBOpenHelper(applicationContext, null).addImage(
-                    Image(
-                        imageNew.toString(),
-                        ""
-                    )
+                    Image(picture)
                 )
             }
             MainActivity.imagesAdapter.notifyDataSetChanged();
@@ -211,7 +210,7 @@ class ImageActivity : AppCompatActivity() {
         }
 
         private fun writeImage(finalBitmap: Bitmap) {
-            val file = getPicture(imageNew.toString())
+            val file = getPicture(imageNewName.toString())
             if (file.exists())
                 file.delete()
 
@@ -235,7 +234,7 @@ class ImageActivity : AppCompatActivity() {
     }
 
     /**
-     * Method to get picture from file system
+     * Method to get image from file system
      */
     fun getPicture(name: String): File {
         val storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
