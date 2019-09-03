@@ -59,6 +59,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
 
         imagesAdapter = PicturesAdapter(this, images)
         girdViewImages.adapter = imagesAdapter
+
         // Get images to display
         if (getImages().size == 0) {
             downloadImagesFromFlickr()
@@ -73,7 +74,8 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
             }
 
         // Get frames to add
-        if (getFrames().size == 0)
+        getFrames()
+        if (frames.size == 0)
             downloadFrames()
     }
 
@@ -251,7 +253,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
      *
      * @return paths of stored imagesNames
      */
-    private fun getFrames(): ArrayList<Picture> {
+    private fun getFrames() {
         val cursor = BuildAlbumDBOpenHelper(this, null).getAllFrames()
         var frame: Frame
 
@@ -285,7 +287,6 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
             }
         }
         cursor.close()
-        return frames
     }
 
     /**
