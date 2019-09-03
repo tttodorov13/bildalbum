@@ -9,9 +9,7 @@ import android.os.AsyncTask
 import android.os.Bundle
 import android.os.Environment
 import android.util.Log.e
-import android.view.LayoutInflater
 import android.widget.AdapterView
-import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import blog.photo.bildalbum.R.string.*
@@ -45,6 +43,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
         var frames = ArrayList<Picture>()
         var images = ArrayList<Picture>()
         lateinit var imagesAdapter: PicturesAdapter
+        lateinit var file: File
     }
 
     /**
@@ -74,17 +73,74 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
         // Get frames to add
         if (getFrames().size == 0)
             downloadFrames()
+
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.CAMERA
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            buttonCreateImage.setEnabled(false)
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                0
+            )
+        }
+
+        buttonCreateImage.setOnClickListener {
+            buttonCreateImage.isEnabled = false
+            val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+            intent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(getOutputMediaFile()))
+            startActivityForResult(intent, 100)
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == 100 && resultCode == Activity.RESULT_OK && file.exists()) {
+            val image = Image(file.name, "")
+            BuildAlbumDBOpenHelper(applicationContext, null).addImage(
+                image
+            )
+            images.add(image)
+            imagesAdapter.notifyDataSetChanged()
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        if (requestCode == 0 &&
+            (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                    && grantResults[1] == PackageManager.PERMISSION_GRANTED)
+        ) {
+            buttonCreateImage.isEnabled = true
+        }
+    }
+
+    private fun getOutputMediaFile(): File? {
+        file = getPicture("img".plus(currentTimeMillis()).plus(".png"))
+        if (file.exists())
+            file.delete()
+
+        try {
+            val out = FileOutputStream(file)
+            out.flush()
+            out.close()
+        } catch (e: Exception) {
+            toast(getString(internal_error))
+            e(tag, e.message.toString())
+            e.printStackTrace()
+        }
+        return file
     }
 
     /**
-     * Helper class for creating new image
-     *
-     * @param context
-     * @param imageView
+     * Helper class for creating new picture
      */
-    inner class SavePicture(context: Context, var imageView: ImageView) :
+    inner class SavePicture() :
         AsyncTask<String, Void, Bitmap>() {
-        val context = context
         private var picture = Picture("", "")
 
         override fun doInBackground(vararg params: String): Bitmap? {
@@ -106,7 +162,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
                     picture.name = "frame".plus(currentTimeMillis()).plus(".png")
                     writeImage(result)
                     frames.add(0, picture)
-                    BuildAlbumDBOpenHelper(context, null).addFrame(
+                    BuildAlbumDBOpenHelper(applicationContext, null).addFrame(
                         Frame(picture)
                     )
                 }
@@ -116,7 +172,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
             if (picture !in images) {
                 picture.name = "img".plus(currentTimeMillis()).plus(".png")
                 writeImage(result)
-                BuildAlbumDBOpenHelper(context, null).addImage(
+                BuildAlbumDBOpenHelper(applicationContext, null).addImage(
                     Image(picture)
                 )
                 images.add(0, picture)
@@ -156,7 +212,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     }
 
     /**
-     * Method to download imagesNames from Flickr
+     * Method to download imagesNames from https://www.flickr.com
      */
     private fun downloadImagesFromFlickr() {
         val uri = createUriFlickr(
@@ -194,7 +250,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     }
 
     /**
-     * Method to download imagesNames from Pixabay
+     * Method to download imagesNames from https://pixabay.com
      */
     private fun downloadImagesFromPixabay() {
         val uri = createUriPixabay(
@@ -225,13 +281,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
      */
     override fun onDataAvailable(data: ArrayList<String>) {
         data.forEach {
-            SavePicture(
-                this,
-                LayoutInflater.from(this).inflate(
-                    R.layout.image_layout,
-                    null
-                ).findViewById(R.id.picture)
-            ).execute(it)
+            SavePicture().execute(it)
         }
     }
 

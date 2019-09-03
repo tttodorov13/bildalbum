@@ -11,7 +11,6 @@ import android.os.AsyncTask
 import android.os.Bundle
 import android.os.Environment
 import android.util.Log.e
-import android.view.LayoutInflater
 import android.widget.AdapterView
 import android.widget.ImageView
 import android.widget.Toast
@@ -78,20 +77,10 @@ class ImageActivity : AppCompatActivity() {
                     imageViewImageNew.setImageBitmap(bitmapNew)
                     imageViewImageNew.isGone = false
                     imageViewImageOriginal.isGone = true
-                    var new = false
                     if (imageNew == null) {
                         imageNew = "img" + System.currentTimeMillis() + ".jpg"
-                        new = true
                     }
-
-                    SaveImage(
-                        applicationContext,
-                        LayoutInflater.from(applicationContext).inflate(
-                            R.layout.activity_image,
-                            null
-                        ).findViewById(R.id.imageViewImageNew)
-                        , new
-                    ).execute()
+                    SaveImage().execute()
                 } catch (e: Exception) {
                     toast(getString(internal_error))
                     e(tag, e.message.toString())
@@ -197,14 +186,9 @@ class ImageActivity : AppCompatActivity() {
 
     /**
      * Helper class for creating new image
-     *
-     * @param context
-     * @param imageView
      */
-    inner class SaveImage(context: Context, var imageView: ImageView, private var new: Boolean) :
+    inner class SaveImage() :
         AsyncTask<String, Void, Bitmap>() {
-        val context = context
-        private var image = Image("", "")
 
         override fun doInBackground(vararg args: String?): Bitmap? {
             return convertImageViewToBitmap(imageViewImageNew)
@@ -212,12 +196,10 @@ class ImageActivity : AppCompatActivity() {
 
         override fun onPostExecute(result: Bitmap) {
             writeImage(result)
-
-            if (new) {
-                // Update the imagesNames GridView in main screen
-                image.name = imageNew.toString()
+            val image = Image(imageNew.toString(), "")
+            if (image !in images) {
                 images.add(0, image)
-                BuildAlbumDBOpenHelper(context, null).addImage(
+                BuildAlbumDBOpenHelper(applicationContext, null).addImage(
                     Image(
                         imageNew.toString(),
                         ""

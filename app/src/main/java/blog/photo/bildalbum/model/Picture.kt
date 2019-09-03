@@ -7,7 +7,7 @@ open class Picture(var name: String, var uri: String) {
     override fun equals(other: Any?): Boolean {
         if (other == null ||
             other !is Picture ||
-            (uri != other.uri && name != other.name)
+            uri != other.uri || name != other.name
         ) return false
 
         return true
