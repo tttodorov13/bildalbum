@@ -47,11 +47,13 @@ class DownloadData(private val listener: OnDownloadComplete, private val source:
             return "No URL specified"
         }
 
+        var uri = StringBuilder()
         try {
             status = DownloadStatus.OK
             if (source == DownloadSource.FRAMES)
-                return URL(params[0]).toString()
-            return URL(params[0]).readText()
+                uri.append(URL(params[0]).toString())
+            else
+                uri.append(URL(params[0]).readText())
         } catch (e: Exception) {
             val errorMessage = when (e) {
                 is MalformedURLException -> {
@@ -76,6 +78,7 @@ class DownloadData(private val listener: OnDownloadComplete, private val source:
             Log.e(tag, errorMessage)
             return errorMessage
         }
+        return uri.toString()
     }
 
     /**

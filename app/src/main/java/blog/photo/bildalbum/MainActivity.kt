@@ -246,7 +246,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
         if (status == OK)
             JsonData(this, source).execute(data)
         if (status == NETWORK_ERROR)
-            toast(getString(check_internet_connection))
+            toast(getString(enable_internet))
     }
 
     /**

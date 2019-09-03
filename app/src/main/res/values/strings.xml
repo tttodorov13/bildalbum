@@ -9,7 +9,7 @@
     <string name="FLICKR_API_LANG">en-us</string>
     <string name="PIXABAY_API_URI">https://pixabay.com/api/</string>
     <string name="PIXABAY_API_KEY">13310406-d6e15cf3e2d5c590fa44a6bea</string>
-    <string name="check_internet_connection">Check Internet connection and try again!</string>
+    <string name="enable_internet">Enable Internet to get fun images!</string>
     <string name="image_size">400</string>
     <string name="image_size_border">100</string>
     <string name="share">Share</string>
