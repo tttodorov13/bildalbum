@@ -1,4 +1,4 @@
-package blog.photo.bildalbum.network
+package blog.photo.buildalbum.network
 
 import android.os.AsyncTask
 import android.util.Log
@@ -13,7 +13,7 @@ class JsonData(private val listener: OnDataAvailable, private val source: Downlo
     private val tag = "JsonData"
 
     /**
-     * Interface for image uri download completed.
+     * Interface for picture origin download completed.
      */
     interface OnDataAvailable {
         fun onDataAvailable(data: ArrayList<String>)
@@ -24,7 +24,7 @@ class JsonData(private val listener: OnDataAvailable, private val source: Downlo
      * Method to override AsyncTask doInBackground.
      *
      * @param params
-     * @return list of image URIs
+     * @return list of picture URIs
      */
     override fun doInBackground(vararg params: String?): ArrayList<String> {
         val imagesUris = ArrayList<String>()

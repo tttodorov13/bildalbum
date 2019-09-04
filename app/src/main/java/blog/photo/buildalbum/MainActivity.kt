@@ -1,51 +1,58 @@
-package blog.photo.bildalbum
+package blog.photo.buildalbum
 
 import android.content.Context
 import android.content.Intent
+import android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
+import android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
-import android.os.Environment
+import android.provider.MediaStore
 import android.util.Log.e
 import android.widget.AdapterView
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import blog.photo.bildalbum.R.string.*
-import blog.photo.bildalbum.model.Frame
-import blog.photo.bildalbum.model.Image
-import blog.photo.bildalbum.model.Picture
-import blog.photo.bildalbum.network.DownloadData
-import blog.photo.bildalbum.network.DownloadSource
-import blog.photo.bildalbum.network.DownloadStatus
-import blog.photo.bildalbum.network.DownloadStatus.NETWORK_ERROR
-import blog.photo.bildalbum.network.DownloadStatus.OK
-import blog.photo.bildalbum.network.JsonData
-import blog.photo.bildalbum.utils.BuildAlbumDBOpenHelper
-import blog.photo.bildalbum.utils.PicturesAdapter
+import androidx.core.content.FileProvider
+import blog.photo.buildalbum.R.string.*
+import blog.photo.buildalbum.model.Image
+import blog.photo.buildalbum.network.DownloadData
+import blog.photo.buildalbum.network.DownloadSource
+import blog.photo.buildalbum.network.DownloadStatus
+import blog.photo.buildalbum.network.DownloadStatus.NETWORK_ERROR
+import blog.photo.buildalbum.network.DownloadStatus.OK
+import blog.photo.buildalbum.network.JsonData
+import blog.photo.buildalbum.utils.BuildAlbumDBOpenHelper
+import blog.photo.buildalbum.utils.PicturesAdapter
 import kotlinx.android.synthetic.main.content_main.*
 import java.io.File
 import java.io.FileOutputStream
-import java.lang.System.currentTimeMillis
+import java.io.IOException
+import java.lang.System.nanoTime
 
 /**
- * Class that manages the main screen.
+ * Class to manage the main screen.
  */
 class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     JsonData.OnDataAvailable {
+
+    private lateinit var image: Image
+    private lateinit var downloadMessage: String
 
     /**
      * A companion object to declare variables for displaying imagesNames
      */
     companion object {
         private const val tag = "MainActivity"
-        var frames = ArrayList<Picture>()
-        var images = ArrayList<Picture>()
-        lateinit var imagesAdapter: PicturesAdapter
+        private const val REQUEST_TAKE_PHOTO = 1
+        var frames = ArrayList<Image>()
+        var images = ArrayList<Image>()
         lateinit var file: File
+        lateinit var imagesAdapter: PicturesAdapter
     }
 
     /**
@@ -60,36 +67,137 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
         imagesAdapter = PicturesAdapter(this, images)
         girdViewImages.adapter = imagesAdapter
 
+        // TODO Fix app crash on image download when No Internet
+        if (!::downloadMessage.isInitialized) {
+            downloadMessage = getString(download_images_ended)
+        }
         // Get images to display
-        if (getImages().size == 0) {
+        if (getImages() == 0) {
             downloadImagesFromFlickr()
             downloadImagesFromPixabay()
         }
+        // Get frames to add
+        if (getFrames() == 0)
+            downloadFrames()
+        toast(downloadMessage)
 
         girdViewImages.onItemClickListener =
             AdapterView.OnItemClickListener { _, _, position, _ ->
-                val intent = Intent(applicationContext, ImageActivity::class.java)
-                intent.putExtra("imageOriginal", images[position].name)
+                val intent = Intent(this, ImageActivity::class.java)
+                intent.putExtra("imageOriginalName", images[position].name)
                 startActivity(intent)
             }
 
-        // Get frames to add
-        getFrames()
-        if (frames.size == 0)
-            downloadFrames()
+        buttonTakePicture.setOnClickListener {
+            val camera = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+            camera.addFlags(FLAG_GRANT_WRITE_URI_PERMISSION)
+            camera.also { takePictureIntent ->
+                // Ensure that there's a camera activity to handle the intent
+                takePictureIntent.resolveActivity(packageManager)?.also {
+                    // Create the File where the photo should go
+                    val photoFile =
+                        createImage()
+                    // Continue only if the File was successfully created
+                    photoFile.also {
+                        val photoURI: Uri = FileProvider.getUriForFile(
+                            this,
+                            "blog.photo.buildalbum.FileProvider",
+                            it
+                        )
+                        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
+
+                        val resolvedIntentActivities = this.packageManager
+                            .queryIntentActivities(
+                                camera,
+                                PackageManager.MATCH_DEFAULT_ONLY
+                            )
+                        for (resolvedIntentInfo in resolvedIntentActivities) {
+                            val packageName = resolvedIntentInfo.activityInfo.packageName
+                            applicationContext.grantUriPermission(
+                                packageName,
+                                photoURI,
+                                FLAG_GRANT_WRITE_URI_PERMISSION or FLAG_GRANT_READ_URI_PERMISSION
+                            )
+                        }
+
+                        startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO)
+                    }
+                }
+            }
+        }
     }
 
     /**
-     * Helper class for creating new picture
+     * OnActivityResult Activity
+     *
+     * @param requestCode
+     * @param resultCode
+     * @param data
      */
-    inner class SavePicture(private val picture: Picture) :
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == REQUEST_TAKE_PHOTO && (resultCode == RESULT_OK)) {
+            BuildAlbumDBOpenHelper(this, null).addImage(
+                image
+            )
+            images.add(0, image)
+            imagesAdapter.notifyDataSetChanged()
+        }
+    }
+
+    /**
+     * OnRequestPermissionsResult Activity
+     *
+     * @param requestCode
+     * @param permissions
+     * @param grantResults
+     */
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>,
+        grantResults: IntArray
+    ) {
+        if (requestCode == REQUEST_TAKE_PHOTO) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED
+                && grantResults[1] == PackageManager.PERMISSION_GRANTED
+            ) {
+                buttonTakePicture.isEnabled = true
+            }
+        }
+    }
+
+    /**
+     * Method to create image file on disk
+     */
+    private fun createImage(): File {
+        image = Image(this, "img".plus(nanoTime()).plus(".png"), "")
+        file = image.file
+        if (file.exists())
+            file.delete()
+
+        try {
+            val out = FileOutputStream(file)
+            out.flush()
+            out.close()
+        } catch (e: IOException) {
+            toast(getString(not_enough_space_on_disk))
+            e(tag, e.message.toString())
+            e.printStackTrace()
+        }
+        return file
+    }
+
+    /**
+     * Helper class for creating new image
+     */
+    inner class SavePicture(private val image: Image) :
         AsyncTask<String, Void, Bitmap>() {
 
         override fun doInBackground(vararg params: String): Bitmap? {
             try {
-                val `in` = java.net.URL(picture.uri).openStream()
+                val `in` = java.net.URL(image.origin).openStream()
                 return BitmapFactory.decodeStream(`in`)
             } catch (e: Exception) {
+                toast(getString(not_enough_space_on_disk))
                 e(tag, e.message.toString())
                 e.printStackTrace()
             }
@@ -97,31 +205,29 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
         }
 
         override fun onPostExecute(result: Bitmap) {
-            if (picture.uri.contains(getString(FRAMES_URI))) {
-                if (picture !in frames) {
-                    picture.name = "frame".plus(currentTimeMillis()).plus(".png")
+            if (image.origin.contains(getString(FRAMES_URI))) {
+                if (image !in frames) {
                     writeImage(result)
-                    frames.add(0, picture)
+                    frames.add(0, image)
                     BuildAlbumDBOpenHelper(applicationContext, null).addFrame(
-                        Frame(picture)
+                        image
                     )
                 }
                 return
             }
 
-            if (picture !in images) {
-                picture.name = "img".plus(currentTimeMillis()).plus(".png")
+            if (image !in images) {
                 writeImage(result)
                 BuildAlbumDBOpenHelper(applicationContext, null).addImage(
-                    Image(picture)
+                    image
                 )
-                images.add(0, picture)
+                images.add(0, image)
                 imagesAdapter.notifyDataSetChanged();
             }
         }
 
         private fun writeImage(finalBitmap: Bitmap) {
-            val file = getPicture(picture.name)
+            val file = image.file
             if (file.exists())
                 file.delete()
 
@@ -130,8 +236,8 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
                 finalBitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
                 out.flush()
                 out.close()
-            } catch (e: Exception) {
-                toast(getString(internal_error))
+            } catch (e: IOException) {
+                toast(getString(not_enough_space_on_disk))
                 e(tag, e.message.toString())
                 e.printStackTrace()
             }
@@ -221,7 +327,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
      */
     override fun onDataAvailable(data: ArrayList<String>) {
         data.forEach {
-            SavePicture(Picture("", it)).execute()
+            SavePicture(Image(this, "img".plus(nanoTime()).plus(".png"), it)).execute()
         }
     }
 
@@ -236,7 +342,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
         if (status == OK)
             JsonData(this, source).execute(data)
         if (status == NETWORK_ERROR)
-            toast(getString(enable_internet))
+            downloadMessage = getString(enable_internet)
     }
 
     /**
@@ -245,33 +351,34 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
      * @param exception
      */
     override fun onError(exception: Exception) {
-        toast("DownloadData Exception: $exception")
+        downloadMessage = getString(download_exception).plus(exception)
     }
 
     /**
      * Method to get imagesNames paths from database
-     *
-     * @return paths of stored imagesNames
      */
-    private fun getFrames() {
+    private fun getFrames(): Int {
         val cursor = BuildAlbumDBOpenHelper(this, null).getAllFrames()
-        var frame: Frame
+        var frame: Image
 
         if (cursor!!.moveToFirst()) {
-            frame = Frame(
+            frame = Image(
+                this,
                 cursor.getString(
                     cursor.getColumnIndex(
                         BuildAlbumDBOpenHelper.COLUMN_NAME
                     )
                 ), cursor.getString(
                     cursor.getColumnIndex(
-                        BuildAlbumDBOpenHelper.COLUMN_URI
+                        BuildAlbumDBOpenHelper.COLUMN_ORIGIN
                     )
                 )
             )
-            frames.add(frame)
+            if (frame !in frames)
+                frames.add(frame)
             while (cursor.moveToNext()) {
-                frame = Frame(
+                frame = Image(
+                    this,
                     cursor.getString(
                         cursor.getColumnIndex(
                             BuildAlbumDBOpenHelper.COLUMN_NAME
@@ -279,14 +386,16 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
                     ),
                     cursor.getString(
                         cursor.getColumnIndex(
-                            BuildAlbumDBOpenHelper.COLUMN_URI
+                            BuildAlbumDBOpenHelper.COLUMN_ORIGIN
                         )
                     )
                 )
-                frames.add(frame)
+                if (frame !in frames)
+                    frames.add(frame)
             }
         }
         cursor.close()
+        return images.size
     }
 
     /**
@@ -294,53 +403,44 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
      *
      * @return paths of stored imagesNames
      */
-    private fun getImages(): ArrayList<Picture> {
+    private fun getImages(): Int {
         val cursor = BuildAlbumDBOpenHelper(this, null).getAllImagesReverse()
         var image: Image
 
         if (cursor!!.moveToFirst()) {
             image = Image(
+                this,
                 cursor.getString(
                     cursor.getColumnIndex(
                         BuildAlbumDBOpenHelper.COLUMN_NAME
                     )
                 ), cursor.getString(
                     cursor.getColumnIndex(
-                        BuildAlbumDBOpenHelper.COLUMN_URI
+                        BuildAlbumDBOpenHelper.COLUMN_ORIGIN
                     )
                 )
             )
-            images.add(image)
+            if (image !in images)
+                images.add(image)
             while (cursor.moveToNext()) {
                 image = Image(
+                    this,
                     cursor.getString(
                         cursor.getColumnIndex(
                             BuildAlbumDBOpenHelper.COLUMN_NAME
                         )
                     ), cursor.getString(
                         cursor.getColumnIndex(
-                            BuildAlbumDBOpenHelper.COLUMN_URI
+                            BuildAlbumDBOpenHelper.COLUMN_ORIGIN
                         )
                     )
                 )
-                images.add(image)
+                if (image !in images)
+                    images.add(image)
             }
         }
         cursor.close()
-        return images
-    }
-
-    /**
-     * Method to get picture from file system
-     */
-    private fun getPicture(name: String): File {
-        val storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-
-        if (!storageDir!!.exists()) {
-            storageDir.mkdirs()
-        }
-
-        return File(storageDir, name)
+        return images.size
     }
 
     /**

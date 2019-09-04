@@ -1,4 +1,4 @@
-package blog.photo.bildalbum.network
+package blog.photo.buildalbum.network
 
 import android.os.AsyncTask
 import android.util.Log
@@ -7,14 +7,14 @@ import java.net.MalformedURLException
 import java.net.URL
 
 /**
- * Enum for image's download sources.
+ * Enum for picture's download sources.
  */
 enum class DownloadSource {
     FLICKR, PIXABAY, FRAMES
 }
 
 /**
- * Enum for image's download statuses.
+ * Enum for picture's download statuses.
  */
 enum class DownloadStatus {
     OK, IDLE, NOT_INITIALIZED, FAILED_OR_EMPTY, NETWORK_ERROR, PERMISSIONS_ERROR, ERROR
@@ -29,7 +29,7 @@ class DownloadData(private val listener: OnDownloadComplete, private val source:
     private var status = DownloadStatus.IDLE
 
     /**
-     * Interface for image download completed.
+     * Interface for picture download completed.
      */
     interface OnDownloadComplete {
         fun onDownloadComplete(data: String, source: DownloadSource, status: DownloadStatus)

@@ -1,4 +1,4 @@
-package blog.photo.bildalbum
+package blog.photo.buildalbum
 
 import org.junit.Assert.assertEquals
 import org.junit.Test

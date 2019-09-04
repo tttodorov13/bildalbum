@@ -1,4 +1,4 @@
-package blog.photo.bildalbum
+package blog.photo.buildalbum
 
 import android.content.Intent
 import android.os.Bundle
@@ -6,7 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import kotlin.concurrent.thread
 
 /**
- * Class that manages the login screen.
+ * Class to manage the login screen.
  */
 class LoginActivity : AppCompatActivity() {
 

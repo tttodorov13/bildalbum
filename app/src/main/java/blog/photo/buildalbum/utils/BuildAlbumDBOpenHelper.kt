@@ -1,12 +1,11 @@
-package blog.photo.bildalbum.utils
+package blog.photo.buildalbum.utils
 
 import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
-import blog.photo.bildalbum.model.Frame
-import blog.photo.bildalbum.model.Image
+import blog.photo.buildalbum.model.Image
 
 class BuildAlbumDBOpenHelper(
     context: Context,
@@ -17,8 +16,8 @@ class BuildAlbumDBOpenHelper(
 ) {
 
     override fun onCreate(db: SQLiteDatabase) {
-        db.execSQL("CREATE TABLE $TABLE_FRAMES ($COLUMN_ID INTEGER PRIMARY KEY, $COLUMN_NAME TEXT,$COLUMN_URI TEXT)")
-        db.execSQL("CREATE TABLE $TABLE_IMAGES ($COLUMN_ID INTEGER PRIMARY KEY, $COLUMN_NAME TEXT,$COLUMN_URI TEXT)")
+        db.execSQL("CREATE TABLE $TABLE_FRAMES ($COLUMN_ID INTEGER PRIMARY KEY, $COLUMN_NAME TEXT,$COLUMN_ORIGIN TEXT)")
+        db.execSQL("CREATE TABLE $TABLE_IMAGES ($COLUMN_ID INTEGER PRIMARY KEY, $COLUMN_NAME TEXT,$COLUMN_ORIGIN TEXT)")
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
@@ -28,10 +27,10 @@ class BuildAlbumDBOpenHelper(
         onCreate(db)
     }
 
-    fun addFrame(frame: Frame) {
+    fun addFrame(frame: Image) {
         val values = ContentValues()
         values.put(COLUMN_NAME, frame.name)
-        values.put(COLUMN_URI, frame.uri)
+        values.put(COLUMN_ORIGIN, frame.origin)
         val db = this.writableDatabase
         db.insert(TABLE_FRAMES, null, values)
         db.close()
@@ -40,7 +39,7 @@ class BuildAlbumDBOpenHelper(
     fun addImage(image: Image) {
         val values = ContentValues()
         values.put(COLUMN_NAME, image.name)
-        values.put(COLUMN_URI, image.uri)
+        values.put(COLUMN_ORIGIN, image.origin)
         val db = this.writableDatabase
         db.insert(TABLE_IMAGES, null, values)
         db.close()
@@ -49,13 +48,11 @@ class BuildAlbumDBOpenHelper(
     fun getAllFrames(): Cursor? {
         val db = this.readableDatabase
         return db.rawQuery("SELECT * FROM $TABLE_FRAMES ORDER BY $COLUMN_ID ASC", null)
-        db.close()
     }
 
     fun getAllImagesReverse(): Cursor? {
         val db = this.readableDatabase
         return db.rawQuery("SELECT * FROM $TABLE_IMAGES ORDER BY $COLUMN_ID DESC", null)
-        db.close()
     }
 
     companion object {
@@ -65,6 +62,6 @@ class BuildAlbumDBOpenHelper(
         private const val TABLE_FRAMES = "frames"
         private const val COLUMN_ID = "_id"
         const val COLUMN_NAME = "name"
-        const val COLUMN_URI = "uri"
+        const val COLUMN_ORIGIN = "origin"
     }
 }

@@ -1,22 +1,19 @@
-package blog.photo.bildalbum.utils
+package blog.photo.buildalbum.utils
 
 import android.content.Context
-import android.net.Uri
-import android.os.Environment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.ImageView
-import blog.photo.bildalbum.R
-import blog.photo.bildalbum.model.Picture
-import java.io.File
+import blog.photo.buildalbum.R
+import blog.photo.buildalbum.model.Image
 
-class PicturesAdapter(private val mContext: Context, private val pictures: ArrayList<Picture>) :
+class PicturesAdapter(private val mContext: Context, private val images: ArrayList<Image>) :
     BaseAdapter() {
 
     override fun getCount(): Int {
-        return pictures.size
+        return images.size
     }
 
     override fun getItemId(position: Int): Long {
@@ -36,18 +33,14 @@ class PicturesAdapter(private val mContext: Context, private val pictures: Array
             convertView = layoutInflater.inflate(R.layout.image_layout, null)
 
             val imageView = convertView.findViewById(R.id.picture) as ImageView
-            imageView.setImageURI(Uri.parse(getPictureCanonicalPath(pictures[position].name)))
+            imageView.setImageURI(images[position].uri)
 
             viewHolder = ViewHolder(imageView)
             convertView.tag = viewHolder
         } else {
             viewHolder = convertView.tag as ViewHolder
             viewHolder.imageView.setImageURI(
-                Uri.parse(
-                    getPictureCanonicalPath(
-                        pictures[position].name
-                    )
-                )
+                images[position].uri
             )
         }
 
@@ -57,14 +50,4 @@ class PicturesAdapter(private val mContext: Context, private val pictures: Array
     private inner class ViewHolder(
         var imageView: ImageView
     )
-
-    private fun getPictureCanonicalPath(name: String): String {
-        val storageDir = mContext.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-
-        if (!storageDir!!.exists()) {
-            storageDir.mkdirs()
-        }
-
-        return File(storageDir, name).canonicalPath
-    }
 }

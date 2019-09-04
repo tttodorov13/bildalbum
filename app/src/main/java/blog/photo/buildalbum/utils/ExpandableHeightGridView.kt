@@ -1,4 +1,4 @@
-package blog.photo.bildalbum.utils
+package blog.photo.buildalbum.utils
 
 import android.content.Context
 import android.util.AttributeSet

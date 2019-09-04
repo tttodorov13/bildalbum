@@ -1,4 +1,4 @@
-package blog.photo.bildalbum
+package blog.photo.buildalbum
 
 import androidx.test.InstrumentationRegistry
 import androidx.test.runner.AndroidJUnit4
@@ -17,6 +17,6 @@ class ExampleInstrumentedTest {
     fun useAppContext() {
         // Context of the app under test.
         val appContext = InstrumentationRegistry.getTargetContext()
-        assertEquals("org.takemedicines.bildalbum", appContext.packageName)
+        assertEquals("org.takemedicines.buildalbum", appContext.packageName)
     }
 }
