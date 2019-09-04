@@ -8,11 +8,25 @@ import java.io.File
 /**
  * Base class to manage the picture model.
  */
-data class Image(val context: Context, val name: String, val origin: String) {
+data class Image(val context: Context, val isFrame: Boolean, val name: String, val origin: String) {
+
+    constructor(context: Context, isFrame: Boolean, origin: String) : this(
+        context,
+        isFrame,
+        "img".plus(System.nanoTime()).plus(".png"),
+        origin
+    )
+
+    constructor(context: Context, name: String, origin: String) : this(context, false, name, origin)
+
+    constructor(context: Context, name: String) : this(context, false, name, "")
+
+    constructor(context: Context) : this(context, "img".plus(System.nanoTime()).plus(".png"))
 
     override fun equals(other: Any?): Boolean {
         if (other == null ||
             other !is Image ||
+            isFrame != other.isFrame ||
             origin != other.origin || name != other.name
         ) return false
 

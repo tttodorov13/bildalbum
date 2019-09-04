@@ -2,7 +2,6 @@ package blog.photo.buildalbum
 
 import android.content.Context
 import android.content.Intent
-import android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION
 import android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -32,7 +31,6 @@ import kotlinx.android.synthetic.main.content_main.*
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-import java.lang.System.nanoTime
 
 /**
  * Class to manage the main screen.
@@ -41,14 +39,13 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     JsonData.OnDataAvailable {
 
     private lateinit var image: Image
-    private lateinit var downloadMessage: String
 
     /**
      * A companion object to declare variables for displaying imagesNames
      */
     companion object {
         private const val tag = "MainActivity"
-        private const val REQUEST_TAKE_PHOTO = 1
+        private const val REQUEST_TAKE_PHOTO = 100
         var frames = ArrayList<Image>()
         var images = ArrayList<Image>()
         lateinit var file: File
@@ -68,9 +65,6 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
         girdViewImages.adapter = imagesAdapter
 
         // TODO Fix app crash on image download when No Internet
-        if (!::downloadMessage.isInitialized) {
-            downloadMessage = getString(download_images_ended)
-        }
         // Get images to display
         if (getImages() == 0) {
             downloadImagesFromFlickr()
@@ -79,7 +73,6 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
         // Get frames to add
         if (getFrames() == 0)
             downloadFrames()
-        toast(downloadMessage)
 
         girdViewImages.onItemClickListener =
             AdapterView.OnItemClickListener { _, _, position, _ ->
@@ -88,17 +81,16 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
                 startActivity(intent)
             }
 
-        buttonTakePicture.setOnClickListener {
+        buttonTakePhoto.setOnClickListener {
             val camera = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-            camera.addFlags(FLAG_GRANT_WRITE_URI_PERMISSION)
             camera.also { takePictureIntent ->
                 // Ensure that there's a camera activity to handle the intent
                 takePictureIntent.resolveActivity(packageManager)?.also {
                     // Create the File where the photo should go
-                    val photoFile =
-                        createImage()
+                    val photoFile = createImage()
+
                     // Continue only if the File was successfully created
-                    photoFile.also {
+                    photoFile?.also {
                         val photoURI: Uri = FileProvider.getUriForFile(
                             this,
                             "blog.photo.buildalbum.FileProvider",
@@ -106,25 +98,26 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
                         )
                         takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
 
-                        val resolvedIntentActivities = this.packageManager
+                        // Temporary grant write URI permissions
+                        packageManager
                             .queryIntentActivities(
                                 camera,
                                 PackageManager.MATCH_DEFAULT_ONLY
-                            )
-                        for (resolvedIntentInfo in resolvedIntentActivities) {
-                            val packageName = resolvedIntentInfo.activityInfo.packageName
-                            applicationContext.grantUriPermission(
-                                packageName,
-                                photoURI,
-                                FLAG_GRANT_WRITE_URI_PERMISSION or FLAG_GRANT_READ_URI_PERMISSION
-                            )
-                        }
-
-                        startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO)
+                            ).forEach { resolvedIntentInfo ->
+                                applicationContext.grantUriPermission(
+                                    resolvedIntentInfo.activityInfo.packageName,
+                                    photoURI,
+                                    FLAG_GRANT_WRITE_URI_PERMISSION
+                                )
+                            }
                     }
+
+                    startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO)
                 }
             }
         }
+
+        // TODO: Add Upload Photo functionality
     }
 
     /**
@@ -145,45 +138,25 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     }
 
     /**
-     * OnRequestPermissionsResult Activity
-     *
-     * @param requestCode
-     * @param permissions
-     * @param grantResults
-     */
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray
-    ) {
-        if (requestCode == REQUEST_TAKE_PHOTO) {
-            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED
-                && grantResults[1] == PackageManager.PERMISSION_GRANTED
-            ) {
-                buttonTakePicture.isEnabled = true
-            }
-        }
-    }
-
-    /**
      * Method to create image file on disk
      */
-    private fun createImage(): File {
-        image = Image(this, "img".plus(nanoTime()).plus(".png"), "")
+    private fun createImage(): File? {
+        image = Image(this)
         file = image.file
         if (file.exists())
             file.delete()
 
-        try {
+        return try {
             val out = FileOutputStream(file)
             out.flush()
             out.close()
+            file
         } catch (e: IOException) {
             toast(getString(not_enough_space_on_disk))
             e(tag, e.message.toString())
             e.printStackTrace()
+            null
         }
-        return file
     }
 
     /**
@@ -205,7 +178,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
         }
 
         override fun onPostExecute(result: Bitmap) {
-            if (image.origin.contains(getString(FRAMES_URI))) {
+            if (image.isFrame) {
                 if (image !in frames) {
                     writeImage(result)
                     frames.add(0, image)
@@ -327,7 +300,13 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
      */
     override fun onDataAvailable(data: ArrayList<String>) {
         data.forEach {
-            SavePicture(Image(this, "img".plus(nanoTime()).plus(".png"), it)).execute()
+            SavePicture(
+                Image(
+                    this,
+                    it.contains(getString(FRAMES_URI)),
+                    it
+                )
+            ).execute()
         }
     }
 
@@ -342,7 +321,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
         if (status == OK)
             JsonData(this, source).execute(data)
         if (status == NETWORK_ERROR)
-            downloadMessage = getString(enable_internet)
+            toast(getString(enable_internet))
     }
 
     /**
@@ -351,7 +330,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
      * @param exception
      */
     override fun onError(exception: Exception) {
-        downloadMessage = getString(download_exception).plus(exception)
+        toast(getString(download_exception).plus(exception))
     }
 
     /**
@@ -364,6 +343,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
         if (cursor!!.moveToFirst()) {
             frame = Image(
                 this,
+                true,
                 cursor.getString(
                     cursor.getColumnIndex(
                         BuildAlbumDBOpenHelper.COLUMN_NAME
@@ -379,6 +359,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
             while (cursor.moveToNext()) {
                 frame = Image(
                     this,
+                    true,
                     cursor.getString(
                         cursor.getColumnIndex(
                             BuildAlbumDBOpenHelper.COLUMN_NAME

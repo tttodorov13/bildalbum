@@ -52,8 +52,8 @@ class ImageActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_image)
 
-        imageNew = Image(this, "img".plus(System.nanoTime()).plus(".png"), "")
-        imageOriginal = Image(this, intent.extras!!.get("imageOriginalName").toString(), "")
+        imageNew = Image(this, "img".plus(System.nanoTime()).plus(".png"))
+        imageOriginal = Image(this, intent.extras!!.get("imageOriginalName").toString())
         imageSize = getString(image_size).toInt()
         imageSizeBorder = getString(image_size_border).toInt()
         imageViewImageOriginal.setImageURI(
@@ -78,7 +78,7 @@ class ImageActivity : AppCompatActivity() {
                 imageViewImageNew.isGone = false
                 imageViewImageOriginal.isGone = true
                 if (!imageNewName.isBlank())
-                    imageNew = Image(this, imageNewName, "")
+                    imageNew = Image(this, imageNewName)
                 else
                     imageNewName = imageNew.name
                 SavePicture(imageNew).execute()
@@ -105,10 +105,11 @@ class ImageActivity : AppCompatActivity() {
             var facebookAppFound = false
             val matches = packageManager.queryIntentActivities(intent, 0)
             for (info in matches) {
-                if (info.activityInfo.packageName.toLowerCase().startsWith(
+                if (info.activityInfo.packageName.equals(
                         getString(
                             com_facebook_katana
-                        )
+                        ),
+                        true
                     )
                 ) {
                     intent.setPackage(info.activityInfo.packageName)
@@ -149,7 +150,7 @@ class ImageActivity : AppCompatActivity() {
         super.onRestoreInstanceState(savedInstanceState)
         imageNewName = savedInstanceState.getString("imageNewName")!!
         if (!imageNewName.isBlank()) {
-            imageNew = Image(this, imageNewName, "")
+            imageNew = Image(this, imageNewName)
             imageViewImageNew.setImageURI(imageNew.uri)
             imageViewImageNew.isGone = false
             imageViewImageOriginal.isGone = true
@@ -160,6 +161,7 @@ class ImageActivity : AppCompatActivity() {
      * Method to add a bitmap framesNames
      */
     private fun addFrame(imageOriginal: Image, frame: Image): Bitmap? {
+        // TODO: If size is bigger and shape is not square cut one from the middle before resizing
         var scaledBitmap = Bitmap.createScaledBitmap(
             BitmapFactory.decodeFile(imageOriginal.file.canonicalPath),
             imageSize,
