@@ -39,7 +39,7 @@
                         android:textColor="@color/colorWhite" />
 
                 <ImageView
-                        android:id="@+id/imageViewImageNew"
+                        android:id="@+id/imageViewImage"
                         android:layout_width="@dimen/edited_image_size"
                         android:layout_height="@dimen/edited_image_size"
                         android:layout_gravity="center_horizontal"

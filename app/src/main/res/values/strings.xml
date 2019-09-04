@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">BuildAlbum</string>
+    <string name="app_name">Build Album</string>
     <string name="app_info">Build Your Photo Album</string>
     <string name="app_web">https://buildalbum.photo.blog</string>
     <string name="FRAMES_COUNT">5</string>
@@ -9,7 +9,12 @@
     <string name="FLICKR_API_LANG">en-us</string>
     <string name="PIXABAY_API_URI">https://pixabay.com/api/</string>
     <string name="PIXABAY_API_KEY">13310406-d6e15cf3e2d5c590fa44a6bea</string>
+    <string name="add_image">Add Image</string>
     <string name="take_photo">Take a Photo</string>
+    <string name="choice_from_gallery">Choice from Gallery</string>
+    <string name="download_from_flickr">Download from Flickr</string>
+    <string name="download_from_pixabay">Download from Pixabay</string>
+    <string name="close">Close</string>
     <string name="enable_internet">Enable Internet to get fun images!</string>
     <string name="image_size">400</string>
     <string name="image_size_border">100</string>
@@ -21,4 +26,6 @@
     <string name="download_exception">Download Exception: </string>
     <string name="download_images_ended">Download images ended!</string>
     <string name="not_enough_space_on_disk">Not enough space on disk!</string>
+    <string name="no_image_is_picked_from_gallery">No image is picked from Gallery!</string>
+    <string name="allow_camera_and_gallery_permissions_to_add_image">Allow Camera and Gallery permissions to add image!</string>
 </resources>

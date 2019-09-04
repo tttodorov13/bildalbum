@@ -27,6 +27,7 @@ import java.io.IOException
 /**
  * Class to manage the picture screen.
  */
+// TODO: Add functionality Delete Image
 class ImageActivity : AppCompatActivity() {
 
     private var imageSize = 400
@@ -74,8 +75,8 @@ class ImageActivity : AppCompatActivity() {
                     imageOriginal,
                     MainActivity.frames[position]
                 )
-                imageViewImageNew.setImageBitmap(bitmapNew)
-                imageViewImageNew.isGone = false
+                imageViewImage.setImageBitmap(bitmapNew)
+                imageViewImage.isGone = false
                 imageViewImageOriginal.isGone = true
                 if (!imageNewName.isBlank())
                     imageNew = Image(this, imageNewName)
@@ -151,8 +152,8 @@ class ImageActivity : AppCompatActivity() {
         imageNewName = savedInstanceState.getString("imageNewName")!!
         if (!imageNewName.isBlank()) {
             imageNew = Image(this, imageNewName)
-            imageViewImageNew.setImageURI(imageNew.uri)
-            imageViewImageNew.isGone = false
+            imageViewImage.setImageURI(imageNew.uri)
+            imageViewImage.isGone = false
             imageViewImageOriginal.isGone = true
         }
     }
@@ -189,7 +190,7 @@ class ImageActivity : AppCompatActivity() {
         AsyncTask<String, Void, Bitmap>() {
 
         override fun doInBackground(vararg args: String?): Bitmap? {
-            return convertImageViewToBitmap(imageViewImageNew)
+            return convertImageViewToBitmap(imageViewImage)
         }
 
         override fun onPostExecute(result: Bitmap) {

@@ -1,8 +1,9 @@
 package blog.photo.buildalbum
 
+import android.Manifest.permission.CAMERA
+import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.content.Context
 import android.content.Intent
-import android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -15,8 +16,11 @@ import android.util.Log.e
 import android.widget.AdapterView
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.content.FileProvider
+import androidx.core.graphics.drawable.toBitmap
 import blog.photo.buildalbum.R.string.*
 import blog.photo.buildalbum.model.Image
 import blog.photo.buildalbum.network.DownloadData
@@ -39,13 +43,16 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     JsonData.OnDataAvailable {
 
     private lateinit var image: Image
+    private var grantedPermissions = ArrayList<String>()
 
     /**
      * A companion object to declare variables for displaying imagesNames
      */
     companion object {
         private const val tag = "MainActivity"
-        private const val REQUEST_TAKE_PHOTO = 100
+        private const val PERMISSIONS_REQUEST_CODE = 8888
+        private val REQUESTED_PERMISSIONS =
+            arrayOf(CAMERA, WRITE_EXTERNAL_STORAGE)
         var frames = ArrayList<Image>()
         var images = ArrayList<Image>()
         lateinit var file: File
@@ -61,15 +68,15 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        imagesAdapter = PicturesAdapter(this, images)
-        girdViewImages.adapter = imagesAdapter
+        // Get the app granted permission
+        getGrantedPermissions()
 
         // TODO Fix app crash on image download when No Internet
         // Get images to display
-        if (getImages() == 0) {
-            downloadImagesFromFlickr()
-            downloadImagesFromPixabay()
-        }
+        getImages()
+        imagesAdapter = PicturesAdapter(this, images)
+        girdViewImages.adapter = imagesAdapter
+
         // Get frames to add
         if (getFrames() == 0)
             downloadFrames()
@@ -81,43 +88,37 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
                 startActivity(intent)
             }
 
-        buttonTakePhoto.setOnClickListener {
-            val camera = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-            camera.also { takePictureIntent ->
-                // Ensure that there's a camera activity to handle the intent
-                takePictureIntent.resolveActivity(packageManager)?.also {
-                    // Create the File where the photo should go
-                    val photoFile = createImage()
+        // TODO: Configure UI on Add Image dialog
+        buttonAddImage.setOnClickListener {
+            val builder = AlertDialog.Builder(this)
+            builder.setTitle(getString(add_image))
 
-                    // Continue only if the File was successfully created
-                    photoFile?.also {
-                        val photoURI: Uri = FileProvider.getUriForFile(
-                            this,
-                            "blog.photo.buildalbum.FileProvider",
-                            it
-                        )
-                        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
+            // Add dialog items
+            var items = ArrayList<String>()
+            if (CAMERA in grantedPermissions.distinct())
+                items.add(getString(take_photo))
+            if (WRITE_EXTERNAL_STORAGE in grantedPermissions)
+                items.add(getString(choice_from_gallery))
+            items.add(getString(download_from_flickr))
+            items.add(getString(download_from_pixabay))
+            items.add(getString(close))
 
-                        // Temporary grant write URI permissions
-                        packageManager
-                            .queryIntentActivities(
-                                camera,
-                                PackageManager.MATCH_DEFAULT_ONLY
-                            ).forEach { resolvedIntentInfo ->
-                                applicationContext.grantUriPermission(
-                                    resolvedIntentInfo.activityInfo.packageName,
-                                    photoURI,
-                                    FLAG_GRANT_WRITE_URI_PERMISSION
-                                )
-                            }
-                    }
+            val itemsArray = arrayOfNulls<String>(items.size)
+            items.toArray(itemsArray)
 
-                    startActivityForResult(takePictureIntent, REQUEST_TAKE_PHOTO)
+            builder.setItems(
+                itemsArray
+            ) { dialog, item ->
+                when {
+                    items[item] == getString(take_photo) -> startIntentCamera()
+                    items[item] == getString(choice_from_gallery) -> startIntentGallery()
+                    items[item] == getString(download_from_flickr) -> downloadFromFlickr()
+                    items[item] == getString(download_from_pixabay) -> downloadFromPixabay()
+                    else -> dialog.dismiss()
                 }
             }
+            builder.show()
         }
-
-        // TODO: Add Upload Photo functionality
     }
 
     /**
@@ -128,13 +129,91 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
      * @param data
      */
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == REQUEST_TAKE_PHOTO && (resultCode == RESULT_OK)) {
-            BuildAlbumDBOpenHelper(this, null).addImage(
-                image
-            )
-            images.add(0, image)
-            imagesAdapter.notifyDataSetChanged()
+        if (resultCode == RESULT_OK && requestCode == PERMISSIONS_REQUEST_CODE) {
+            when {
+                data == null -> {
+                    imageViewImage.setImageURI(image.uri)
+                    SavePicture(Image(this, image.name)).execute()
+                }
+                data.data != null -> {
+                    val filePathColumn = arrayOf(MediaStore.Images.Media.DATA)
+                    val cursor = contentResolver.query(
+                        data.data!!,
+                        filePathColumn, null, null, null
+                    )
+                    if (cursor != null) {
+                        cursor.moveToFirst()
+                        imageViewImage.setImageBitmap(
+                            BitmapFactory.decodeFile(
+                                cursor.getString(
+                                    cursor.getColumnIndex(filePathColumn[0])
+                                )
+                            )
+                        )
+                        cursor.close()
+                    }
+                    SavePicture(Image(this)).execute()
+                }
+                else -> toast(getString(no_image_is_picked_from_gallery))
+            }
         }
+    }
+
+    /**
+     * OnRequestPermissionsResult Activity
+     *
+     * @param requestCode
+     * @param permissions
+     * @param grantResults
+     */
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>, grantResults: IntArray
+    ) {
+        when (requestCode) {
+            PERMISSIONS_REQUEST_CODE -> {
+                // If request is cancelled, the result arrays are empty.
+                if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                    // permission was granted, yay! Do the
+                    // contacts-related task you need to do.
+                    grantedPermissions.addAll(permissions)
+                } else {
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                    grantedPermissions.removeAll(permissions)
+                }
+                return
+            }
+
+            // Add other 'when' lines to check for other
+            // permissions this app might request.
+            else -> {
+                // Ignore all other requests.
+            }
+        }
+    }
+
+    /**
+     * Method to check for the required permissions
+     */
+    private fun getGrantedPermissions(): ArrayList<String> {
+        REQUESTED_PERMISSIONS.forEach {
+            // Here, this is the current activity
+            if (ActivityCompat.checkSelfPermission(
+                    this,
+                    it
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                grantedPermissions.add(it)
+            } else {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(it),
+                    PERMISSIONS_REQUEST_CODE
+                )
+            }
+        }
+        return grantedPermissions
     }
 
     /**
@@ -154,9 +233,39 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
         } catch (e: IOException) {
             toast(getString(not_enough_space_on_disk))
             e(tag, e.message.toString())
-            e.printStackTrace()
             null
         }
+    }
+
+    private fun startIntentCamera() {
+        Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { intent ->
+            // Ensure that there's a camera activity to handle the intent
+            intent.resolveActivity(packageManager)?.also {
+                // Create the File where the photo should go
+                val imageFile = createImage()
+
+                // Continue only if the File was successfully created
+                imageFile?.also {
+                    val photoURI: Uri = FileProvider.getUriForFile(
+                        this,
+                        "blog.photo.buildalbum.FileProvider",
+                        it
+                    )
+                    intent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
+                }
+
+                startActivityForResult(intent, PERMISSIONS_REQUEST_CODE)
+            }
+        }
+    }
+
+    private fun startIntentGallery() {
+        startActivityForResult(
+            Intent(
+                Intent.ACTION_PICK,
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+            ), PERMISSIONS_REQUEST_CODE
+        )
     }
 
     /**
@@ -165,16 +274,14 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     inner class SavePicture(private val image: Image) :
         AsyncTask<String, Void, Bitmap>() {
 
-        override fun doInBackground(vararg params: String): Bitmap? {
+        override fun doInBackground(vararg params: String): Bitmap {
             try {
                 val `in` = java.net.URL(image.origin).openStream()
                 return BitmapFactory.decodeStream(`in`)
             } catch (e: Exception) {
-                toast(getString(not_enough_space_on_disk))
                 e(tag, e.message.toString())
-                e.printStackTrace()
             }
-            return convertImageViewToBitmap(imageViewImageNew)
+            return convertImageViewToBitmap(imageViewImage)
         }
 
         override fun onPostExecute(result: Bitmap) {
@@ -210,9 +317,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
                 out.flush()
                 out.close()
             } catch (e: IOException) {
-                toast(getString(not_enough_space_on_disk))
                 e(tag, e.message.toString())
-                e.printStackTrace()
             }
         }
     }
@@ -233,7 +338,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     /**
      * Method to download imagesNames from https://www.flickr.com
      */
-    private fun downloadImagesFromFlickr() {
+    private fun downloadFromFlickr() {
         val uri = createUriFlickr(
             getString(FLICKR_API_URI),
             getString(FLICKR_API_TAGS),
@@ -271,7 +376,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     /**
      * Method to download imagesNames from https://pixabay.com
      */
-    private fun downloadImagesFromPixabay() {
+    private fun downloadFromPixabay() {
         val uri = createUriPixabay(
             getString(PIXABAY_API_URI),
             getString(PIXABAY_API_KEY)
@@ -317,7 +422,12 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
      * @param source
      * @param status
      */
-    override fun onDownloadComplete(data: String, source: DownloadSource, status: DownloadStatus) {
+    // TODO Fix app crash on image download when No Internet
+    override fun onDownloadComplete(
+        data: String,
+        source: DownloadSource,
+        status: DownloadStatus
+    ) {
         if (status == OK)
             JsonData(this, source).execute(data)
         if (status == NETWORK_ERROR)
@@ -329,6 +439,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
      *
      * @param exception
      */
+    // TODO Fix app crash on image download when No Internet
     override fun onError(exception: Exception) {
         toast(getString(download_exception).plus(exception))
     }
@@ -376,7 +487,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
             }
         }
         cursor.close()
-        return images.size
+        return frames.size
     }
 
     /**
@@ -427,8 +538,18 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     /**
      * Method to get a bitmap from ImageView
      */
+    // TODO: Catch image null initialized to view.drawable
     private fun convertImageViewToBitmap(view: ImageView): Bitmap {
-        return (view.drawable as BitmapDrawable).bitmap
+        var bitmap = (view.drawable as BitmapDrawable).bitmap
+        if (bitmap == null) {
+            bitmap =
+                packageManager.resolveActivity(intent, 0)!!.loadIcon(packageManager).toBitmap(
+                    getString(image_size).toInt().plus(getString(image_size_border).toInt()),
+                    getString(image_size).toInt().plus(getString(image_size_border).toInt()),
+                    Bitmap.Config.ARGB_8888
+                )
+        }
+        return bitmap
     }
 
     /**
