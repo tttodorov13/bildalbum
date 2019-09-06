@@ -448,45 +448,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
      * Method to get imagesNames paths from database
      */
     private fun getFrames(): Int {
-        val cursor = BuildAlbumDBOpenHelper(this, null).getAllFrames()
-        var frame: Image
-
-        if (cursor!!.moveToFirst()) {
-            frame = Image(
-                this,
-                true,
-                cursor.getString(
-                    cursor.getColumnIndex(
-                        BuildAlbumDBOpenHelper.COLUMN_NAME
-                    )
-                ), cursor.getString(
-                    cursor.getColumnIndex(
-                        BuildAlbumDBOpenHelper.COLUMN_ORIGIN
-                    )
-                )
-            )
-            if (frame !in frames)
-                frames.add(frame)
-            while (cursor.moveToNext()) {
-                frame = Image(
-                    this,
-                    true,
-                    cursor.getString(
-                        cursor.getColumnIndex(
-                            BuildAlbumDBOpenHelper.COLUMN_NAME
-                        )
-                    ),
-                    cursor.getString(
-                        cursor.getColumnIndex(
-                            BuildAlbumDBOpenHelper.COLUMN_ORIGIN
-                        )
-                    )
-                )
-                if (frame !in frames)
-                    frames.add(frame)
-            }
-        }
-        cursor.close()
+        frames.addAll(BuildAlbumDBOpenHelper(this, null).getAllFrames())
         return frames.size
     }
 
@@ -496,42 +458,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
      * @return paths of stored imagesNames
      */
     private fun getImages(): Int {
-        val cursor = BuildAlbumDBOpenHelper(this, null).getAllImagesReverse()
-        var image: Image
-
-        if (cursor!!.moveToFirst()) {
-            image = Image(
-                this,
-                cursor.getString(
-                    cursor.getColumnIndex(
-                        BuildAlbumDBOpenHelper.COLUMN_NAME
-                    )
-                ), cursor.getString(
-                    cursor.getColumnIndex(
-                        BuildAlbumDBOpenHelper.COLUMN_ORIGIN
-                    )
-                )
-            )
-            if (image !in images)
-                images.add(image)
-            while (cursor.moveToNext()) {
-                image = Image(
-                    this,
-                    cursor.getString(
-                        cursor.getColumnIndex(
-                            BuildAlbumDBOpenHelper.COLUMN_NAME
-                        )
-                    ), cursor.getString(
-                        cursor.getColumnIndex(
-                            BuildAlbumDBOpenHelper.COLUMN_ORIGIN
-                        )
-                    )
-                )
-                if (image !in images)
-                    images.add(image)
-            }
-        }
-        cursor.close()
+        images.addAll(BuildAlbumDBOpenHelper(this, null).getAllImagesReverse())
         return images.size
     }
 

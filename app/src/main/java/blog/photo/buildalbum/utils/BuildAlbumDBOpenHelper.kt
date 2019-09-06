@@ -2,7 +2,6 @@ package blog.photo.buildalbum.utils
 
 import android.content.ContentValues
 import android.content.Context
-import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import blog.photo.buildalbum.model.Image
@@ -14,6 +13,7 @@ class BuildAlbumDBOpenHelper(
     context, DATABASE_NAME,
     factory, DATABASE_VERSION
 ) {
+    private val mContext = context
 
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL("CREATE TABLE $TABLE_FRAMES ($COLUMN_ID INTEGER PRIMARY KEY, $COLUMN_NAME TEXT,$COLUMN_ORIGIN TEXT)")
@@ -45,14 +45,91 @@ class BuildAlbumDBOpenHelper(
         db.close()
     }
 
-    fun getAllFrames(): Cursor? {
+    fun getAllFrames(): ArrayList<Image> {
+        var frames = ArrayList<Image>()
         val db = this.readableDatabase
-        return db.rawQuery("SELECT * FROM $TABLE_FRAMES ORDER BY $COLUMN_ID ASC", null)
+        val cursor = db.rawQuery("SELECT * FROM $TABLE_FRAMES ORDER BY $COLUMN_ID ASC", null)
+
+        if (cursor!!.moveToFirst()) {
+            frames.add(
+                Image(
+                    mContext,
+                    true,
+                    cursor.getString(
+                        cursor.getColumnIndex(
+                            COLUMN_NAME
+                        )
+                    ), cursor.getString(
+                        cursor.getColumnIndex(
+                            COLUMN_ORIGIN
+                        )
+                    )
+                )
+            )
+        }
+        while (cursor.moveToNext()) {
+            frames.add(
+                Image(
+                    mContext,
+                    true,
+                    cursor.getString(
+                        cursor.getColumnIndex(
+                            COLUMN_NAME
+                        )
+                    ),
+                    cursor.getString(
+                        cursor.getColumnIndex(
+                            COLUMN_ORIGIN
+                        )
+                    )
+                )
+            )
+        }
+        cursor.close()
+
+        return frames
     }
 
-    fun getAllImagesReverse(): Cursor? {
+    fun getAllImagesReverse(): ArrayList<Image> {
+        var images = ArrayList<Image>()
         val db = this.readableDatabase
-        return db.rawQuery("SELECT * FROM $TABLE_IMAGES ORDER BY $COLUMN_ID DESC", null)
+        val cursor = db.rawQuery("SELECT * FROM $TABLE_IMAGES ORDER BY $COLUMN_ID DESC", null)
+
+        if (cursor!!.moveToFirst()) {
+            images.add(
+                Image(
+                    mContext,
+                    cursor.getString(
+                        cursor.getColumnIndex(
+                            BuildAlbumDBOpenHelper.COLUMN_NAME
+                        )
+                    ), cursor.getString(
+                        cursor.getColumnIndex(
+                            BuildAlbumDBOpenHelper.COLUMN_ORIGIN
+                        )
+                    )
+                )
+            )
+            while (cursor.moveToNext()) {
+                images.add(
+                    Image(
+                        mContext,
+                        cursor.getString(
+                            cursor.getColumnIndex(
+                                BuildAlbumDBOpenHelper.COLUMN_NAME
+                            )
+                        ), cursor.getString(
+                            cursor.getColumnIndex(
+                                BuildAlbumDBOpenHelper.COLUMN_ORIGIN
+                            )
+                        )
+                    )
+                )
+            }
+        }
+        cursor.close()
+
+        return images
     }
 
     companion object {
