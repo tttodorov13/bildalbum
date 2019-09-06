@@ -78,7 +78,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
         girdViewImages.adapter = imagesAdapter
 
         // Get frames to add
-        if (getFrames() == 0)
+        if (frames.size == 0 && getFrames() == 0)
             downloadFrames()
 
         girdViewImages.onItemClickListener =
