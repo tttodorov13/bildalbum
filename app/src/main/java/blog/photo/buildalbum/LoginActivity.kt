@@ -31,8 +31,7 @@ class LoginActivity : AppCompatActivity() {
      * @param savedInstanceState
      */
     private fun startActivity() {
-        val intent = Intent(applicationContext, MainActivity::class.java)
-        startActivity(intent)
+        startActivity(Intent(applicationContext, MainActivity::class.java))
         finish()
     }
 }
