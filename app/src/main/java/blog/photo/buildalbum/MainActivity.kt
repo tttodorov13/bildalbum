@@ -55,7 +55,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
             arrayOf(CAMERA, WRITE_EXTERNAL_STORAGE)
         var frames = ArrayList<Image>()
         var images = ArrayList<Image>()
-        lateinit var file: File
+        private lateinit var file: File
         lateinit var imagesAdapter: PicturesAdapter
     }
 
@@ -73,7 +73,8 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
 
         // TODO Fix app crash on image download when No Internet
         // Get images to display
-        getImages()
+        if (images.size == 0)
+            getImages()
         imagesAdapter = PicturesAdapter(this, images)
         girdViewImages.adapter = imagesAdapter
 
@@ -93,7 +94,6 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
             val builder = AlertDialog.Builder(this)
             builder.setTitle(getString(add_image))
 
-            // Add dialog items
             var items = ArrayList<String>()
             if (CAMERA in grantedPermissions.distinct())
                 items.add(getString(take_photo))
@@ -132,7 +132,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
         if (resultCode == RESULT_OK && requestCode == PERMISSIONS_REQUEST_CODE) {
             when {
                 data == null -> {
-                    imageViewImage.setImageURI(image.uri)
+                    imageView.setImageURI(image.uri)
                     SavePicture(Image(this, image.name)).execute()
                 }
                 data.data != null -> {
@@ -143,7 +143,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
                     )
                     if (cursor != null) {
                         cursor.moveToFirst()
-                        imageViewImage.setImageBitmap(
+                        imageView.setImageBitmap(
                             BitmapFactory.decodeFile(
                                 cursor.getString(
                                     cursor.getColumnIndex(filePathColumn[0])
@@ -281,7 +281,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
             } catch (e: Exception) {
                 e(tag, e.message.toString())
             }
-            return convertImageViewToBitmap(imageViewImage)
+            return convertImageViewToBitmap(imageView)
         }
 
         override fun onPostExecute(result: Bitmap) {
