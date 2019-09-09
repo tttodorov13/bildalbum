@@ -86,6 +86,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
             AdapterView.OnItemClickListener { _, _, position, _ ->
                 val intent = Intent(this, ImageActivity::class.java)
                 intent.putExtra("imageOriginalName", images[position].name)
+                intent.putExtra("imageOriginalOrigin", images[position].origin)
                 startActivity(intent)
             }
 

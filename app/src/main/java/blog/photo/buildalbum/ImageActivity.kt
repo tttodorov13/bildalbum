@@ -52,7 +52,11 @@ class ImageActivity : AppCompatActivity() {
         setContentView(R.layout.activity_image)
 
         imageNew = Image(this, "img".plus(System.nanoTime()).plus(".png"))
-        imageOriginal = Image(this, intent.extras!!.get("imageOriginalName").toString())
+        imageOriginal = Image(
+            this,
+            intent.extras!!.get("imageOriginalName").toString(),
+            intent.extras!!.get("imageOriginalOrigin").toString()
+        )
         imageViewImageOriginal.setImageURI(
             imageOriginal.uri
         )
@@ -129,22 +133,21 @@ class ImageActivity : AppCompatActivity() {
 
         buttonDelete.setOnClickListener {
             if (imageViewImageOriginal.isGone) {
-                images.remove(imageNew)
-                imagesAdapter.notifyDataSetChanged()
                 BuildAlbumDBOpenHelper(applicationContext, null).deleteImage(
                     imageNew
                 )
                 if (imageNew.file.exists())
                     imageNew.file.delete()
+                images.remove(imageNew)
             } else {
-                images.remove(imageOriginal)
-                imagesAdapter.notifyDataSetChanged()
                 BuildAlbumDBOpenHelper(applicationContext, null).deleteImage(
                     imageOriginal
                 )
                 if (imageOriginal.file.exists())
                     imageOriginal.file.delete()
+                images.remove(imageOriginal)
             }
+            imagesAdapter.notifyDataSetChanged()
             toast(getString(image_deleted))
             finish()
         }
