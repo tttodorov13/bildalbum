@@ -28,5 +28,5 @@
     <string name="download_exception">Download Exception: </string>
     <string name="download_images_ended">Download images ended!</string>
     <string name="not_enough_space_on_disk">Not enough space on disk!</string>
-    <string name="no_image_is_picked_from_gallery">No image is picked from Gallery!</string>
+    <string name="no_image_is_captured">No image is captured!</string>
 </resources>

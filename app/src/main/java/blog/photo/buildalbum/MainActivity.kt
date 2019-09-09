@@ -38,7 +38,6 @@ import java.io.IOException
 /**
  * Class to manage the main screen.
  */
-// TODO: Fix Request Permissions for both Take a Photo and Choice from Gallery
 class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     JsonData.OnDataAvailable {
 
@@ -51,7 +50,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     companion object {
         private const val tag = "MainActivity"
         private const val PERMISSIONS_REQUEST_CODE = 8888
-        private val REQUESTED_PERMISSIONS =
+        private val REQUIRED_PERMISSIONS =
             arrayOf(CAMERA, WRITE_EXTERNAL_STORAGE)
         var frames = ArrayList<Image>()
         var images = ArrayList<Image>()
@@ -69,7 +68,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
         setContentView(R.layout.activity_main)
 
         // Get the app granted permission
-        getGrantedPermissions()
+        getPermissions()
 
         // TODO: Fix do not download images when No Internet
         // Get images to display
@@ -155,7 +154,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
                     }
                     SavePicture(Image(this)).execute()
                 }
-                else -> toast(getString(no_image_is_picked_from_gallery))
+                else -> toast(getString(no_image_is_captured))
             }
         }
     }
@@ -183,9 +182,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
                     // functionality that depends on this permission.
                     grantedPermissions.removeAll(permissions)
                 }
-                return
             }
-
             // Add other 'when' lines to check for other
             // permissions this app might request.
             else -> {
@@ -197,24 +194,27 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     /**
      * Method to check for the required permissions
      */
-    private fun getGrantedPermissions(): ArrayList<String> {
-        REQUESTED_PERMISSIONS.forEach {
-            // Here, this is the current activity
+    private fun getPermissions() {
+        var requestedPermissions = ArrayList<String>()
+        REQUIRED_PERMISSIONS.forEach {
             if (ActivityCompat.checkSelfPermission(
                     this,
                     it
                 ) == PackageManager.PERMISSION_GRANTED
-            ) {
+            )
                 grantedPermissions.add(it)
-            } else {
-                ActivityCompat.requestPermissions(
-                    this,
-                    arrayOf(it),
-                    PERMISSIONS_REQUEST_CODE
-                )
-            }
+            else
+                requestedPermissions.add(it)
         }
-        return grantedPermissions
+        if (!requestedPermissions.isEmpty()) {
+            val requestedPermissionsArray = arrayOfNulls<String>(requestedPermissions.size)
+            requestedPermissions.toArray(requestedPermissionsArray)
+            ActivityCompat.requestPermissions(
+                this,
+                requestedPermissionsArray,
+                PERMISSIONS_REQUEST_CODE
+            )
+        }
     }
 
     /**
@@ -333,6 +333,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     /**
      * Method to download framesNames
      */
+    // TODO: Make frame list unlimited
     private fun downloadFrames() {
         for (i in 1..getString(FRAMES_COUNT).toInt()) {
             val frame = "frame$i.png"
