@@ -75,8 +75,8 @@ class ImageActivity : AppCompatActivity() {
                     imageOriginal,
                     MainActivity.frames[position]
                 )
-                imageViewImage.setImageBitmap(bitmapNew)
-                imageViewImage.isGone = false
+                imageView.setImageBitmap(bitmapNew)
+                imageView.isGone = false
                 imageViewImageOriginal.isGone = true
                 if (!imageNewName.isBlank())
                     imageNew = Image(this, imageNewName)
@@ -152,8 +152,8 @@ class ImageActivity : AppCompatActivity() {
         imageNewName = savedInstanceState.getString("imageNewName")!!
         if (!imageNewName.isBlank()) {
             imageNew = Image(this, imageNewName)
-            imageViewImage.setImageURI(imageNew.uri)
-            imageViewImage.isGone = false
+            imageView.setImageURI(imageNew.uri)
+            imageView.isGone = false
             imageViewImageOriginal.isGone = true
         }
     }
@@ -190,7 +190,7 @@ class ImageActivity : AppCompatActivity() {
         AsyncTask<String, Void, Bitmap>() {
 
         override fun doInBackground(vararg args: String?): Bitmap? {
-            return convertImageViewToBitmap(imageViewImage)
+            return convertImageViewToBitmap(imageView)
         }
 
         override fun onPostExecute(result: Bitmap) {

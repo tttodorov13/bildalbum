@@ -20,7 +20,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.FileProvider
-import androidx.core.graphics.drawable.toBitmap
 import blog.photo.buildalbum.R.string.*
 import blog.photo.buildalbum.model.Image
 import blog.photo.buildalbum.network.DownloadData
@@ -465,18 +464,8 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     /**
      * Method to get a bitmap from ImageView
      */
-    // TODO: Catch image null initialized to view.drawable
-    private fun convertImageViewToBitmap(view: ImageView): Bitmap {
-        var bitmap = (view.drawable as BitmapDrawable).bitmap
-        if (bitmap == null) {
-            bitmap =
-                packageManager.resolveActivity(intent, 0)!!.loadIcon(packageManager).toBitmap(
-                    getString(image_size).toInt().plus(getString(image_size_border).toInt()),
-                    getString(image_size).toInt().plus(getString(image_size_border).toInt()),
-                    Bitmap.Config.ARGB_8888
-                )
-        }
-        return bitmap
+    fun convertImageViewToBitmap(view: ImageView): Bitmap {
+        return (view.drawable as BitmapDrawable).bitmap
     }
 
     /**
