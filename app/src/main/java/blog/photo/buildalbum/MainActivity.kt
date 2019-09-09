@@ -38,6 +38,7 @@ import java.io.IOException
 /**
  * Class to manage the main screen.
  */
+// TODO: Fix Take a Photo and Choice from Gallery on API =<22 when No Internet
 class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     JsonData.OnDataAvailable {
 
@@ -236,6 +237,9 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
         }
     }
 
+    /**
+     * Method to Take a Photo with Camera app
+     */
     private fun startIntentCamera() {
         Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { intent ->
             // Ensure that there's a camera activity to handle the intent
@@ -258,6 +262,9 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
         }
     }
 
+    /**
+     * Method to Catch Image from Gallery
+     */
     private fun startIntentGallery() {
         startActivityForResult(
             Intent(
@@ -270,6 +277,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     /**
      * Helper class for creating new image
      */
+    // TODO: Case when no Internet
     inner class SavePicture(private val image: Image) :
         AsyncTask<String, Void, Bitmap>() {
 
@@ -400,7 +408,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     /**
      * Method to download imagesNames
      *
-     * @param data - imagesNames' URIs
+     * @param data - images' URIs
      */
     override fun onDataAvailable(data: ArrayList<String>) {
         data.forEach {
@@ -410,7 +418,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
                     it.contains(getString(FRAMES_URI)),
                     it
                 )
-            ).execute()
+            ).execute(it)
         }
     }
 
