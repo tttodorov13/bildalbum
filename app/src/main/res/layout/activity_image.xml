@@ -69,6 +69,19 @@
                         android:stretchMode="spacingWidthUniform"
                         android:verticalSpacing="20dp" />
 
+                <Button
+                        android:id="@+id/buttonDelete"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_margin="@dimen/inner_margin"
+                        android:background="@color/colorPrimary"
+                        android:gravity="center"
+                        android:paddingTop="12dp"
+                        android:paddingBottom="12dp"
+                        android:text="@string/delete"
+                        android:textColor="@color/colorWhite" />
+
             </LinearLayout>
 
         </ScrollView>

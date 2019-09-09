@@ -23,7 +23,7 @@ class BuildAlbumDBOpenHelper(
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         db.execSQL("DROP TABLE IF EXISTS $TABLE_FRAMES")
         onCreate(db)
-        db.execSQL("DROP TABLE IF EXISTS $TABLE_IMAGES")
+        writableDatabase.execSQL("DROP TABLE IF EXISTS $TABLE_IMAGES")
         onCreate(db)
     }
 
@@ -31,24 +31,27 @@ class BuildAlbumDBOpenHelper(
         val values = ContentValues()
         values.put(COLUMN_NAME, frame.name)
         values.put(COLUMN_ORIGIN, frame.origin)
-        val db = this.writableDatabase
-        db.insert(TABLE_FRAMES, null, values)
-        db.close()
+        writableDatabase.insert(TABLE_FRAMES, null, values)
+        writableDatabase.close()
     }
 
     fun addImage(image: Image) {
         val values = ContentValues()
         values.put(COLUMN_NAME, image.name)
         values.put(COLUMN_ORIGIN, image.origin)
-        val db = this.writableDatabase
-        db.insert(TABLE_IMAGES, null, values)
-        db.close()
+        this.writableDatabase
+        writableDatabase.insert(TABLE_IMAGES, null, values)
+        writableDatabase.close()
+    }
+
+    fun deleteImage(image: Image) {
+        writableDatabase.delete(TABLE_IMAGES, "$COLUMN_NAME=?", arrayOf(image.name))
+        writableDatabase.close()
     }
 
     fun getAllFrames(): ArrayList<Image> {
         var frames = ArrayList<Image>()
-        val db = this.readableDatabase
-        val cursor = db.rawQuery("SELECT * FROM $TABLE_FRAMES ORDER BY $COLUMN_ID ASC", null)
+        val cursor = readableDatabase.rawQuery("SELECT * FROM $TABLE_FRAMES ORDER BY $COLUMN_ID ASC", null)
 
         if (cursor!!.moveToFirst()) {
             frames.add(
@@ -92,8 +95,7 @@ class BuildAlbumDBOpenHelper(
 
     fun getAllImagesReverse(): ArrayList<Image> {
         var images = ArrayList<Image>()
-        val db = this.readableDatabase
-        val cursor = db.rawQuery("SELECT * FROM $TABLE_IMAGES ORDER BY $COLUMN_ID DESC", null)
+        val cursor = readableDatabase.rawQuery("SELECT * FROM $TABLE_IMAGES ORDER BY $COLUMN_ID DESC", null)
 
         if (cursor!!.moveToFirst()) {
             images.add(

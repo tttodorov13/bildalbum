@@ -16,6 +16,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isGone
 import blog.photo.buildalbum.MainActivity.Companion.images
+import blog.photo.buildalbum.MainActivity.Companion.imagesAdapter
 import blog.photo.buildalbum.R.string.*
 import blog.photo.buildalbum.model.Image
 import blog.photo.buildalbum.utils.BuildAlbumDBOpenHelper
@@ -27,11 +28,8 @@ import java.io.IOException
 /**
  * Class to manage the picture screen.
  */
-// TODO: Add functionality Delete Image
 class ImageActivity : AppCompatActivity() {
 
-    private var imageSize = 400
-    private var imageSizeBorder = 100
     private var imageNewName: String = ""
     private lateinit var imageNew: Image
     private lateinit var imageOriginal: Image
@@ -55,8 +53,6 @@ class ImageActivity : AppCompatActivity() {
 
         imageNew = Image(this, "img".plus(System.nanoTime()).plus(".png"))
         imageOriginal = Image(this, intent.extras!!.get("imageOriginalName").toString())
-        imageSize = getString(image_size).toInt()
-        imageSizeBorder = getString(image_size_border).toInt()
         imageViewImageOriginal.setImageURI(
             imageOriginal.uri
         )
@@ -130,6 +126,28 @@ class ImageActivity : AppCompatActivity() {
 
             startActivity(intent)
         }
+
+        buttonDelete.setOnClickListener {
+            if (imageViewImageOriginal.isGone) {
+                images.remove(imageNew)
+                imagesAdapter.notifyDataSetChanged()
+                BuildAlbumDBOpenHelper(applicationContext, null).deleteImage(
+                    imageNew
+                )
+                if (imageNew.file.exists())
+                    imageNew.file.delete()
+            } else {
+                images.remove(imageOriginal)
+                imagesAdapter.notifyDataSetChanged()
+                BuildAlbumDBOpenHelper(applicationContext, null).deleteImage(
+                    imageOriginal
+                )
+                if (imageOriginal.file.exists())
+                    imageOriginal.file.delete()
+            }
+            toast(getString(image_deleted))
+            finish()
+        }
     }
 
     /**
@@ -165,10 +183,10 @@ class ImageActivity : AppCompatActivity() {
         // TODO: If size is bigger and shape is not square cut one from the middle before resizing
         var scaledBitmap = Bitmap.createScaledBitmap(
             BitmapFactory.decodeFile(imageOriginal.file.canonicalPath),
-            imageSize,
-            imageSize,
+            getString(image_size).toInt(),
+            getString(image_size).toInt(),
             false
-        );
+        )
         val imageNewBitmap = BitmapFactory.decodeFile(frame.file.canonicalPath).copy(
             Bitmap.Config.ARGB_8888,
             true
@@ -176,8 +194,8 @@ class ImageActivity : AppCompatActivity() {
         val canvas = Canvas(imageNewBitmap)
         canvas.drawBitmap(
             scaledBitmap,
-            imageSizeBorder.toFloat(),
-            imageSizeBorder.toFloat(),
+            getString(image_size_border).toFloat(),
+            getString(image_size_border).toFloat(),
             null
         )
         return imageNewBitmap

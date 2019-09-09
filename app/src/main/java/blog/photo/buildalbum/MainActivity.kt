@@ -38,7 +38,7 @@ import java.io.IOException
 /**
  * Class to manage the main screen.
  */
-// TODO: Fix Take a Photo and Choice from Gallery on API =<22 when No Internet
+// TODO: Fix Request Permissions for both Take a Photo and Choice from Gallery
 class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     JsonData.OnDataAvailable {
 
@@ -71,13 +71,14 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
         // Get the app granted permission
         getGrantedPermissions()
 
-        // TODO Fix app crash on image download when No Internet
+        // TODO: Fix do not download images when No Internet
         // Get images to display
         if (images.size == 0)
             getImages()
         imagesAdapter = PicturesAdapter(this, images)
         girdViewImages.adapter = imagesAdapter
 
+        // TODO: Fix do not download frames when No Internet
         // Get frames to add
         if (frames.size == 0 && getFrames() == 0)
             downloadFrames()
@@ -95,7 +96,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
             builder.setTitle(getString(add_image))
 
             var items = ArrayList<String>()
-            if (CAMERA in grantedPermissions.distinct())
+            if (CAMERA in grantedPermissions)
                 items.add(getString(take_photo))
             if (WRITE_EXTERNAL_STORAGE in grantedPermissions)
                 items.add(getString(choice_from_gallery))
@@ -472,6 +473,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     /**
      * Method to get a bitmap from ImageView
      */
+    // TODO: Fix ClassCastException: android.graphics.drawable.AdaptiveIconDrawable cannot be cast to android.graphics.drawable.BitmapDrawable
     fun convertImageViewToBitmap(view: ImageView): Bitmap {
         return (view.drawable as BitmapDrawable).bitmap
     }
