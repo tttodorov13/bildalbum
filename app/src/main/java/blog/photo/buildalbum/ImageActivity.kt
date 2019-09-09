@@ -39,6 +39,8 @@ class ImageActivity : AppCompatActivity() {
      */
     companion object {
         private const val tag = "ImageActivity"
+        private const val IMAGE_SIZE = 400
+        private const val IMAGE_SIZE_BORDER = 100F
         private lateinit var framesAdapter: PicturesAdapter
     }
 
@@ -182,25 +184,56 @@ class ImageActivity : AppCompatActivity() {
     /**
      * Method to add a bitmap framesNames
      */
-    private fun addFrame(imageOriginal: Image, frame: Image): Bitmap? {
-        // TODO: If size is bigger and shape is not square cut one from the middle before resizing
-        var scaledBitmap = Bitmap.createScaledBitmap(
-            BitmapFactory.decodeFile(imageOriginal.file.canonicalPath),
-            getString(image_size).toInt(),
-            getString(image_size).toInt(),
-            false
-        )
+    private fun addFrame(image: Image, frame: Image): Bitmap? {
+        val imageBitmap = BitmapFactory.decodeFile(image.file.canonicalPath)
+        var editedBitmap: Bitmap =
+            // Check if the original image is too small to cut a square from it
+            if (IMAGE_SIZE >= imageBitmap.width || IMAGE_SIZE >= imageBitmap.height)
+                Bitmap.createScaledBitmap(
+                    imageBitmap,
+                    IMAGE_SIZE,
+                    IMAGE_SIZE,
+                    false
+                )
+            // Check if the original image is large enough to cut a square from it
+            else {
+                val cutBitmap =
+                    if (imageBitmap.width >= imageBitmap.height) Bitmap.createBitmap(
+                        imageBitmap,
+                        imageBitmap.width / 2 - imageBitmap.height / 2,
+                        0,
+                        imageBitmap.height,
+                        imageBitmap.height
+                    )
+                    else Bitmap.createBitmap(
+                        imageBitmap,
+                        0,
+                        imageBitmap.height / 2 - imageBitmap.width / 2,
+                        imageBitmap.width,
+                        imageBitmap.width
+                    )
+                Bitmap.createScaledBitmap(
+                    cutBitmap,
+                    IMAGE_SIZE,
+                    IMAGE_SIZE,
+                    false
+                )
+            }
+
+        // Get the bitmap frame to be applied
         val imageNewBitmap = BitmapFactory.decodeFile(frame.file.canonicalPath).copy(
             Bitmap.Config.ARGB_8888,
             true
         )
-        val canvas = Canvas(imageNewBitmap)
-        canvas.drawBitmap(
-            scaledBitmap,
-            getString(image_size_border).toFloat(),
-            getString(image_size_border).toFloat(),
+
+        // Add the scaled image onto the frame
+        Canvas(imageNewBitmap).drawBitmap(
+            editedBitmap,
+            IMAGE_SIZE_BORDER,
+            IMAGE_SIZE_BORDER,
             null
         )
+
         return imageNewBitmap
     }
 

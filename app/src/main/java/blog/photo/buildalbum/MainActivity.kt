@@ -70,7 +70,6 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
         // Get the app granted permission
         getPermissions()
 
-        // TODO: Fix do not download images when No Internet
         // Get images to display
         if (images.size == 0)
             getImages()
@@ -348,6 +347,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     /**
      * Method to download imagesNames from https://www.flickr.com
      */
+    // TODO: Do not download image with same origin twice
     private fun downloadFromFlickr() {
         val uri = createUriFlickr(
             getString(FLICKR_API_URI),
@@ -386,6 +386,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     /**
      * Method to download imagesNames from https://pixabay.com
      */
+    // TODO: Do not download image with same origin twice
     private fun downloadFromPixabay() {
         val uri = createUriPixabay(
             getString(PIXABAY_API_URI),
@@ -432,7 +433,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
      * @param source
      * @param status
      */
-    // TODO Fix app crash on image download when No Internet
+    // TODO: Fix app crash on image download when No Internet
     override fun onDownloadComplete(
         data: String,
         source: DownloadSource,
@@ -449,7 +450,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
      *
      * @param exception
      */
-    // TODO Fix app crash on image download when No Internet
+    // TODO: Fix app crash on image download when No Internet
     override fun onError(exception: Exception) {
         toast(getString(download_exception).plus(exception))
     }
@@ -475,7 +476,8 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     /**
      * Method to get a bitmap from ImageView
      */
-    // TODO: Fix ClassCastException: android.graphics.drawable.AdaptiveIconDrawable cannot be cast to android.graphics.drawable.BitmapDrawable
+    // TODO: Fix ClassCastException : android.graphics.drawable.AdaptiveIconDrawable cannot be cast to android.graphics.drawable.BitmapDrawable
+    // for Android 8+
     fun convertImageViewToBitmap(view: ImageView): Bitmap {
         return (view.drawable as BitmapDrawable).bitmap
     }

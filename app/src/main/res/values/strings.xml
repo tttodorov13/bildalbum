@@ -16,8 +16,6 @@
     <string name="download_from_pixabay">Download from Pixabay</string>
     <string name="close">Close</string>
     <string name="enable_internet">Enable Internet to get fun images!</string>
-    <string name="image_size">400</string>
-    <string name="image_size_border">100</string>
     <string name="share">Share</string>
     <string name="delete">Delete</string>
     <string name="com_facebook_katana">com.facebook.katana</string>
