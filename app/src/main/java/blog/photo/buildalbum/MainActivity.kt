@@ -89,11 +89,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
                 startActivity(intent)
             }
 
-        // TODO: Configure UI on Add Image dialog
         buttonAddImage.setOnClickListener {
-            val builder = AlertDialog.Builder(this)
-            builder.setTitle(getString(add_image))
-
             var items = ArrayList<String>()
             if (CAMERA in grantedPermissions)
                 items.add(getString(take_photo))
@@ -106,7 +102,8 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
             val itemsArray = arrayOfNulls<String>(items.size)
             items.toArray(itemsArray)
 
-            builder.setItems(
+            val builder = AlertDialog.Builder(this, R.style.BuildAlbumAlertDialog)
+            builder.setTitle(getString(add_image)).setItems(
                 itemsArray
             ) { dialog, item ->
                 when {
