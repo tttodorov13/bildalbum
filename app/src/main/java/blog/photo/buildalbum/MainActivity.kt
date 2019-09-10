@@ -15,10 +15,12 @@ import android.provider.MediaStore
 import android.util.Log.e
 import android.widget.AdapterView
 import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import blog.photo.buildalbum.R.string.*
 import blog.photo.buildalbum.model.Image
@@ -435,7 +437,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
                     it.contains(Uri.parse(getString(FRAMES_URI)).authority.toString()),
                     it
                 )
-            ).execute(it)
+            ).execute()
         }
     }
 
@@ -480,6 +482,16 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
      * Extension method to show toast message
      */
     private fun Context.toast(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+        val toastMessage =
+            Toast.makeText(this, message, Toast.LENGTH_SHORT)
+        val toastView = toastMessage.view
+        toastMessage.view.setBackgroundResource(R.drawable.buildalbum_toast)
+        (toastView.findViewById(android.R.id.message) as TextView).setTextColor(
+            ContextCompat.getColor(
+                this,
+                R.color.colorWhite
+            )
+        )
+        toastMessage.show()
     }
 }

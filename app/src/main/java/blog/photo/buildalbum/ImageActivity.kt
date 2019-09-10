@@ -12,8 +12,10 @@ import android.os.Bundle
 import android.util.Log.e
 import android.widget.AdapterView
 import android.widget.ImageView
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.isGone
 import blog.photo.buildalbum.MainActivity.Companion.images
 import blog.photo.buildalbum.MainActivity.Companion.imagesAdapter
@@ -287,6 +289,16 @@ class ImageActivity : AppCompatActivity() {
      * Extension function to show toast message
      */
     fun Context.toast(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+        val toastMessage =
+            Toast.makeText(this, message, Toast.LENGTH_SHORT)
+        val toastView = toastMessage.view
+        toastMessage.view.setBackgroundResource(R.drawable.buildalbum_toast)
+        (toastView.findViewById(android.R.id.message) as TextView).setTextColor(
+            ContextCompat.getColor(
+                this,
+                R.color.colorWhite
+            )
+        )
+        toastMessage.show()
     }
 }
