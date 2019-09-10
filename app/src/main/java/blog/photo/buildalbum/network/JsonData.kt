@@ -2,6 +2,7 @@ package blog.photo.buildalbum.network
 
 import android.os.AsyncTask
 import android.util.Log
+import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
 
@@ -28,16 +29,24 @@ class JsonData(private val listener: OnDataAvailable, private val source: Downlo
      */
     override fun doInBackground(vararg params: String?): ArrayList<String> {
         val imagesUris = ArrayList<String>()
-        var jsonData: JSONObject
+        val jsonData: JSONObject
+        val itemsArray: JSONArray
 
         try {
+            jsonData = JSONObject(params[0].toString())
             when (source) {
                 DownloadSource.FRAMES -> {
-                    imagesUris.add(params[0].toString())
+                    itemsArray = jsonData.getJSONArray("items")
+                    for (i in 0 until itemsArray.length()) {
+                        imagesUris.add(
+                            itemsArray.getJSONObject(i).getJSONObject("media").getString(
+                                "m"
+                            )
+                        )
+                    }
                 }
                 DownloadSource.FLICKR -> {
-                    jsonData = JSONObject(params[0].toString())
-                    val itemsArray = jsonData.getJSONArray("items")
+                    itemsArray = jsonData.getJSONArray("items")
                     for (i in 0 until itemsArray.length()) {
                         imagesUris.add(
                             itemsArray.getJSONObject(i).getJSONObject("media").getString(
@@ -47,8 +56,7 @@ class JsonData(private val listener: OnDataAvailable, private val source: Downlo
                     }
                 }
                 DownloadSource.PIXABAY -> {
-                    jsonData = JSONObject(params[0].toString())
-                    val itemsArray = jsonData.getJSONArray("hits")
+                    itemsArray = jsonData.getJSONArray("hits")
                     for (i in 0 until itemsArray.length()) {
                         imagesUris.add(itemsArray.getJSONObject(i).getString("previewURL"))
                     }

@@ -50,10 +50,7 @@ class DownloadData(private val listener: OnDownloadComplete, private val source:
         var uri = StringBuilder()
         try {
             status = DownloadStatus.OK
-            if (source == DownloadSource.FRAMES)
-                uri.append(URL(params[0]).toString())
-            else
-                uri.append(URL(params[0]).readText())
+            uri.append(URL(params[0]).readText())
         } catch (e: Exception) {
             val errorMessage = when (e) {
                 is MalformedURLException -> {

@@ -279,6 +279,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     inner class SavePicture(private val image: Image) :
         AsyncTask<String, Void, Bitmap>() {
 
+        // TODO: Fix error on Android 8+ when URI not found
         override fun doInBackground(vararg params: String): Bitmap {
             try {
                 val `in` = java.net.URL(image.origin).openStream()
@@ -330,15 +331,11 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     /**
      * Method to download framesNames
      */
-    // TODO: Make frame list unlimited
     private fun downloadFrames() {
-        for (i in 1..getString(FRAMES_COUNT).toInt()) {
-            val frame = "frame$i.png"
-            DownloadData(
-                this,
-                DownloadSource.FRAMES
-            ).execute(getString(FRAMES_URI).plus(frame))
-        }
+        DownloadData(
+            this,
+            DownloadSource.FRAMES
+        ).execute(getString(FRAMES_URI))
     }
 
     /**
@@ -407,23 +404,6 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     }
 
     /**
-     * Method to download imagesNames
-     *
-     * @param data - images' URIs
-     */
-    override fun onDataAvailable(data: ArrayList<String>) {
-        data.forEach {
-            SavePicture(
-                Image(
-                    this,
-                    it.contains(getString(FRAMES_URI)),
-                    it
-                )
-            ).execute(it)
-        }
-    }
-
-    /**
      * Method to mark image download completion
      *
      * @param data
@@ -440,6 +420,23 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
             JsonData(this, source).execute(data)
         if (status == NETWORK_ERROR)
             toast(getString(enable_internet))
+    }
+
+    /**
+     * Method to download imagesNames
+     *
+     * @param data - images' URIs
+     */
+    override fun onDataAvailable(data: ArrayList<String>) {
+        data.forEach {
+            SavePicture(
+                Image(
+                    this,
+                    it.contains(Uri.parse(getString(FRAMES_URI)).authority.toString()),
+                    it
+                )
+            ).execute(it)
+        }
     }
 
     /**
