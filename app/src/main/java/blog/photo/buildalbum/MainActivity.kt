@@ -13,6 +13,7 @@ import android.os.AsyncTask
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log.e
+import android.view.LayoutInflater
 import android.widget.AdapterView
 import android.widget.ImageView
 import android.widget.TextView
@@ -128,31 +129,27 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
      * @param data
      */
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (resultCode == RESULT_OK && requestCode == PERMISSIONS_REQUEST_CODE) {
+        if (resultCode == RESULT_OK && requestCode == PERMISSIONS_REQUEST_CODE && data != null) {
             when {
-                data == null -> {
-                    imageView.setImageURI(image.uri)
+                // Image is taken with Camera
+                data.data == null -> {
                     SavePicture(Image(this, image.name)).execute()
                 }
+
+                // Image is taken from Gallery
                 data.data != null -> {
                     val filePathColumn = arrayOf(MediaStore.Images.Media.DATA)
                     val cursor = contentResolver.query(
                         data.data!!,
                         filePathColumn, null, null, null
                     )
-                    if (cursor != null) {
-                        cursor.moveToFirst()
-                        imageView.setImageBitmap(
-                            BitmapFactory.decodeFile(
-                                cursor.getString(
-                                    cursor.getColumnIndex(filePathColumn[0])
-                                )
-                            )
-                        )
-                        cursor.close()
-                    }
-                    SavePicture(Image(this)).execute()
+                    cursor!!.moveToFirst()
+                    val filePath = cursor.getString(cursor.getColumnIndex(filePathColumn[0]))
+                    cursor.close()
+                    SavePicture(Image(this)).execute(filePath)
                 }
+
+                // Image capturing is cancelled
                 else -> toast(getString(no_image_is_captured))
             }
         }
@@ -281,15 +278,28 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     inner class SavePicture(private val image: Image) :
         AsyncTask<String, Void, Bitmap>() {
 
-        // TODO: Fix error on Android 8+ when URI not found
         override fun doInBackground(vararg params: String): Bitmap {
-            try {
-                val `in` = java.net.URL(image.origin).openStream()
-                return BitmapFactory.decodeStream(`in`)
-            } catch (e: Exception) {
-                e(tag, e.message.toString())
+            // Picture is downloaded from Internet
+            if (!image.origin.isBlank())
+                try {
+                    return BitmapFactory.decodeStream(java.net.URL(image.origin).openStream())
+                } catch (e: Exception) {
+                    e(tag, e.message.toString())
+                }
+
+            return when {
+                // Picture is taken with Camera
+                BitmapFactory.decodeFile(image.file.canonicalPath) != null -> BitmapFactory.decodeFile(
+                    image.file.canonicalPath
+                )
+
+                // Picture is taken from Gallery
+                params.size >= 0 -> BitmapFactory.decodeFile(params[0])
+
+                // Default picture is used
+
+                else -> getDefaultImageBitmap()
             }
-            return convertImageViewToBitmap(imageView)
         }
 
         override fun onPostExecute(result: Bitmap) {
@@ -472,10 +482,11 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     /**
      * Method to get a bitmap from ImageView
      */
-    // TODO: Fix ClassCastException : android.graphics.drawable.AdaptiveIconDrawable cannot be cast to android.graphics.drawable.BitmapDrawable
-    // for Android 8+
-    fun convertImageViewToBitmap(view: ImageView): Bitmap {
-        return (view.drawable as BitmapDrawable).bitmap
+    fun getDefaultImageBitmap(): Bitmap {
+        return ((LayoutInflater.from(this).inflate(
+            R.layout.image_layout,
+            null
+        ).findViewById(R.id.picture) as ImageView).drawable as BitmapDrawable).bitmap
     }
 
     /**
