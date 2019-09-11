@@ -130,28 +130,30 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
      * @param data
      */
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (resultCode == RESULT_OK && requestCode == PERMISSIONS_REQUEST_CODE && data != null) {
-            when {
-                // Image is taken with Camera
-                data.data == null -> {
-                    SavePicture(Image(this, image.name)).execute()
-                }
+        if (requestCode == PERMISSIONS_REQUEST_CODE && data != null) {
+            when (resultCode) {
+                RESULT_OK -> when {
+                    // Image is taken with Camera
+                    data.data == null -> {
+                        SavePicture(Image(this, image.name)).execute()
+                    }
 
-                // Image is taken from Gallery
-                data.data != null -> {
-                    val filePathColumn = arrayOf(MediaStore.Images.Media.DATA)
-                    val cursor = contentResolver.query(
-                        data.data!!,
-                        filePathColumn, null, null, null
-                    )
-                    cursor!!.moveToFirst()
-                    val filePath = cursor.getString(cursor.getColumnIndex(filePathColumn[0]))
-                    cursor.close()
-                    SavePicture(Image(this)).execute(filePath)
+                    // Image is taken from Gallery
+                    data.data != null -> {
+                        val filePathColumn = arrayOf(MediaStore.Images.Media.DATA)
+                        val cursor = contentResolver.query(
+                            data.data!!,
+                            filePathColumn, null, null, null
+                        )
+                        cursor!!.moveToFirst()
+                        val filePath = cursor.getString(cursor.getColumnIndex(filePathColumn[0]))
+                        cursor.close()
+                        SavePicture(Image(this)).execute(filePath)
+                    }
                 }
-
-                // Image capturing is cancelled
-                else -> toast(getString(no_image_is_captured))
+                RESULT_CANCELED
+                    // Image capturing is cancelled
+                -> toast(getString(no_image_is_captured))
             }
         }
     }
