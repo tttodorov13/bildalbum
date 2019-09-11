@@ -30,6 +30,7 @@ import java.io.IOException
 /**
  * Class to manage the picture screen.
  */
+// TODO: Make this class Fragment to MainActivity
 class ImageActivity : AppCompatActivity() {
 
     private var imageNewName: String = ""

@@ -23,7 +23,7 @@ class BuildAlbumDBOpenHelper(
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         db.execSQL("DROP TABLE IF EXISTS $TABLE_FRAMES")
         onCreate(db)
-        writableDatabase.execSQL("DROP TABLE IF EXISTS $TABLE_IMAGES")
+        db.execSQL("DROP TABLE IF EXISTS $TABLE_IMAGES")
         onCreate(db)
     }
 
@@ -31,22 +31,24 @@ class BuildAlbumDBOpenHelper(
         val values = ContentValues()
         values.put(COLUMN_NAME, frame.name)
         values.put(COLUMN_ORIGIN, frame.origin)
-        writableDatabase.insert(TABLE_FRAMES, null, values)
-        writableDatabase.close()
+        val db = writableDatabase
+        db.insert(TABLE_FRAMES, null, values)
+        db.close()
     }
 
     fun addImage(image: Image) {
         val values = ContentValues()
         values.put(COLUMN_NAME, image.name)
         values.put(COLUMN_ORIGIN, image.origin)
-        this.writableDatabase
-        writableDatabase.insert(TABLE_IMAGES, null, values)
-        writableDatabase.close()
+        val db = writableDatabase
+        db.insert(TABLE_IMAGES, null, values)
+        db.close()
     }
 
     fun deleteImage(image: Image) {
-        writableDatabase.delete(TABLE_IMAGES, "$COLUMN_NAME=?", arrayOf(image.name))
-        writableDatabase.close()
+        val db = writableDatabase
+        db.delete(TABLE_IMAGES, "$COLUMN_NAME=?", arrayOf(image.name))
+        db.close()
     }
 
     fun getAllFrames(): ArrayList<Image> {
@@ -103,11 +105,11 @@ class BuildAlbumDBOpenHelper(
                     mContext,
                     cursor.getString(
                         cursor.getColumnIndex(
-                            BuildAlbumDBOpenHelper.COLUMN_NAME
+                            COLUMN_NAME
                         )
                     ), cursor.getString(
                         cursor.getColumnIndex(
-                            BuildAlbumDBOpenHelper.COLUMN_ORIGIN
+                            COLUMN_ORIGIN
                         )
                     )
                 )
@@ -118,11 +120,11 @@ class BuildAlbumDBOpenHelper(
                         mContext,
                         cursor.getString(
                             cursor.getColumnIndex(
-                                BuildAlbumDBOpenHelper.COLUMN_NAME
+                                COLUMN_NAME
                             )
                         ), cursor.getString(
                             cursor.getColumnIndex(
-                                BuildAlbumDBOpenHelper.COLUMN_ORIGIN
+                                COLUMN_ORIGIN
                             )
                         )
                     )

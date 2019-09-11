@@ -34,5 +34,5 @@ data class Image(val context: Context, val isFrame: Boolean, val name: String, v
     }
 
     val file = File(context.getExternalFilesDir(Environment.DIRECTORY_PICTURES), name)
-    val uri = Uri.parse(file.canonicalPath)
+    val uri = Uri.parse(file.canonicalPath)!!
 }

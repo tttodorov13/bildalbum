@@ -9,7 +9,7 @@ import android.widget.ImageView
 import blog.photo.buildalbum.R
 import blog.photo.buildalbum.model.Image
 
-class PicturesAdapter(private val mContext: Context, private val images: ArrayList<Image>) :
+class PicturesAdapter(private val context: Context, private val images: ArrayList<Image>) :
     BaseAdapter() {
 
     override fun getCount(): Int {
@@ -29,8 +29,7 @@ class PicturesAdapter(private val mContext: Context, private val images: ArrayLi
         var viewHolder: ViewHolder
 
         if (convertView == null) {
-            val layoutInflater = LayoutInflater.from(mContext)
-            convertView = layoutInflater.inflate(R.layout.image_layout, null)
+            convertView = LayoutInflater.from(context).inflate(R.layout.image_layout, null)
 
             val imageView = convertView.findViewById(R.id.picture) as ImageView
             imageView.setImageURI(images[position].uri)

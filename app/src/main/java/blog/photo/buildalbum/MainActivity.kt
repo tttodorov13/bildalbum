@@ -41,6 +41,7 @@ import java.io.IOException
 /**
  * Class to manage the main screen.
  */
+// TODO: Add check for Internet
 class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     JsonData.OnDataAvailable {
 
@@ -79,7 +80,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
         imagesAdapter = PicturesAdapter(this, images)
         girdViewImages.adapter = imagesAdapter
 
-        // TODO: Fix do not download frames when No Internet
+        // TODO: Do not download frames when No Internet
         // Get frames to add
         if (frames.size == 0 && getFrames() == 0)
             downloadFrames()
@@ -191,7 +192,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
      * Method to check for the required permissions
      */
     private fun getPermissions() {
-        var requestedPermissions = ArrayList<String>()
+        var requestPermissions = ArrayList<String>()
         REQUIRED_PERMISSIONS.forEach {
             if (ActivityCompat.checkSelfPermission(
                     this,
@@ -200,11 +201,11 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
             )
                 grantedPermissions.add(it)
             else
-                requestedPermissions.add(it)
+                requestPermissions.add(it)
         }
-        if (!requestedPermissions.isEmpty()) {
-            val requestedPermissionsArray = arrayOfNulls<String>(requestedPermissions.size)
-            requestedPermissions.toArray(requestedPermissionsArray)
+        if (!requestPermissions.isEmpty()) {
+            val requestedPermissionsArray = arrayOfNulls<String>(requestPermissions.size)
+            requestPermissions.toArray(requestedPermissionsArray)
             ActivityCompat.requestPermissions(
                 this,
                 requestedPermissionsArray,
@@ -263,18 +264,17 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
      * Method to Catch Image from Gallery
      */
     private fun startIntentGallery() {
-        startActivityForResult(
-            Intent(
-                Intent.ACTION_PICK,
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI
-            ), PERMISSIONS_REQUEST_CODE
-        )
+        Intent(
+            Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+        ).also { intent ->
+            startActivityForResult(intent, PERMISSIONS_REQUEST_CODE)
+        }
     }
 
     /**
      * Helper class for creating new image
      */
-    // TODO: Case when no Internet
+    // TODO: Do not download image with same origin twice
     inner class SavePicture(private val image: Image) :
         AsyncTask<String, Void, Bitmap>() {
 
@@ -303,17 +303,19 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
         }
 
         override fun onPostExecute(result: Bitmap) {
+            // Check if the image is frame
             if (image.isFrame) {
                 if (image !in frames) {
                     writeImage(result)
-                    frames.add(0, image)
                     BuildAlbumDBOpenHelper(applicationContext, null).addFrame(
                         image
                     )
+                    frames.add(0, image)
                 }
                 return
             }
 
+            // Check if the image already exists
             if (image !in images) {
                 writeImage(result)
                 BuildAlbumDBOpenHelper(applicationContext, null).addImage(
@@ -324,6 +326,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
             }
         }
 
+        // Write the image into the file system
         private fun writeImage(finalBitmap: Bitmap) {
             val file = image.file
             if (file.exists())
@@ -353,7 +356,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     /**
      * Method to download imagesNames from https://www.flickr.com
      */
-    // TODO: Do not download image with same origin twice
+    // TODO: Case no Internet
     private fun downloadFromFlickr() {
         val uri = createUriFlickr(
             getString(FLICKR_API_URI),
@@ -392,7 +395,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     /**
      * Method to download imagesNames from https://pixabay.com
      */
-    // TODO: Do not download image with same origin twice
+    // TODO: Case no Internet
     private fun downloadFromPixabay() {
         val uri = createUriPixabay(
             getString(PIXABAY_API_URI),
