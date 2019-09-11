@@ -27,7 +27,7 @@ data class Image(val context: Context, val isFrame: Boolean, val name: String, v
         if (other == null ||
             other !is Image ||
             isFrame != other.isFrame ||
-            origin != other.origin || name != other.name
+            (origin != other.origin && name != other.name)
         ) return false
 
         return true

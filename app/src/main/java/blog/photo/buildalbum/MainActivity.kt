@@ -274,7 +274,6 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     /**
      * Helper class for creating new image
      */
-    // TODO: Do not download image with same origin twice
     inner class SavePicture(private val image: Image) :
         AsyncTask<String, Void, Bitmap>() {
 
