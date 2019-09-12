@@ -2,16 +2,15 @@ package blog.photo.buildalbum
 
 import android.content.Intent
 import android.os.Bundle
-import androidx.appcompat.app.AppCompatActivity
 import kotlin.concurrent.thread
 
 /**
  * Class to manage the login screen.
  */
-class LoginActivity : AppCompatActivity() {
+class LoginActivity : BaseActivity() {
 
     /**
-     * OnCreate Activity
+     * OnCreate LoginActivity
      *
      * @param savedInstanceState
      */
@@ -26,9 +25,7 @@ class LoginActivity : AppCompatActivity() {
     }
 
     /**
-     * Method that redirect to the main screen
-     *
-     * @param savedInstanceState
+     * Method to redirect to the main screen
      */
     private fun startActivity() {
         startActivity(Intent(applicationContext, MainActivity::class.java))

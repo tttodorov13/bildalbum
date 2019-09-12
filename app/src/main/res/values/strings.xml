@@ -2,7 +2,6 @@
     <string name="app_name">Build Album</string>
     <string name="app_info">Build Your Photo Album</string>
     <string name="app_web">https://buildalbum.photo.blog</string>
-    <string name="FRAMES_COUNT">5</string>
     <string name="FRAMES_URI">https://drive.google.com/uc?export=view&amp;id=1kituJ8bOZYybBydnECcy31Z7sg1Y2KG7</string>
     <string name="FLICKR_API_URI">https://api.flickr.com/services/feeds/photos_public.gne</string>
     <string name="FLICKR_API_TAGS">android,oreo</string>
@@ -15,7 +14,6 @@
     <string name="download_from_flickr">Download from Flickr</string>
     <string name="download_from_pixabay">Download from Pixabay</string>
     <string name="close">Close</string>
-    <string name="enable_internet">Enable Internet to get images!</string>
     <string name="share">Share</string>
     <string name="com_facebook_katana">com.facebook.katana</string>
     <string name="facebook_sharer">https://www.facebook.com/sharer/sharer.php?u=</string>
@@ -26,4 +24,5 @@
     <string name="download_exception">Download Exception: </string>
     <string name="not_enough_space_on_disk">Not enough space on disk!</string>
     <string name="no_image_is_captured">No image is captured!</string>
+    <string name="enable_internet_to_download_images">Enable Internet to download images!</string>
 </resources>

@@ -17,7 +17,7 @@ enum class DownloadSource {
  * Enum for picture's download statuses.
  */
 enum class DownloadStatus {
-    OK, IDLE, NOT_INITIALIZED, FAILED_OR_EMPTY, NETWORK_ERROR, PERMISSIONS_ERROR, ERROR
+    OK, IDLE, NOT_INITIALIZED, FAILED_OR_EMPTY, PERMISSIONS_ERROR, ERROR
 }
 
 /**
@@ -59,8 +59,6 @@ class DownloadData(private val listener: OnDownloadComplete, private val source:
                 }
                 is IOException -> {
                     status = DownloadStatus.FAILED_OR_EMPTY
-                    if (e.message.toString().startsWith("Unable to resolve host"))
-                        status = DownloadStatus.NETWORK_ERROR
                     "doInBackground: IO Exception reading data: ${e.message}"
                 }
                 is SecurityException -> {

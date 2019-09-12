@@ -1,6 +1,5 @@
 package blog.photo.buildalbum
 
-import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -12,13 +11,7 @@ import android.os.Bundle
 import android.util.Log.e
 import android.widget.AdapterView
 import android.widget.ImageView
-import android.widget.TextView
-import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import androidx.core.view.isGone
-import blog.photo.buildalbum.MainActivity.Companion.images
-import blog.photo.buildalbum.MainActivity.Companion.imagesAdapter
 import blog.photo.buildalbum.R.string.*
 import blog.photo.buildalbum.model.Image
 import blog.photo.buildalbum.utils.BuildAlbumDBOpenHelper
@@ -31,14 +24,14 @@ import java.io.IOException
  * Class to manage the picture screen.
  */
 // TODO: Make this class Fragment to MainActivity
-class ImageActivity : AppCompatActivity() {
+class ImageActivity : BaseActivity() {
 
     private var imageNewName: String = ""
     private lateinit var imageNew: Image
     private lateinit var imageOriginal: Image
 
     /**
-     * A companion object to declare variables for displaying framesNames
+     * A companion object for static variables
      */
     companion object {
         private const val tag = "ImageActivity"
@@ -48,7 +41,7 @@ class ImageActivity : AppCompatActivity() {
     }
 
     /**
-     * OnCreate Activity
+     * OnCreate ImageActivity
      *
      * @param savedInstanceState
      */
@@ -67,18 +60,20 @@ class ImageActivity : AppCompatActivity() {
         )
 
         framesAdapter = PicturesAdapter(
-            this, MainActivity.frames
+            this, frames
         )
+        // TODO: Show gridViewFrames on 1 line
         gridViewFrames.isExpanded = true
         gridViewFrames.adapter = framesAdapter
 
         imageScreenScroll.smoothScrollTo(0, 0)
 
+        // Click listener for add frame
         gridViewFrames.onItemClickListener =
             AdapterView.OnItemClickListener { _, _, position, _ ->
                 val bitmapNew = addFrame(
                     imageOriginal,
-                    MainActivity.frames[position]
+                    frames[position]
                 )
                 imageView.setImageBitmap(bitmapNew)
                 imageView.isGone = false
@@ -136,6 +131,7 @@ class ImageActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+        // Click listener for delete button
         buttonDelete.setOnClickListener {
             if (imageViewImageOriginal.isGone) {
                 BuildAlbumDBOpenHelper(applicationContext, null).deleteImage(
@@ -159,7 +155,7 @@ class ImageActivity : AppCompatActivity() {
     }
 
     /**
-     * OnSaveInstanceState Activity
+     * OnSaveInstanceState ImageActivity
      *
      * @param outState
      */
@@ -169,7 +165,7 @@ class ImageActivity : AppCompatActivity() {
     }
 
     /**
-     * OnRestoreInstanceState Activity
+     * OnRestoreInstanceState ImageActivity
      *
      * @param savedInstanceState
      */
@@ -185,10 +181,12 @@ class ImageActivity : AppCompatActivity() {
     }
 
     /**
-     * Method to add a bitmap framesNames
+     * Method to add a frame
      */
     private fun addFrame(image: Image, frame: Image): Bitmap? {
         val imageBitmap = BitmapFactory.decodeFile(image.file.canonicalPath)
+
+        // Resize image to fit in the frame
         var editedBitmap: Bitmap =
             // Check if the original image is too small to cut a square from it
             if (IMAGE_SIZE >= imageBitmap.width || IMAGE_SIZE >= imageBitmap.height)
@@ -258,10 +256,11 @@ class ImageActivity : AppCompatActivity() {
                     image
                 )
             }
-            MainActivity.imagesAdapter.notifyDataSetChanged();
+            imagesAdapter.notifyDataSetChanged()
             toast(getString(image_saved))
         }
 
+        // Write new image on the file system
         private fun writeImage(finalBitmap: Bitmap) {
             if (image.file.exists())
                 image.file.delete()
@@ -284,22 +283,5 @@ class ImageActivity : AppCompatActivity() {
      */
     private fun convertImageViewToBitmap(view: ImageView): Bitmap {
         return (view.drawable as BitmapDrawable).bitmap
-    }
-
-    /**
-     * Extension function to show toast message
-     */
-    fun Context.toast(message: String) {
-        val toastMessage =
-            Toast.makeText(this, message, Toast.LENGTH_SHORT)
-        val toastView = toastMessage.view
-        toastMessage.view.setBackgroundResource(R.drawable.buildalbum_toast)
-        (toastView.findViewById(android.R.id.message) as TextView).setTextColor(
-            ContextCompat.getColor(
-                this,
-                R.color.colorWhite
-            )
-        )
-        toastMessage.show()
     }
 }

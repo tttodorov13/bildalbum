@@ -2,12 +2,13 @@ package blog.photo.buildalbum
 
 import android.Manifest.permission.CAMERA
 import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
-import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.drawable.BitmapDrawable
+import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
@@ -16,21 +17,18 @@ import android.util.Log.e
 import android.view.LayoutInflater
 import android.widget.AdapterView
 import android.widget.ImageView
-import android.widget.TextView
-import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import androidx.core.view.isGone
 import blog.photo.buildalbum.R.string.*
 import blog.photo.buildalbum.model.Image
 import blog.photo.buildalbum.network.DownloadData
 import blog.photo.buildalbum.network.DownloadSource
 import blog.photo.buildalbum.network.DownloadStatus
-import blog.photo.buildalbum.network.DownloadStatus.NETWORK_ERROR
 import blog.photo.buildalbum.network.DownloadStatus.OK
 import blog.photo.buildalbum.network.JsonData
+import blog.photo.buildalbum.receiver.ConnectivityReceiver
 import blog.photo.buildalbum.utils.BuildAlbumDBOpenHelper
 import blog.photo.buildalbum.utils.PicturesAdapter
 import kotlinx.android.synthetic.main.content_main.*
@@ -41,29 +39,23 @@ import java.io.IOException
 /**
  * Class to manage the main screen.
  */
-// TODO: Add check for Internet
-class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
+class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiverListener,
+    DownloadData.OnDownloadComplete,
     JsonData.OnDataAvailable {
 
     private lateinit var image: Image
-    private var grantedPermissions = ArrayList<String>()
+    private var dialogItems = ArrayList<String>()
 
     /**
-     * A companion object to declare variables for displaying imagesNames
+     * A companion object for static variables
      */
     companion object {
         private const val tag = "MainActivity"
-        private const val PERMISSIONS_REQUEST_CODE = 8888
-        private val REQUIRED_PERMISSIONS =
-            arrayOf(CAMERA, WRITE_EXTERNAL_STORAGE)
-        var frames = ArrayList<Image>()
-        var images = ArrayList<Image>()
         private lateinit var file: File
-        lateinit var imagesAdapter: PicturesAdapter
     }
 
     /**
-     * OnCreate Activity
+     * OnCreate MainActivity
      *
      * @param savedInstanceState
      */
@@ -71,20 +63,27 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        // Register connectivity receiver
+        registerReceiver(
+            ConnectivityReceiver(),
+            IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
+        )
+
         // Get the app granted permission
         getPermissions()
 
-        // Get images to display
-        if (images.size == 0)
-            getImages()
+        // Add items to the Dialog
+        if (WRITE_EXTERNAL_STORAGE in grantedPermissions)
+            dialogItems.add(getString(choice_from_gallery))
+        if (CAMERA in grantedPermissions)
+            dialogItems.add(getString(take_photo))
+        dialogItems.add(getString(close))
+
+        // Display images
         imagesAdapter = PicturesAdapter(this, images)
         girdViewImages.adapter = imagesAdapter
-
-        // TODO: Do not download frames when No Internet
-        // Get frames to add
-        if (frames.size == 0 && getFrames() == 0)
-            downloadFrames()
-
+        
+        // Click listener for ImageActivity
         girdViewImages.onItemClickListener =
             AdapterView.OnItemClickListener { _, _, position, _ ->
                 val intent = Intent(this, ImageActivity::class.java)
@@ -93,28 +92,20 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
                 startActivity(intent)
             }
 
+        // Click listener for Add Image
         buttonAddImage.setOnClickListener {
-            var items = ArrayList<String>()
-            if (CAMERA in grantedPermissions)
-                items.add(getString(take_photo))
-            if (WRITE_EXTERNAL_STORAGE in grantedPermissions)
-                items.add(getString(choice_from_gallery))
-            items.add(getString(download_from_flickr))
-            items.add(getString(download_from_pixabay))
-            items.add(getString(close))
-
-            val itemsArray = arrayOfNulls<String>(items.size)
-            items.toArray(itemsArray)
+            val itemsArray = arrayOfNulls<String>(dialogItems.size)
+            dialogItems.toArray(itemsArray)
 
             val builder = AlertDialog.Builder(this, R.style.BuildAlbumAlertDialog)
             builder.setTitle(getString(add_image)).setItems(
                 itemsArray
             ) { dialog, item ->
                 when {
-                    items[item] == getString(take_photo) -> startIntentCamera()
-                    items[item] == getString(choice_from_gallery) -> startIntentGallery()
-                    items[item] == getString(download_from_flickr) -> downloadFromFlickr()
-                    items[item] == getString(download_from_pixabay) -> downloadFromPixabay()
+                    dialogItems[item] == getString(take_photo) -> startIntentCamera()
+                    dialogItems[item] == getString(choice_from_gallery) -> startIntentGallery()
+                    dialogItems[item] == getString(download_from_flickr) -> downloadFromFlickr()
+                    dialogItems[item] == getString(download_from_pixabay) -> downloadFromPixabay()
                     else -> dialog.dismiss()
                 }
             }
@@ -123,7 +114,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     }
 
     /**
-     * OnActivityResult Activity
+     * OnActivityResult MainActivity
      *
      * @param requestCode
      * @param resultCode
@@ -159,7 +150,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     }
 
     /**
-     * OnRequestPermissionsResult Activity
+     * OnRequestPermissionsResult MainActivity
      *
      * @param requestCode
      * @param permissions
@@ -171,22 +162,44 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     ) {
         when (requestCode) {
             PERMISSIONS_REQUEST_CODE -> {
-                // If request is cancelled, the result arrays are empty.
+                // If permissions were granted add them all.
                 if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                    // permission was granted, yay! Do the
-                    // contacts-related task you need to do.
                     grantedPermissions.addAll(permissions)
                 } else {
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
+                    // If permissions were not granted remove them.
                     grantedPermissions.removeAll(permissions)
                 }
             }
-            // Add other 'when' lines to check for other
-            // permissions this app might request.
+            // Ignore all other requests.
             else -> {
-                // Ignore all other requests.
             }
+        }
+    }
+
+    /**
+     * OnResume MainActivity
+     */
+    override fun onResume() {
+        super.onResume()
+        ConnectivityReceiver.connectivityReceiverListener = this
+    }
+
+    /**
+     * Callback will be called when there is network change
+     */
+    override fun onNetworkConnectionChanged(isConnected: Boolean) {
+        if (isConnected) {
+            buttonAddImage.isGone = false
+            dialogItems.add(0, getString(download_from_flickr))
+            dialogItems.add(0, getString(download_from_pixabay))
+            // TODO: Download new frames only when available
+            downloadFrames()
+        } else {
+            dialogItems.remove(getString(download_from_flickr))
+            dialogItems.remove(getString(download_from_pixabay))
+            if (dialogItems.size <= 1)
+                buttonAddImage.isGone = true
+            toast(getString(enable_internet_to_download_images))
         }
     }
 
@@ -205,7 +218,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
             else
                 requestPermissions.add(it)
         }
-        if (!requestPermissions.isEmpty()) {
+        if (requestPermissions.isNotEmpty()) {
             val requestedPermissionsArray = arrayOfNulls<String>(requestPermissions.size)
             requestPermissions.toArray(requestedPermissionsArray)
             ActivityCompat.requestPermissions(
@@ -238,16 +251,16 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     }
 
     /**
-     * Method to Take a Photo with Camera app
+     * Method to Take a Photo with Camera App
      */
     private fun startIntentCamera() {
         Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { intent ->
-            // Ensure that there's a camera activity to handle the intent
+            // Ensure that there's a Camera Activity to handle the intent
             intent.resolveActivity(packageManager)?.also {
                 // Create the File where the photo should go
                 val imageFile = createImage()
 
-                // Continue only if the File was successfully created
+                // Continue only if the file was successfully created
                 imageFile?.also {
                     val photoURI: Uri = FileProvider.getUriForFile(
                         this,
@@ -263,7 +276,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     }
 
     /**
-     * Method to Catch Image from Gallery
+     * Method to Choice Picture from Gallery App
      */
     private fun startIntentGallery() {
         Intent(
@@ -323,11 +336,11 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
                     image
                 )
                 images.add(0, image)
-                imagesAdapter.notifyDataSetChanged();
+                imagesAdapter.notifyDataSetChanged()
             }
         }
 
-        // Write the image into the file system
+        // Write the image on the file system
         private fun writeImage(finalBitmap: Bitmap) {
             val file = image.file
             if (file.exists())
@@ -345,7 +358,7 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     }
 
     /**
-     * Method to download framesNames
+     * Method to download frames
      */
     private fun downloadFrames() {
         DownloadData(
@@ -355,9 +368,8 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     }
 
     /**
-     * Method to download imagesNames from https://www.flickr.com
+     * Method to download images from https://www.flickr.com
      */
-    // TODO: Case no Internet
     private fun downloadFromFlickr() {
         val uri = createUriFlickr(
             getString(FLICKR_API_URI),
@@ -394,9 +406,8 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     }
 
     /**
-     * Method to download imagesNames from https://pixabay.com
+     * Method to download images from https://pixabay.com
      */
-    // TODO: Case no Internet
     private fun downloadFromPixabay() {
         val uri = createUriPixabay(
             getString(PIXABAY_API_URI),
@@ -420,13 +431,12 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     }
 
     /**
-     * Method to mark image download completion
+     * Method to mark image download complete
      *
      * @param data
      * @param source
      * @param status
      */
-    // TODO: Fix app crash on image download when No Internet
     override fun onDownloadComplete(
         data: String,
         source: DownloadSource,
@@ -434,15 +444,14 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
     ) {
         if (status == OK)
             JsonData(this, source).execute(data)
-        if (status == NETWORK_ERROR)
-            toast(getString(enable_internet))
     }
 
     /**
-     * Method to download imagesNames
+     * Method to download images
      *
      * @param data - images' URIs
      */
+    // TODO: Return proper message when no image is downloaded
     override fun onDataAvailable(data: ArrayList<String>) {
         data.forEach {
             SavePicture(
@@ -460,53 +469,17 @@ class MainActivity() : AppCompatActivity(), DownloadData.OnDownloadComplete,
      *
      * @param exception
      */
-    // TODO: Fix app crash on image download when No Internet
     override fun onError(exception: Exception) {
         toast(getString(download_exception).plus(exception))
     }
 
     /**
-     * Method to get imagesNames paths from database
-     */
-    private fun getFrames(): Int {
-        frames.addAll(BuildAlbumDBOpenHelper(this, null).getAllFrames())
-        return frames.size
-    }
-
-    /**
-     * Method to get imagesNames paths from database
-     *
-     * @return paths of stored imagesNames
-     */
-    private fun getImages(): Int {
-        images.addAll(BuildAlbumDBOpenHelper(this, null).getAllImagesReverse())
-        return images.size
-    }
-
-    /**
-     * Method to get a bitmap from ImageView
+     * Method to get default image bitmap
      */
     fun getDefaultImageBitmap(): Bitmap {
         return ((LayoutInflater.from(this).inflate(
             R.layout.image_layout,
             null
         ).findViewById(R.id.picture) as ImageView).drawable as BitmapDrawable).bitmap
-    }
-
-    /**
-     * Extension method to show toast message
-     */
-    private fun Context.toast(message: String) {
-        val toastMessage =
-            Toast.makeText(this, message, Toast.LENGTH_SHORT)
-        val toastView = toastMessage.view
-        toastMessage.view.setBackgroundResource(R.drawable.buildalbum_toast)
-        (toastView.findViewById(android.R.id.message) as TextView).setTextColor(
-            ContextCompat.getColor(
-                this,
-                R.color.colorWhite
-            )
-        )
-        toastMessage.show()
     }
 }
