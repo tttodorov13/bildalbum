@@ -24,13 +24,10 @@ data class Image(val context: Context, val isFrame: Boolean, val name: String, v
     constructor(context: Context) : this(context, "img".plus(System.nanoTime()).plus(".png"))
 
     override fun equals(other: Any?): Boolean {
-        if (other == null ||
-            other !is Image ||
-            isFrame != other.isFrame ||
-            (origin != other.origin && name != other.name)
-        ) return false
-
-        return true
+        return other != null &&
+                other is Image &&
+                isFrame == other.isFrame &&
+                (name == other.name || (!origin.isBlank() && origin == other.origin))
     }
 
     val file = File(context.getExternalFilesDir(Environment.DIRECTORY_PICTURES), name)
