@@ -1,35 +1,35 @@
 package blog.photo.buildalbum
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import blog.photo.buildalbum.model.Image
-import blog.photo.buildalbum.utils.BuildAlbumDBOpenHelper
-import blog.photo.buildalbum.utils.PicturesAdapter
+import blog.photo.buildalbum.utils.DatabaseHelper
+import blog.photo.buildalbum.utils.ImagesAdapter
 
 /**
  * Class to be base for all activities of the application.
  */
-@SuppressLint("Registered")
 open class BaseActivity : AppCompatActivity() {
 
     /**
-     * A companion object for static variables
+     * A companion object for class variables.
      */
     companion object {
-        private const val tag = "BaseActivity"
         internal var grantedPermissions = ArrayList<String>()
         internal const val PERMISSIONS_REQUEST_CODE = 8888
         internal val REQUIRED_PERMISSIONS =
             arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
         internal var frames = ArrayList<Image>()
         internal var images = ArrayList<Image>()
-        internal lateinit var imagesAdapter: PicturesAdapter
+        internal var hasInternet: Boolean = false
+        internal lateinit var imagesAdapter: ImagesAdapter
     }
 
     /**
@@ -39,6 +39,9 @@ open class BaseActivity : AppCompatActivity() {
      */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Get granted permission
+        getPermissions()
 
         // Get images to display
         if (images.size == 0)
@@ -72,20 +75,46 @@ open class BaseActivity : AppCompatActivity() {
     }
 
     /**
-     * Method to get images from database
+     * Method to check for the required permissions
+     */
+    private fun getPermissions() {
+        var requestPermissions = ArrayList<String>()
+        REQUIRED_PERMISSIONS.forEach {
+            if (ActivityCompat.checkSelfPermission(
+                    this,
+                    it
+                ) == PackageManager.PERMISSION_GRANTED
+            )
+                grantedPermissions.add(it)
+            else
+                requestPermissions.add(it)
+        }
+        if (requestPermissions.isNotEmpty()) {
+            val requestedPermissionsArray = arrayOfNulls<String>(requestPermissions.size)
+            requestPermissions.toArray(requestedPermissionsArray)
+            ActivityCompat.requestPermissions(
+                this,
+                requestedPermissionsArray,
+                PERMISSIONS_REQUEST_CODE
+            )
+        }
+    }
+
+    /**
+     * Method to get all images
      *
      * @return paths of stored imagesNames
      */
     private fun getImages(): Int {
-        images.addAll(BuildAlbumDBOpenHelper(this, null).getAllImagesReverse())
+        images.addAll(DatabaseHelper(this).getAllImagesReverse())
         return images.size
     }
 
     /**
-     * Method to get frames from database
+     * Method to get all frames
      */
     private fun getFrames(): Int {
-        frames.addAll(BuildAlbumDBOpenHelper(this, null).getAllFrames())
+        frames.addAll(DatabaseHelper(this).getAllFrames())
         return frames.size
     }
 }

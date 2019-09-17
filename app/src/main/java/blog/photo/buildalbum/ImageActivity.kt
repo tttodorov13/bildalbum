@@ -6,24 +6,19 @@ import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
-import android.os.AsyncTask
 import android.os.Bundle
-import android.util.Log.e
 import android.widget.AdapterView
 import android.widget.ImageView
 import androidx.core.view.isGone
 import blog.photo.buildalbum.R.string.*
 import blog.photo.buildalbum.model.Image
-import blog.photo.buildalbum.utils.BuildAlbumDBOpenHelper
-import blog.photo.buildalbum.utils.PicturesAdapter
+import blog.photo.buildalbum.tasks.SaveImage
+import blog.photo.buildalbum.utils.ImagesAdapter
 import kotlinx.android.synthetic.main.activity_image.*
-import java.io.FileOutputStream
-import java.io.IOException
 
 /**
  * Class to manage the picture screen.
  */
-// TODO: Make this class Fragment to MainActivity
 class ImageActivity : BaseActivity() {
 
     private var imageNewName: String = ""
@@ -34,10 +29,17 @@ class ImageActivity : BaseActivity() {
      * A companion object for static variables
      */
     companion object {
-        private const val tag = "ImageActivity"
         private const val IMAGE_SIZE = 400
         private const val IMAGE_SIZE_BORDER = 100F
-        private lateinit var framesAdapter: PicturesAdapter
+        private lateinit var framesAdapter: ImagesAdapter
+        private lateinit var imageNewView: ImageView
+
+        /**
+         * Method to get a bitmap from the new image ImageView
+         */
+        internal fun getBitmapFromImageView(): Bitmap {
+            return (imageNewView.drawable as BitmapDrawable).bitmap
+        }
     }
 
     /**
@@ -49,7 +51,8 @@ class ImageActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_image)
 
-        imageNew = Image(this, "img".plus(System.nanoTime()).plus(".png"))
+        imageNew = Image(this)
+        imageNewView = imageView
         imageOriginal = Image(
             this,
             intent.extras!!.get("imageOriginalName").toString(),
@@ -59,16 +62,15 @@ class ImageActivity : BaseActivity() {
             imageOriginal.uri
         )
 
-        framesAdapter = PicturesAdapter(
+        framesAdapter = ImagesAdapter(
             this, frames
         )
-        // TODO: Show gridViewFrames on 1 line
         gridViewFrames.isExpanded = true
         gridViewFrames.adapter = framesAdapter
 
         imageScreenScroll.smoothScrollTo(0, 0)
 
-        // Click listener for add frame
+        // Click listener for Add Frame
         gridViewFrames.onItemClickListener =
             AdapterView.OnItemClickListener { _, _, position, _ ->
                 val bitmapNew = addFrame(
@@ -78,20 +80,23 @@ class ImageActivity : BaseActivity() {
                 imageView.setImageBitmap(bitmapNew)
                 imageView.isGone = false
                 imageViewImageOriginal.isGone = true
-                if (!imageNewName.isBlank())
-                    imageNew = Image(this, imageNewName)
+
+                if (imageNewName != "")
+                    imageNew = Image(this, imageNewName, getString(app_name))
                 else
                     imageNewName = imageNew.name
-                SavePicture(imageNew).execute()
+
+                SaveImage(this, imageNew).execute()
+                toast(getString(image_saved))
             }
 
-        // Click listener for share button
+        // Click listener for Share Button
         buttonShare.setOnClickListener {
             var intent = Intent(Intent.ACTION_SEND)
             intent.type = "image/*"
             intent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
 
-            if (!imageNewName.isBlank())
+            if (imageNewName != "")
                 intent.putExtra(
                     Intent.EXTRA_STREAM,
                     Uri.fromFile(imageNew.file)
@@ -131,26 +136,31 @@ class ImageActivity : BaseActivity() {
             startActivity(intent)
         }
 
-        // Click listener for delete button
+        // Click listener for Delete Button
         buttonDelete.setOnClickListener {
             if (imageViewImageOriginal.isGone) {
-                BuildAlbumDBOpenHelper(applicationContext, null).deleteImage(
-                    imageNew
-                )
-                if (imageNew.file.exists())
-                    imageNew.file.delete()
-                images.remove(imageNew)
+                imageNew.delete()
             } else {
-                BuildAlbumDBOpenHelper(applicationContext, null).deleteImage(
-                    imageOriginal
-                )
-                if (imageOriginal.file.exists())
-                    imageOriginal.file.delete()
-                images.remove(imageOriginal)
+                imageOriginal.delete()
             }
-            imagesAdapter.notifyDataSetChanged()
             toast(getString(image_deleted))
             finish()
+        }
+    }
+
+    /**
+     * OnRestoreInstanceState ImageActivity
+     *
+     * @param savedInstanceState
+     */
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+        imageNewName = savedInstanceState.getString("imageNewName")!!
+        if (imageNewName != "") {
+            imageNew = Image(this, imageNewName)
+            imageView.setImageURI(imageNew.uri)
+            imageView.isGone = false
+            imageViewImageOriginal.isGone = true
         }
     }
 
@@ -162,22 +172,6 @@ class ImageActivity : BaseActivity() {
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putString("imageNewName", imageNewName)
         super.onSaveInstanceState(outState)
-    }
-
-    /**
-     * OnRestoreInstanceState ImageActivity
-     *
-     * @param savedInstanceState
-     */
-    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
-        super.onRestoreInstanceState(savedInstanceState)
-        imageNewName = savedInstanceState.getString("imageNewName")!!
-        if (!imageNewName.isBlank()) {
-            imageNew = Image(this, imageNewName)
-            imageView.setImageURI(imageNew.uri)
-            imageView.isGone = false
-            imageViewImageOriginal.isGone = true
-        }
     }
 
     /**
@@ -236,52 +230,5 @@ class ImageActivity : BaseActivity() {
         )
 
         return imageNewBitmap
-    }
-
-    /**
-     * Helper class for creating new image
-     */
-    inner class SavePicture(private val image: Image) :
-        AsyncTask<String, Void, Bitmap>() {
-
-        override fun doInBackground(vararg args: String?): Bitmap? {
-            return convertImageViewToBitmap(imageView)
-        }
-
-        override fun onPostExecute(result: Bitmap) {
-            writeImage(result)
-            if (image !in images) {
-                images.add(0, image)
-                BuildAlbumDBOpenHelper(applicationContext, null).addImage(
-                    image
-                )
-            }
-            imagesAdapter.notifyDataSetChanged()
-            toast(getString(image_saved))
-        }
-
-        // Write new image on the file system
-        private fun writeImage(finalBitmap: Bitmap) {
-            if (image.file.exists())
-                image.file.delete()
-
-            try {
-                val out = FileOutputStream(image.file)
-                finalBitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
-                out.flush()
-                out.close()
-            } catch (e: IOException) {
-                toast(getString(not_enough_space_on_disk))
-                e(tag, e.message!!)
-                e.printStackTrace()
-            }
-        }
-    }
-
-    /**
-     * Method to get a bitmap from ImageView
-     */
-    private fun convertImageViewToBitmap(view: ImageView): Bitmap {
-        return (view.drawable as BitmapDrawable).bitmap
     }
 }

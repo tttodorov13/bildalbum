@@ -6,14 +6,12 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import blog.photo.buildalbum.model.Image
 
-class BuildAlbumDBOpenHelper(
-    context: Context,
-    factory: SQLiteDatabase.CursorFactory?
-) : SQLiteOpenHelper(
-    context, DATABASE_NAME,
-    factory, DATABASE_VERSION
-) {
-    private val mContext = context
+/**
+ * Class to manage local database transactions
+ */
+// TODO: Save to local database with Room
+// TODO: Fix A SQLiteConnection object for database '+data+data+blog_photo_buildalbum+databases+buildalbum_db' was leaked!  Please fix your application to end transactions in progress properly and to close the database when it is no longer needed.
+class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL("CREATE TABLE $TABLE_FRAMES ($COLUMN_ID INTEGER PRIMARY KEY, $COLUMN_NAME TEXT,$COLUMN_ORIGIN TEXT)")
@@ -53,12 +51,13 @@ class BuildAlbumDBOpenHelper(
 
     fun getAllFrames(): ArrayList<Image> {
         var frames = ArrayList<Image>()
-        val cursor = readableDatabase.rawQuery("SELECT * FROM $TABLE_FRAMES ORDER BY $COLUMN_ID ASC", null)
+        val cursor =
+            readableDatabase.rawQuery("SELECT * FROM $TABLE_FRAMES ORDER BY $COLUMN_ID ASC", null)
 
         if (cursor!!.moveToFirst()) {
             frames.add(
                 Image(
-                    mContext,
+                    context,
                     true,
                     cursor.getString(
                         cursor.getColumnIndex(
@@ -75,7 +74,7 @@ class BuildAlbumDBOpenHelper(
         while (cursor.moveToNext()) {
             frames.add(
                 Image(
-                    mContext,
+                    context,
                     true,
                     cursor.getString(
                         cursor.getColumnIndex(
@@ -97,12 +96,13 @@ class BuildAlbumDBOpenHelper(
 
     fun getAllImagesReverse(): ArrayList<Image> {
         var images = ArrayList<Image>()
-        val cursor = readableDatabase.rawQuery("SELECT * FROM $TABLE_IMAGES ORDER BY $COLUMN_ID DESC", null)
+        val cursor =
+            readableDatabase.rawQuery("SELECT * FROM $TABLE_IMAGES ORDER BY $COLUMN_ID DESC", null)
 
         if (cursor!!.moveToFirst()) {
             images.add(
                 Image(
-                    mContext,
+                    context,
                     cursor.getString(
                         cursor.getColumnIndex(
                             COLUMN_NAME
@@ -117,7 +117,7 @@ class BuildAlbumDBOpenHelper(
             while (cursor.moveToNext()) {
                 images.add(
                     Image(
-                        mContext,
+                        context,
                         cursor.getString(
                             cursor.getColumnIndex(
                                 COLUMN_NAME

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Направи Албум</string>
+    <string name="add_image">Добави Изображение</string>
+    <string name="app_info">Направи Своя Албум</string>
+    <string name="choice_from_gallery">Избери от Галерия</string>
+    <string name="close">Затвори</string>
+    <string name="enable_internet_to_download_images">Включи Интернет, за да сваляш снимки!</string>
+    <string name="image_deleted">Изображението е изтрито!</string>
+    <string name="image_saved">Изображението е запазено!</string>
+    <string name="install_facebook_for_optimal_experience">Инсталирай Facebook за най-добро изживяване!</string>
+    <string name="no_image_is_captured">Не бе избрано изображение!</string>
+    <string name="not_enough_space_on_disk">Недостатъчно място на диска!</string>
+    <string name="take_photo">Снимай</string>
+</resources>

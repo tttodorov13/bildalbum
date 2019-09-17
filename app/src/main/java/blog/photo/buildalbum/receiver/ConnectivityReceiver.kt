@@ -19,6 +19,9 @@ class ConnectivityReceiver : BroadcastReceiver() {
         fun onNetworkConnectionChanged(isConnected: Boolean)
     }
 
+    /**
+     * A companion object for class variables.
+     */
     companion object {
         fun isConnectedOrConnecting(context: Context): Boolean {
             val connMgr =

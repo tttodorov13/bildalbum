@@ -1,4 +1,4 @@
-package blog.photo.buildalbum.network
+package blog.photo.buildalbum.tasks
 
 import android.os.AsyncTask
 import android.util.Log

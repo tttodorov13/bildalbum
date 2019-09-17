@@ -1,86 +1,76 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="@color/colorYellow"
-        android:fitsSystemWindows="true"
-        tools:context=".ImageActivity">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorYellow"
+    android:fitsSystemWindows="true"
+    tools:context=".ImageActivity">
 
     <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-            xmlns:tools="http://schemas.android.com/tools"
-            android:id="@+id/content_image"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:padding="@dimen/activity_margin">
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/content_image"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="@dimen/activity_margin">
 
         <ScrollView
-                android:id="@+id/imageScreenScroll"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
+            android:id="@+id/imageScreenScroll"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
             <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <ImageButton
+                    android:id="@+id/buttonShare"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:orientation="vertical">
-
-                <Button
-                        android:id="@+id/buttonShare"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_vertical"
-                        android:layout_margin="@dimen/inner_margin"
-                        android:background="@color/colorPrimary"
-                        android:gravity="center"
-                        android:paddingTop="12dp"
-                        android:paddingBottom="12dp"
-                        android:text="@string/share"
-                        android:textColor="@color/colorWhite" />
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:gravity="center"
+                    app:srcCompat="@mipmap/ic_share" />
 
                 <ImageView
-                        android:id="@+id/imageView"
-                        android:layout_width="@dimen/edited_image_size"
-                        android:layout_height="@dimen/edited_image_size"
-                        android:layout_gravity="center_horizontal"
-                        android:layout_margin="@dimen/inner_margin"
-                        android:background="@color/colorPrimary"
-                        android:visibility="gone"
-                        app:srcCompat="@mipmap/ic_launcher" />
+                    android:id="@+id/imageView"
+                    android:layout_width="@dimen/edited_image_size"
+                    android:layout_height="@dimen/edited_image_size"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_margin="@dimen/inner_margin"
+                    android:background="@color/colorPrimary"
+                    android:visibility="gone"
+                    app:srcCompat="@mipmap/ic_launcher" />
 
                 <ImageView
-                        android:id="@+id/imageViewImageOriginal"
-                        android:layout_width="@dimen/edited_image_size"
-                        android:layout_height="@dimen/edited_image_size"
-                        android:layout_gravity="center_horizontal"
-                        android:layout_margin="@dimen/inner_margin"
-                        android:background="@color/colorPrimary"
-                        app:srcCompat="@mipmap/ic_launcher" />
+                    android:id="@+id/imageViewImageOriginal"
+                    android:layout_width="@dimen/edited_image_size"
+                    android:layout_height="@dimen/edited_image_size"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_margin="@dimen/inner_margin"
+                    android:background="@color/colorPrimary"
+                    app:srcCompat="@mipmap/ic_launcher" />
 
                 <blog.photo.buildalbum.utils.ExpandableHeightGridView
-                        android:id="@+id/gridViewFrames"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:columnWidth="110dp"
-                        android:gravity="center"
-                        android:horizontalSpacing="5dp"
-                        android:isScrollContainer="false"
-                        android:numColumns="auto_fit"
-                        android:stretchMode="spacingWidthUniform"
-                        android:verticalSpacing="20dp" />
+                    android:id="@+id/gridViewFrames"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:columnWidth="110dp"
+                    android:gravity="center"
+                    android:horizontalSpacing="5dp"
+                    android:isScrollContainer="false"
+                    android:numColumns="auto_fit"
+                    android:stretchMode="spacingWidthUniform"
+                    android:verticalSpacing="20dp" />
 
-                <Button
-                        android:id="@+id/buttonDelete"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_vertical"
-                        android:layout_margin="@dimen/inner_margin"
-                        android:background="@color/colorPrimary"
-                        android:gravity="center"
-                        android:paddingTop="12dp"
-                        android:paddingBottom="12dp"
-                        android:text="@string/delete"
-                        android:textColor="@color/colorWhite" />
+                <ImageButton
+                    android:id="@+id/buttonDelete"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:gravity="center"
+                    app:srcCompat="@mipmap/ic_delete" />
 
             </LinearLayout>
 

@@ -9,7 +9,7 @@ import android.widget.ImageView
 import blog.photo.buildalbum.R
 import blog.photo.buildalbum.model.Image
 
-class PicturesAdapter(private val context: Context, private val images: ArrayList<Image>) :
+class ImagesAdapter(private val context: Context, private val images: ArrayList<Image>) :
     BaseAdapter() {
 
     override fun getCount(): Int {
