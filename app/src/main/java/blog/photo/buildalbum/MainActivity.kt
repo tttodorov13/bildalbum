@@ -19,6 +19,7 @@ import blog.photo.buildalbum.receiver.ConnectivityReceiver
 import blog.photo.buildalbum.tasks.*
 import blog.photo.buildalbum.tasks.DownloadStatus.OK
 import blog.photo.buildalbum.utils.ImagesAdapter
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import java.io.File
 import java.io.FileOutputStream
@@ -73,7 +74,7 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
             }
 
         // Click listener for Add Image Dialog
-        buttonAddImage.setOnClickListener {
+        fab.setOnClickListener{
             var dialogItems = ArrayList<String>()
 
             if (hasInternet) {
@@ -228,6 +229,8 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
     /**
      * Method to Take a Photo with Camera App
      */
+    // TODO: Fix take a picture with camera
+    // TODO: Fix error E/MainActivity: Receiver not registered: blog.photo.buildalbum.receiver.ConnectivityReceiver@9d299c30
     private fun startIntentCamera() {
         Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { intent ->
             // Ensure that there's a Camera Activity to handle the intent
@@ -253,6 +256,7 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
     /**
      * Method to Choice Image from Gallery App
      */
+    // TODO: Fix thrown error Unable to decode stream: java.io.FileNotFoundException:
     private fun startIntentGallery() {
         Intent(
             Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI
