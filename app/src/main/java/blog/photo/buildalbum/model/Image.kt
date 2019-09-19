@@ -42,11 +42,13 @@ data class Image(val context: Context, val isFrame: Boolean, val name: String, v
         return other != null &&
                 other is Image &&
                 isFrame == other.isFrame &&
-                (name == other.name || (origin != "" && origin == other.origin))
+                origin == other.origin &&
+                (isFrame || name == other.name)
     }
 
     val file = File(context.getExternalFilesDir(Environment.DIRECTORY_PICTURES), name)
-    val uri = Uri.parse(file.canonicalPath)!!
+    val filePath: String = file.canonicalPath
+    val uri = Uri.parse(filePath)!!
 
     internal fun delete() {
         DatabaseHelper(context).deleteImage(

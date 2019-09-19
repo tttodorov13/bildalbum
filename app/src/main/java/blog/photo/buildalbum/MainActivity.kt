@@ -5,14 +5,16 @@ import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
 import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.util.Log.e
 import android.widget.AdapterView
+import android.widget.ImageView
 import androidx.appcompat.app.AlertDialog
-import androidx.core.content.FileProvider
 import blog.photo.buildalbum.R.string.*
 import blog.photo.buildalbum.model.Image
 import blog.photo.buildalbum.receiver.ConnectivityReceiver
@@ -41,6 +43,14 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
         private const val tag = "MainActivity"
         private lateinit var file: File
         private val connectivityReceiver = ConnectivityReceiver()
+        private lateinit var imageNewView: ImageView
+
+        /**
+         * Method to get a bitmap from the new image ImageView
+         */
+        internal fun getBitmapFromImageView(): Bitmap {
+            return (imageNewView.drawable as BitmapDrawable).bitmap
+        }
     }
 
     /**
@@ -52,11 +62,7 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Register connectivity receiver
-        registerReceiver(
-            connectivityReceiver,
-            IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
-        )
+        imageNewView = imageViewCamera
 
         // Display images
         imagesAdapter = ImagesAdapter(this, images)
@@ -74,7 +80,7 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
             }
 
         // Click listener for Add Image Dialog
-        fab.setOnClickListener{
+        fab.setOnClickListener {
             var dialogItems = ArrayList<String>()
 
             if (hasInternet) {
@@ -118,30 +124,34 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
      * @param data
      */
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == PERMISSIONS_REQUEST_CODE) {
-            when (resultCode) {
-                RESULT_OK -> when {
-                    // Image is taken with Camera
-                    data?.data == null -> {
-                        SaveImage(this, Image(this, image.name)).execute()
-                    }
-
-                    // Image is taken from Gallery
-                    data.data != null -> {
-                        val filePathColumn = arrayOf(MediaStore.Images.Media.DATA)
-                        val cursor = contentResolver.query(
-                            data.data!!,
-                            filePathColumn, null, null, null
-                        )
-                        cursor!!.moveToFirst()
-                        val filePath = cursor.getString(cursor.getColumnIndex(filePathColumn[0]))
-                        cursor.close()
-                        SaveImage(this, Image(this)).execute(filePath)
-                    }
+        if (requestCode == PERMISSIONS_REQUEST_CODE && resultCode == RESULT_OK && data != null) {
+            when {
+                // Image is taken with Camera
+                data.extras?.get("data") != null -> {
+                    val bmp = data.extras?.get("data") as Bitmap?
+                    imageViewCamera.setImageBitmap(bmp)
+                    SaveImage(false, Image(this, false, CAMERA)).execute()
                 }
-                // Image capturing is cancelled
-                RESULT_CANCELED -> toast(getString(no_image_is_captured))
+
+                // Image is taken from Gallery
+                data.data != null -> {
+                    val filePathColumn = arrayOf(MediaStore.Images.Media.DATA)
+                    val cursor = contentResolver.query(
+                        data.data!!,
+                        filePathColumn, null, null, null
+                    )
+                    cursor!!.moveToFirst()
+                    val filePath = cursor.getString(cursor.getColumnIndex(filePathColumn[0]))
+                    cursor.close()
+                    SaveImage(false, Image(this, false, WRITE_EXTERNAL_STORAGE)).execute(
+                        filePath
+                    )
+                }
             }
+        }
+        // Image capturing is cancelled
+        else {
+            toast(getString(no_image_is_captured))
         }
     }
 
@@ -174,10 +184,27 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
 
     /**
      * OnResume MainActivity
+     *
+     * Set connectivity receiver to listen for Internet connection.
      */
     override fun onResume() {
         super.onResume()
         ConnectivityReceiver.connectivityReceiverListener = this
+    }
+
+    /**
+     * OnStart MainActivity
+     *
+     * Register connectivity receiver to listen for Internet connection.
+     */
+    override fun onStart() {
+        super.onStart()
+
+        // Register connectivity receiver
+        registerReceiver(
+            connectivityReceiver,
+            IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
+        )
     }
 
     /**
@@ -197,11 +224,7 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
      * OnStop MainActivity
      */
     override fun onStop() {
-        try {
-            unregisterReceiver(connectivityReceiver)
-        } catch (e: java.lang.Exception) {
-            e(tag, e.message.toString())
-        }
+        unregisterReceiver(connectivityReceiver)
         super.onStop()
     }
 
@@ -229,23 +252,22 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
     /**
      * Method to Take a Photo with Camera App
      */
-    // TODO: Fix error E/MainActivity: Receiver not registered: blog.photo.buildalbum.receiver.ConnectivityReceiver@9d299c30
     private fun startIntentCamera() {
         Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { intent ->
             // Ensure that there's a Camera Activity to handle the intent
             intent.resolveActivity(packageManager)?.also {
                 // Create the File where the photo should go
-                val imageFile = createImage()
-
-                // Continue only if the file was successfully created
-                imageFile?.also {
-                    val photoURI: Uri = FileProvider.getUriForFile(
-                        this,
-                        "blog.photo.buildalbum.FileProvider",
-                        it
-                    )
-                    intent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
-                }
+//                val imageFile = createImage()
+//
+//                // Continue only if the file was successfully created
+//                imageFile?.also {
+//                    val photoURI: Uri = FileProvider.getUriForFile(
+//                        this,
+//                        "blog.photo.buildalbum.FileProvider",
+//                        it
+//                    )
+//                    intent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
+//                }
 
                 startActivityForResult(intent, PERMISSIONS_REQUEST_CODE)
             }
@@ -324,6 +346,10 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
      * @param data - images' URIs
      */
     override fun onDataAvailable(data: ArrayList<String>) {
+        // Do not download frames if there are no new available
+        if (data[0].contains(Uri.parse(getString(FRAMES_URI)).authority.toString()) && data.size <= frames.size)
+            return
+
         data.forEach {
             val image = Image(
                 this,
@@ -332,7 +358,7 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
             )
             if (image !in images && image !in frames)
                 SaveImage(
-                    this,
+                    false,
                     image
                 ).execute()
         }

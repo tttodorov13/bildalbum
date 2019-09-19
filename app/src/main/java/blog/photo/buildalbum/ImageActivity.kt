@@ -51,7 +51,7 @@ class ImageActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_image)
 
-        imageNew = Image(this)
+        imageNew = Image(this, false, getString(app_name))
         imageNewView = imageView
         imageOriginal = Image(
             this,
@@ -86,7 +86,7 @@ class ImageActivity : BaseActivity() {
                 else
                     imageNewName = imageNew.name
 
-                SaveImage(this, imageNew).execute()
+                SaveImage(true, imageNew).execute()
                 toast(getString(image_saved))
             }
 
@@ -178,7 +178,7 @@ class ImageActivity : BaseActivity() {
      * Method to add a frame
      */
     private fun addFrame(image: Image, frame: Image): Bitmap? {
-        val imageBitmap = BitmapFactory.decodeFile(image.file.canonicalPath)
+        val imageBitmap = BitmapFactory.decodeFile(image.filePath)
 
         // Resize image to fit in the frame
         var editedBitmap: Bitmap =
@@ -216,7 +216,7 @@ class ImageActivity : BaseActivity() {
             }
 
         // Get the bitmap frame to be applied
-        val imageNewBitmap = BitmapFactory.decodeFile(frame.file.canonicalPath).copy(
+        val imageNewBitmap = BitmapFactory.decodeFile(frame.filePath).copy(
             Bitmap.Config.ARGB_8888,
             true
         )

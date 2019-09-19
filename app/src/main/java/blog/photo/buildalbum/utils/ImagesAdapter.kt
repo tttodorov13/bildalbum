@@ -1,6 +1,8 @@
 package blog.photo.buildalbum.utils
 
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,7 +19,7 @@ class ImagesAdapter(private val context: Context, private val images: ArrayList<
     }
 
     override fun getItemId(position: Int): Long {
-        return 0
+        return position.toLong()
     }
 
     override fun getItem(position: Int): Any? {
@@ -28,19 +30,27 @@ class ImagesAdapter(private val context: Context, private val images: ArrayList<
         var convertView = view
         var viewHolder: ViewHolder
 
+        var options = BitmapFactory.Options()
+        options.inDither = false
+        options.inJustDecodeBounds = false
+        options.inPreferredConfig = Bitmap.Config.ARGB_8888
+        options.inSampleSize = 3
+        options.inPurgeable = true
+
+        val bitmap = BitmapFactory.decodeFile(images[position].filePath, options)
+
         if (convertView == null) {
             convertView = LayoutInflater.from(context).inflate(R.layout.image_layout, null)
 
             val imageView = convertView.findViewById(R.id.picture) as ImageView
-            imageView.setImageURI(images[position].uri)
 
             viewHolder = ViewHolder(imageView)
+            viewHolder.imageView.setImageBitmap(bitmap)
+
             convertView.tag = viewHolder
         } else {
             viewHolder = convertView.tag as ViewHolder
-            viewHolder.imageView.setImageURI(
-                images[position].uri
-            )
+            viewHolder.imageView.setImageBitmap(bitmap)
         }
 
         return convertView
