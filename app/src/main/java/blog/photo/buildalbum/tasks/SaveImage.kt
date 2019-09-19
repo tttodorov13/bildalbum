@@ -23,6 +23,7 @@ class SaveImage(private val context: Context, private val image: Image) :
                 e(tag, e.message.toString())
             }
 
+        // TODO: Fix thrown error Unable to decode stream: java.io.FileNotFoundException when Take from Gallery
         return when {
             // Image is taken with Camera
             BitmapFactory.decodeFile(image.file.canonicalPath) != null && image.origin != context.getString(
