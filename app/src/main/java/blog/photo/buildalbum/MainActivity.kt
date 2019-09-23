@@ -130,7 +130,7 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
                 data.extras?.get("data") != null -> {
                     val bmp = data.extras?.get("data") as Bitmap?
                     imageViewCamera.setImageBitmap(bmp)
-                    SaveImage(false, Image(this, false, CAMERA)).execute()
+                    SaveImage(this, false, Image(this, false, CAMERA)).execute()
                 }
 
                 // Image is taken from Gallery
@@ -143,7 +143,7 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
                     cursor!!.moveToFirst()
                     val filePath = cursor.getString(cursor.getColumnIndex(filePathColumn[0]))
                     cursor.close()
-                    SaveImage(false, Image(this, false, WRITE_EXTERNAL_STORAGE)).execute(
+                    SaveImage(this, false, Image(this, false, WRITE_EXTERNAL_STORAGE)).execute(
                         filePath
                     )
                 }
@@ -346,10 +346,6 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
      * @param data - images' URIs
      */
     override fun onDataAvailable(data: ArrayList<String>) {
-        // Do not download frames if there are no new available
-        if (data[0].contains(Uri.parse(getString(FRAMES_URI)).authority.toString()) && data.size <= frames.size)
-            return
-
         data.forEach {
             val image = Image(
                 this,
@@ -358,6 +354,7 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
             )
             if (image !in images && image !in frames)
                 SaveImage(
+                    this,
                     false,
                     image
                 ).execute()

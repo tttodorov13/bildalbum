@@ -19,6 +19,7 @@ import kotlinx.android.synthetic.main.activity_image.*
 /**
  * Class to manage the picture screen.
  */
+// TODO: Add Rotate Image functionality
 class ImageActivity : BaseActivity() {
 
     private var imageNewName: String = ""
@@ -86,7 +87,7 @@ class ImageActivity : BaseActivity() {
                 else
                     imageNewName = imageNew.name
 
-                SaveImage(true, imageNew).execute()
+                SaveImage(this, true, imageNew).execute()
                 toast(getString(image_saved))
             }
 
@@ -137,6 +138,7 @@ class ImageActivity : BaseActivity() {
         }
 
         // Click listener for Delete Button
+        // TODO: Add confirmation Dialog
         buttonDelete.setOnClickListener {
             if (imageViewImageOriginal.isGone) {
                 imageNew.delete()

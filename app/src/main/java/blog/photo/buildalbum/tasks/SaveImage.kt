@@ -2,6 +2,7 @@ package blog.photo.buildalbum.tasks
 
 import android.Manifest.permission.CAMERA
 import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.AsyncTask
@@ -10,7 +11,11 @@ import blog.photo.buildalbum.ImageActivity
 import blog.photo.buildalbum.MainActivity
 import blog.photo.buildalbum.model.Image
 
-class SaveImage(private val isEdited: Boolean, private val image: Image) :
+class SaveImage(
+    private val context: Context,
+    private val isEdited: Boolean,
+    private val image: Image
+) :
     AsyncTask<String, Void, Bitmap>() {
 
     private val tag = "SaveImage"
@@ -18,15 +23,17 @@ class SaveImage(private val isEdited: Boolean, private val image: Image) :
     override fun doInBackground(vararg args: String): Bitmap? {
         return when {
             // Image is taken from Gallery
-            WRITE_EXTERNAL_STORAGE == image.origin -> BitmapFactory.decodeFile(args[0])
+            WRITE_EXTERNAL_STORAGE == image.origin && args.size >= 0 -> BitmapFactory.decodeFile(
+                args[0]
+            )
 
             // Image is taken with Camera
             CAMERA == image.origin -> MainActivity.getBitmapFromImageView()
 
-            // Image is edited
+            // Image is downloaded
             isEdited -> ImageActivity.getBitmapFromImageView()
 
-            // Image download
+            // Image is edited
             else -> try {
                 BitmapFactory.decodeStream(java.net.URL(image.origin).openStream())
             } catch (e: Exception) {
@@ -36,7 +43,7 @@ class SaveImage(private val isEdited: Boolean, private val image: Image) :
         }
     }
 
-    override fun onPostExecute(result: Bitmap) {
+    override fun onPostExecute(result: Bitmap?) {
         image.write(result)
         image.save()
     }

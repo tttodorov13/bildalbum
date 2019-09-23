@@ -95,13 +95,13 @@ data class Image(val context: Context, val isFrame: Boolean, val name: String, v
     /**
      * Method to write new image on the file system.
      */
-    internal fun write(bitmap: Bitmap) {
+    internal fun write(bitmap: Bitmap?) {
         if (file.exists())
             file.delete()
 
         try {
             val out = FileOutputStream(file)
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+            bitmap?.compress(Bitmap.CompressFormat.PNG, 100, out)
             out.flush()
             out.close()
         } catch (e: IOException) {
