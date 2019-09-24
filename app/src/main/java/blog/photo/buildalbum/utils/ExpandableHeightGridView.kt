@@ -5,6 +5,9 @@ import android.util.AttributeSet
 import android.view.View
 import android.widget.GridView
 
+/**
+ * Class to manage render frames in image screen.
+ */
 class ExpandableHeightGridView : GridView {
 
     var isExpanded = false

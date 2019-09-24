@@ -16,7 +16,7 @@ import androidx.core.view.isGone
 import blog.photo.buildalbum.R.string.*
 import blog.photo.buildalbum.model.Image
 import blog.photo.buildalbum.tasks.SaveImage
-import blog.photo.buildalbum.utils.ImagesAdapter
+import blog.photo.buildalbum.adapters.ImagesAdapter
 import kotlinx.android.synthetic.main.activity_image.*
 
 

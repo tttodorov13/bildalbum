@@ -7,7 +7,7 @@ import android.database.sqlite.SQLiteOpenHelper
 import blog.photo.buildalbum.model.Image
 
 /**
- * Class to manage local database transactions
+ * Class to manage local database transactions.
  */
 // TODO: Save to local database with Room
 // TODO: Fix A SQLiteConnection object for database '+data+data+blog_photo_buildalbum+databases+buildalbum_db' was leaked!  Please fix your application to end transactions in progress properly and to close the database when it is no longer needed.

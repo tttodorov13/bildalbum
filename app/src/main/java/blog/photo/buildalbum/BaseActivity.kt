@@ -11,12 +11,11 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import blog.photo.buildalbum.model.Image
 import blog.photo.buildalbum.utils.DatabaseHelper
-import blog.photo.buildalbum.utils.ImagesAdapter
+import blog.photo.buildalbum.adapters.ImagesAdapter
 
 /**
  * Class to be base for all activities of the application.
  */
-// TODO: Add icons to buttons
 open class BaseActivity : AppCompatActivity() {
 
     /**

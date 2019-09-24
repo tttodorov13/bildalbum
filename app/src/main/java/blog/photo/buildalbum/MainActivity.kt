@@ -20,7 +20,8 @@ import blog.photo.buildalbum.model.Image
 import blog.photo.buildalbum.receiver.ConnectivityReceiver
 import blog.photo.buildalbum.tasks.*
 import blog.photo.buildalbum.tasks.DownloadStatus.OK
-import blog.photo.buildalbum.utils.ImagesAdapter
+import blog.photo.buildalbum.adapters.IconsAdapter
+import blog.photo.buildalbum.adapters.ImagesAdapter
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import java.io.File
@@ -81,40 +82,43 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
 
         // Click listener for Add Image Dialog
         fab.setOnClickListener {
-            var dialogItems = ArrayList<String>()
+            val itemTexts = ArrayList<String>()
+            val itemIcons = ArrayList<Int>()
 
             if (hasInternet) {
-                dialogItems.add(getString(download_from_pixabay))
-                dialogItems.add(getString(download_from_flickr))
+                itemTexts.add(getString(download_from_pixabay))
+                itemIcons.add(android.R.drawable.stat_sys_download_done)
+                itemTexts.add(getString(download_from_flickr))
+                itemIcons.add(android.R.drawable.stat_sys_download_done)
             }
 
-            if (WRITE_EXTERNAL_STORAGE in grantedPermissions)
-                dialogItems.add(getString(choice_from_gallery))
+            if (WRITE_EXTERNAL_STORAGE in grantedPermissions) {
+                itemTexts.add(getString(choice_from_gallery))
+                itemIcons.add(android.R.drawable.ic_menu_gallery)
+            }
 
-            if (CAMERA in grantedPermissions)
-                dialogItems.add(getString(take_photo))
+            if (CAMERA in grantedPermissions) {
+                itemTexts.add(getString(take_photo))
+                itemIcons.add(android.R.drawable.ic_menu_camera)
+            }
 
-            if (getString(close) !in dialogItems)
-                dialogItems.add(getString(close))
+            itemTexts.add(getString(close))
+            itemIcons.add(android.R.drawable.ic_menu_close_clear_cancel)
 
-            val dialogItemsArray = arrayOfNulls<String>(dialogItems.size)
-            dialogItems.toArray(dialogItemsArray)
+            val adapter = IconsAdapter(this, itemTexts, itemIcons)
 
-            AlertDialog.Builder(this, R.style.BuildAlbumAlertDialog)
+            val alertDialog = AlertDialog.Builder(this, R.style.BuildAlbumAlertDialog)
                 .setTitle(getString(image_add))
                 .setIcon(android.R.drawable.ic_input_add)
-                .setItems(
-                    dialogItemsArray
-                ) { dialog, item ->
-                    when {
-                        dialogItems[item] == getString(take_photo) -> startIntentCamera()
-                        dialogItems[item] == getString(choice_from_gallery) -> startIntentGallery()
-                        dialogItems[item] == getString(download_from_flickr) -> downloadFromFlickr()
-                        dialogItems[item] == getString(download_from_pixabay) -> downloadFromPixabay()
-                        else -> dialog.dismiss()
-                    }
+            alertDialog.setAdapter(adapter) { dialog, item ->
+                when (adapter.getItem(item)) {
+                    getString(take_photo) -> startIntentCamera()
+                    getString(choice_from_gallery) -> startIntentGallery()
+                    getString(download_from_flickr) -> downloadFromFlickr()
+                    getString(download_from_pixabay) -> downloadFromPixabay()
+                    else -> dialog.dismiss()
                 }
-                .show()
+            }.show()
         }
     }
 

@@ -1,4 +1,4 @@
-package blog.photo.buildalbum.utils
+package blog.photo.buildalbum.adapters
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -11,6 +11,9 @@ import android.widget.ImageView
 import blog.photo.buildalbum.R
 import blog.photo.buildalbum.model.Image
 
+/**
+ * Class to manage render images on main screen.
+ */
 class ImagesAdapter(private val context: Context, private val images: ArrayList<Image>) :
     BaseAdapter() {
 
