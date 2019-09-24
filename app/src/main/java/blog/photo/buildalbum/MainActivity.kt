@@ -100,19 +100,19 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
             val dialogItemsArray = arrayOfNulls<String>(dialogItems.size)
             dialogItems.toArray(dialogItemsArray)
 
-            val builder = AlertDialog.Builder(this, R.style.BuildAlbumAlertDialog)
-            builder.setTitle(getString(add_image)).setItems(
-                dialogItemsArray
-            ) { dialog, item ->
-                when {
-                    dialogItems[item] == getString(take_photo) -> startIntentCamera()
-                    dialogItems[item] == getString(choice_from_gallery) -> startIntentGallery()
-                    dialogItems[item] == getString(download_from_flickr) -> downloadFromFlickr()
-                    dialogItems[item] == getString(download_from_pixabay) -> downloadFromPixabay()
-                    else -> dialog.dismiss()
+            AlertDialog.Builder(this, R.style.BuildAlbumAlertDialog)
+                .setTitle(getString(add_image)).setItems(
+                    dialogItemsArray
+                ) { dialog, item ->
+                    when {
+                        dialogItems[item] == getString(take_photo) -> startIntentCamera()
+                        dialogItems[item] == getString(choice_from_gallery) -> startIntentGallery()
+                        dialogItems[item] == getString(download_from_flickr) -> downloadFromFlickr()
+                        dialogItems[item] == getString(download_from_pixabay) -> downloadFromPixabay()
+                        else -> dialog.dismiss()
+                    }
                 }
-            }
-            builder.show()
+                .show()
         }
     }
 
