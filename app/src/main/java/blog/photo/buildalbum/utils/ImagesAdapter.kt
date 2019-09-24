@@ -23,7 +23,7 @@ class ImagesAdapter(private val context: Context, private val images: ArrayList<
     }
 
     override fun getItem(position: Int): Any? {
-        return null
+        return images[position]
     }
 
     override fun getView(position: Int, view: View?, parent: ViewGroup): View? {
