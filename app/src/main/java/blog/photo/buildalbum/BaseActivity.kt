@@ -16,7 +16,7 @@ import blog.photo.buildalbum.utils.ImagesAdapter
 /**
  * Class to be base for all activities of the application.
  */
-// TODO: Replace button-texts with button-icons
+// TODO: Add icons to buttons
 open class BaseActivity : AppCompatActivity() {
 
     /**

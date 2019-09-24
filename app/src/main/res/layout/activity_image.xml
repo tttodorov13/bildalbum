@@ -70,7 +70,7 @@
                     android:layout_height="wrap_content"
                     android:layout_gravity="center_vertical"
                     android:gravity="center"
-                    app:srcCompat="@android:drawable/ic_delete" />
+                    app:srcCompat="@android:drawable/ic_menu_delete" />
 
             </LinearLayout>
 

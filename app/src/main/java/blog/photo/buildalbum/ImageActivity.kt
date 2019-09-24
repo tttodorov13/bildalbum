@@ -9,12 +9,16 @@ import android.net.Uri
 import android.os.Bundle
 import android.widget.AdapterView
 import android.widget.ImageView
+import android.widget.LinearLayout
+import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import androidx.core.view.isGone
 import blog.photo.buildalbum.R.string.*
 import blog.photo.buildalbum.model.Image
 import blog.photo.buildalbum.tasks.SaveImage
 import blog.photo.buildalbum.utils.ImagesAdapter
 import kotlinx.android.synthetic.main.activity_image.*
+
 
 /**
  * Class to manage the picture screen.
@@ -138,15 +142,49 @@ class ImageActivity : BaseActivity() {
         }
 
         // Click listener for Delete Button
-        // TODO: Add confirmation Dialog
         buttonDelete.setOnClickListener {
-            if (imageViewImageOriginal.isGone) {
-                imageNew.delete()
-            } else {
-                imageOriginal.delete()
+            val alertDialog = AlertDialog.Builder(this, R.style.BuildAlbumAlertDialog)
+                .setTitle(getString(image_delete))
+                .setIcon(android.R.drawable.ic_menu_delete).create()
+
+            alertDialog.setButton(
+                AlertDialog.BUTTON_NEGATIVE,
+                getString(android.R.string.cancel),
+                ContextCompat.getDrawable(
+                    this,
+                    android.R.drawable.ic_delete
+                )
+            ) { dialog, _ ->
+                toast(getString(image_rescued))
+                dialog.dismiss()
             }
-            toast(getString(image_deleted))
-            finish()
+
+            alertDialog.setButton(
+                AlertDialog.BUTTON_POSITIVE,
+                getString(android.R.string.ok),
+                ContextCompat.getDrawable(
+                    this,
+                    android.R.drawable.checkbox_on_background
+                )
+            ) { _, _ ->
+                if (imageViewImageOriginal.isGone) {
+                    imageNew.delete()
+                } else {
+                    imageOriginal.delete()
+                }
+                toast(getString(image_deleted))
+                finish()
+            }
+
+            alertDialog.show()
+
+            val btnPositive = alertDialog.getButton(AlertDialog.BUTTON_POSITIVE)
+            val btnNegative = alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE)
+
+            val layoutParams = btnPositive.layoutParams as LinearLayout.LayoutParams
+            layoutParams.weight = 10f
+            btnPositive.layoutParams = layoutParams
+            btnNegative.layoutParams = layoutParams
         }
     }
 

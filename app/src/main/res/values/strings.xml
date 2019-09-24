@@ -6,7 +6,7 @@
     <string name="FLICKR_API_URI" translatable="false">https://api.flickr.com/services/feeds/photos_public.gne</string>
     <string name="PIXABAY_API_URI" translatable="false">https://pixabay.com/api/</string>
     <string name="PIXABAY_API_KEY" translatable="false">13310406-d6e15cf3e2d5c590fa44a6bea</string>
-    <string name="add_image">Add Image</string>
+    <string name="image_add">Add Image</string>
     <string name="take_photo">Take a Photo</string>
     <string name="choice_from_gallery">Choice from Gallery</string>
     <string name="download_from_flickr" translatable="false">Download from Flickr</string>
@@ -16,9 +16,11 @@
     <string name="facebook_sharer" translatable="false">https://www.facebook.com/sharer/sharer.php?u=</string>
     <string name="install_facebook_for_optimal_experience">Install Facebook for best experience!</string>
     <string name="image_saved">Image saved!</string>
-    <string name="image_deleted">Image deleted!</string>
+    <string name="image_deleted">Image is deleted!</string>
     <string name="download_exception" translatable="false">Download Exception: </string>
     <string name="not_enough_space_on_disk">Not enough space on disk!</string>
     <string name="no_image_is_captured">No image is captured!</string>
-    <string name="enable_internet_to_download_images">Enable Internet to download images!</string>
+    <string name="enable_internet">Enable Internet to download images!</string>
+    <string name="image_delete">Delete Image</string>
+    <string name="image_rescued">Image is rescued!</string>
 </resources>

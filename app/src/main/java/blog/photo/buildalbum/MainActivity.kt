@@ -101,7 +101,9 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
             dialogItems.toArray(dialogItemsArray)
 
             AlertDialog.Builder(this, R.style.BuildAlbumAlertDialog)
-                .setTitle(getString(add_image)).setItems(
+                .setTitle(getString(image_add))
+                .setIcon(android.R.drawable.ic_input_add)
+                .setItems(
                     dialogItemsArray
                 ) { dialog, item ->
                     when {
@@ -215,7 +217,7 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
             downloadFrames()
             true
         } else {
-            toast(getString(enable_internet_to_download_images))
+            toast(getString(enable_internet))
             false
         }
     }
