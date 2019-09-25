@@ -2,6 +2,7 @@ package blog.photo.buildalbum.model
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Environment
 import android.util.Log
@@ -48,6 +49,7 @@ data class Image(val context: Context, val isFrame: Boolean, val name: String, v
 
     val file = File(context.getExternalFilesDir(Environment.DIRECTORY_PICTURES), name)
     val filePath: String = file.canonicalPath
+    val bitmap: Bitmap? = BitmapFactory.decodeFile(filePath)
     val uri = Uri.parse(filePath)!!
 
     internal fun delete() {

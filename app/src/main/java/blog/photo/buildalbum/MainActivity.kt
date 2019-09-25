@@ -235,46 +235,12 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
     }
 
     /**
-     * Method to create image file on disk
-     */
-    private fun createImage(): File? {
-        image = Image(this)
-        file = image.file
-        if (file.exists())
-            file.delete()
-
-        return try {
-            val out = FileOutputStream(file)
-            out.flush()
-            out.close()
-            file
-        } catch (e: IOException) {
-            toast(getString(not_enough_space_on_disk))
-            e(tag, e.message.toString())
-            null
-        }
-    }
-
-    /**
      * Method to Take a Photo with Camera App
      */
     private fun startIntentCamera() {
         Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { intent ->
-            // Ensure that there's a Camera Activity to handle the intent
+            // Ensure there is a Camera Activity to handle the intent
             intent.resolveActivity(packageManager)?.also {
-                // Create the File where the photo should go
-//                val imageFile = createImage()
-//
-//                // Continue only if the file was successfully created
-//                imageFile?.also {
-//                    val photoURI: Uri = FileProvider.getUriForFile(
-//                        this,
-//                        "blog.photo.buildalbum.FileProvider",
-//                        it
-//                    )
-//                    intent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
-//                }
-
                 startActivityForResult(intent, PERMISSIONS_REQUEST_CODE)
             }
         }

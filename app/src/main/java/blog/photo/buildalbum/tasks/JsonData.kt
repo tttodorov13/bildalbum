@@ -33,7 +33,7 @@ class JsonData(private val listener: OnDataAvailable, private val source: Downlo
         val itemsArray: JSONArray
 
         try {
-            jsonData = JSONObject(params[0].toString())
+            jsonData = JSONObject(params[0])
             when (source) {
                 DownloadSource.FRAMES -> {
                     itemsArray = jsonData.getJSONArray("items")
