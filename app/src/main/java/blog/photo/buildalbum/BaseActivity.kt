@@ -16,6 +16,8 @@ import blog.photo.buildalbum.adapters.ImagesAdapter
 /**
  * Class to be base for all activities of the application.
  */
+// TODO: Fix E/BitmapFactory: Unable to decode stream: java.io.FileNotFoundException
+// TODO: Show message image saved on SaveImage execute successfully completed
 open class BaseActivity : AppCompatActivity() {
 
     /**

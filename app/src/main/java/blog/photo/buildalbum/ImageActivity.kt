@@ -4,6 +4,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
+import android.graphics.Matrix
 import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Bundle
@@ -12,23 +13,20 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
-import androidx.core.view.isGone
 import blog.photo.buildalbum.R.string.*
+import blog.photo.buildalbum.adapters.ImagesAdapter
 import blog.photo.buildalbum.model.Image
 import blog.photo.buildalbum.tasks.SaveImage
-import blog.photo.buildalbum.adapters.ImagesAdapter
 import kotlinx.android.synthetic.main.activity_image.*
-
 
 /**
  * Class to manage the picture screen.
  */
-// TODO: Add Rotate Image functionality
 class ImageActivity : BaseActivity() {
 
-    private var imageNewName: String = ""
-    private lateinit var imageNew: Image
-    private lateinit var imageOriginal: Image
+    private lateinit var frame: Image
+    private lateinit var image: Image
+    private var rotateIndex = 0
 
     /**
      * A companion object for static variables
@@ -40,7 +38,7 @@ class ImageActivity : BaseActivity() {
         private lateinit var imageNewView: ImageView
 
         /**
-         * Method to get a bitmap from the new image ImageView
+         * Method to get a bitmap from the new image
          */
         internal fun getBitmapFromImageView(): Bitmap {
             return (imageNewView.drawable as BitmapDrawable).bitmap
@@ -56,16 +54,21 @@ class ImageActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_image)
 
-        imageNew = Image(this, false, getString(app_name))
+        // Set ImageView to be used for saving changes
         imageNewView = imageView
-        imageOriginal = Image(
+
+        // Initialize the image object
+        image = Image(
             this,
-            intent.extras!!.get("imageOriginalName").toString(),
-            intent.extras!!.get("imageOriginalOrigin").toString()
+            intent.extras!!.get("originalName").toString(),
+            intent.extras!!.get("originalOrigin").toString()
         )
-        imageViewImageOriginal.setImageURI(
-            imageOriginal.uri
-        )
+
+        // Initialize the frame object
+        frame = Image(this, true, "", "")
+
+        // Set new Image URI
+        imageView.setImageURI(image.uri)
 
         framesAdapter = ImagesAdapter(
             this, frames
@@ -75,42 +78,16 @@ class ImageActivity : BaseActivity() {
 
         imageScreenScroll.smoothScrollTo(0, 0)
 
-        // Click listener for Add Frame
-        gridViewFrames.onItemClickListener =
-            AdapterView.OnItemClickListener { _, _, position, _ ->
-                val bitmapNew = addFrame(
-                    imageOriginal,
-                    frames[position]
-                )
-                imageView.setImageBitmap(bitmapNew)
-                imageView.isGone = false
-                imageViewImageOriginal.isGone = true
-
-                if (imageNewName != "")
-                    imageNew = Image(this, imageNewName, getString(app_name))
-                else
-                    imageNewName = imageNew.name
-
-                SaveImage(this, true, imageNew).execute()
-                toast(getString(image_saved))
-            }
-
         // Click listener for Share Button
         buttonShare.setOnClickListener {
             var intent = Intent(Intent.ACTION_SEND)
             intent.type = "image/*"
             intent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
 
-            if (imageNewName != "")
-                intent.putExtra(
-                    Intent.EXTRA_STREAM,
-                    Uri.fromFile(imageNew.file)
-                )
-            else
-                intent.putExtra(
-                    Intent.EXTRA_STREAM,
-                    Uri.fromFile(imageOriginal.file)
-                )
+            intent.putExtra(
+                Intent.EXTRA_STREAM,
+                Uri.fromFile(image.file)
+            )
 
             // See if official Facebook app is found
             var facebookAppFound = false
@@ -141,6 +118,52 @@ class ImageActivity : BaseActivity() {
             startActivity(intent)
         }
 
+        // Click listener for Rotate Button
+        buttonRotate.setOnClickListener {
+            imageSetOriginalView()
+
+            // Rotate image with current index +1
+            var bitmap = imageRotate(++rotateIndex)
+
+            // Set current bitmap on image screen
+            imageView.setImageBitmap(bitmap)
+
+            // Check if frame is applied
+            if (frame.name != "") {
+                bitmap = imageAddFrame(frame)
+                imageView.setImageBitmap(bitmap)
+            }
+
+            // Save current image
+            SaveImage(this, true, image).execute()
+            toast(getString(image_saved))
+        }
+
+        // Click listener for Add Frame
+        gridViewFrames.onItemClickListener =
+            AdapterView.OnItemClickListener { _, _, position, _ ->
+                imageSetOriginalView()
+
+                // Copy frame from selection
+                frame = frames[position]
+
+                // Rotate image with current index
+                var bitmap = imageRotate(rotateIndex)
+
+                // Set current bitmap on image screen
+                imageView.setImageBitmap(bitmap)
+
+                // Add current frame
+                bitmap = imageAddFrame(frame)
+
+                // Set current bitmap on image screen
+                imageView.setImageBitmap(bitmap)
+
+                // Save current image
+                SaveImage(this, true, image).execute()
+                toast(getString(image_saved))
+            }
+
         // Click listener for Delete Button
         buttonDelete.setOnClickListener {
             val alertDialog = AlertDialog.Builder(this, R.style.BuildAlbumAlertDialog)
@@ -167,11 +190,7 @@ class ImageActivity : BaseActivity() {
                     android.R.drawable.checkbox_on_background
                 )
             ) { _, _ ->
-                if (imageViewImageOriginal.isGone) {
-                    imageNew.delete()
-                } else {
-                    imageOriginal.delete()
-                }
+                image.delete()
                 toast(getString(image_deleted))
                 finish()
             }
@@ -195,13 +214,18 @@ class ImageActivity : BaseActivity() {
      */
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
-        imageNewName = savedInstanceState.getString("imageNewName")!!
-        if (imageNewName != "") {
-            imageNew = Image(this, imageNewName)
-            imageView.setImageURI(imageNew.uri)
-            imageView.isGone = false
-            imageViewImageOriginal.isGone = true
-        }
+        image = Image(
+            this,
+            savedInstanceState.getString("imageName")!!,
+            savedInstanceState.getString("imageOrigin")!!
+        )
+        frame = Image(
+            this,
+            true,
+            savedInstanceState.getString("frameName")!!,
+            savedInstanceState.getString("frameOrigin")!!
+        )
+        imageView.setImageURI(image.uri)
     }
 
     /**
@@ -210,45 +234,78 @@ class ImageActivity : BaseActivity() {
      * @param outState
      */
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putString("imageNewName", imageNewName)
+        outState.putString("imageName", image.name)
+        outState.putString("imageOrigin", image.origin)
+        outState.putString("frameName", frame.name)
+        outState.putString("frameOrigin", frame.origin)
         super.onSaveInstanceState(outState)
     }
 
     /**
-     * Method to add a frame
+     * Method to get image origin
      */
-    private fun addFrame(image: Image, frame: Image): Bitmap? {
-        val imageBitmap = BitmapFactory.decodeFile(image.filePath)
+    private fun imageSetOriginalView() {
+        // Store image.name in temporary var
+        val imageName = image.name
+
+        // If it is not first edition, get image original
+        if (image.name != intent.extras!!.get("originalName").toString()) {
+            image = Image(
+                this,
+                intent.extras!!.get("originalName").toString(),
+                intent.extras!!.get("originalOrigin").toString()
+            )
+        }
+
+        // Set current bitmap on image screen
+        imageView.setImageBitmap(image.bitmap)
+
+        // If it is not first edition, get saved image
+        image = if (imageName != intent.extras!!.get("originalName").toString())
+            Image(this, imageName, getString(app_name))
+        // Else create new image
+        else
+            Image(this, false, getString(app_name))
+    }
+
+    /**
+     * Method to add a frame
+     *
+     * @param frame to be applied
+     * @return new bitmap to be displayed as image
+     */
+    private fun imageAddFrame(frame: Image): Bitmap? {
+        val bitmap = (imageView.drawable as BitmapDrawable).bitmap
 
         // Resize image to fit in the frame
-        var editedBitmap: Bitmap =
-            // Check if the original image is too small to cut a square from it
-            if (IMAGE_SIZE >= imageBitmap.width || IMAGE_SIZE >= imageBitmap.height)
+        var bitmapEdited: Bitmap =
+            // Check if the original image is too small to cut a square from it and just resize it
+            if (IMAGE_SIZE >= bitmap.width || IMAGE_SIZE >= bitmap.height)
                 Bitmap.createScaledBitmap(
-                    imageBitmap,
+                    bitmap,
                     IMAGE_SIZE,
                     IMAGE_SIZE,
                     false
                 )
-            // Check if the original image is large enough to cut a square from it
+            // If the original image is large enough cut a square from it and resize it
             else {
-                val cutBitmap =
-                    if (imageBitmap.width >= imageBitmap.height) Bitmap.createBitmap(
-                        imageBitmap,
-                        imageBitmap.width / 2 - imageBitmap.height / 2,
+                val bitmapCut =
+                    if (bitmap.width >= bitmap.height) Bitmap.createBitmap(
+                        bitmap,
+                        bitmap.width / 2 - bitmap.height / 2,
                         0,
-                        imageBitmap.height,
-                        imageBitmap.height
+                        bitmap.height,
+                        bitmap.height
                     )
                     else Bitmap.createBitmap(
-                        imageBitmap,
+                        bitmap,
                         0,
-                        imageBitmap.height / 2 - imageBitmap.width / 2,
-                        imageBitmap.width,
-                        imageBitmap.width
+                        bitmap.height / 2 - bitmap.width / 2,
+                        bitmap.width,
+                        bitmap.width
                     )
                 Bitmap.createScaledBitmap(
-                    cutBitmap,
+                    bitmapCut,
                     IMAGE_SIZE,
                     IMAGE_SIZE,
                     false
@@ -256,19 +313,45 @@ class ImageActivity : BaseActivity() {
             }
 
         // Get the bitmap frame to be applied
-        val imageNewBitmap = BitmapFactory.decodeFile(frame.filePath).copy(
+        val bitmapNew = BitmapFactory.decodeFile(frame.filePath).copy(
             Bitmap.Config.ARGB_8888,
             true
         )
 
         // Add the scaled image onto the frame
-        Canvas(imageNewBitmap).drawBitmap(
-            editedBitmap,
+        Canvas(bitmapNew).drawBitmap(
+            bitmapEdited,
             IMAGE_SIZE_BORDER,
             IMAGE_SIZE_BORDER,
             null
         )
 
-        return imageNewBitmap
+        return bitmapNew
+    }
+
+    /**
+     * Method to rotate by 90 degrees clockwise
+     *
+     * @return new bitmap to be displayed as image
+     */
+    private fun imageRotate(index: Int): Bitmap? {
+        val imageBitmap = (imageView.drawable as BitmapDrawable).bitmap
+        if (index == 0)
+            return imageBitmap
+
+        rotateIndex == index % 4
+        val degrees = 90f * rotateIndex
+        val matrix = Matrix()
+        matrix.setRotate(degrees)
+
+        return Bitmap.createBitmap(
+            imageBitmap,
+            0,
+            0,
+            imageBitmap.width,
+            imageBitmap.height,
+            matrix,
+            true
+        )
     }
 }
