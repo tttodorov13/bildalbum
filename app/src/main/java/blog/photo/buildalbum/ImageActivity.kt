@@ -21,8 +21,7 @@ import kotlinx.android.synthetic.main.activity_image.*
 /**
  * Class to manage the picture screen.
  */
-// TODO: Paste Edit Image buttons on top of current image
-// TODO: Make frames' GridView scrollable
+// TODO: Add progress spinner on edit image
 class ImageActivity : BaseActivity() {
 
     private lateinit var frame: Image
@@ -79,7 +78,12 @@ class ImageActivity : BaseActivity() {
         gridViewFrames.adapter = framesAdapter
 
         // Scroll to screen top
-        imageScreenScroll.smoothScrollTo(0, 0)
+        screen.smoothScrollTo(0, 0)
+
+        // Click listener for Scroll-to-Top Button
+        buttonTop.setOnClickListener {
+            screen.smoothScrollTo(0, 0)
+        }
 
         // Click listener for Share Button
         buttonShare.setOnClickListener {

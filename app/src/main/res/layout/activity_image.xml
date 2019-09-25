@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -16,7 +16,7 @@
         android:padding="@dimen/activity_margin">
 
         <ScrollView
-            android:id="@+id/imageScreenScroll"
+            android:id="@+id/screen"
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
@@ -24,14 +24,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:orientation="vertical">
-
-                <ImageButton
-                    android:id="@+id/buttonShare"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:gravity="center"
-                    app:srcCompat="@android:drawable/ic_menu_share" />
 
                 <ImageView
                     android:id="@+id/imageView"
@@ -41,14 +33,6 @@
                     android:layout_margin="@dimen/inner_margin"
                     android:background="@color/colorPrimary"
                     app:srcCompat="@mipmap/ic_launcher" />
-
-                <ImageButton
-                    android:id="@+id/buttonRotate"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:gravity="center"
-                    app:srcCompat="@android:drawable/ic_menu_rotate" />
 
                 <blog.photo.buildalbum.utils.ExpandableHeightGridView
                     android:id="@+id/gridViewFrames"
@@ -62,18 +46,45 @@
                     android:stretchMode="spacingWidthUniform"
                     android:verticalSpacing="20dp" />
 
-                <ImageButton
-                    android:id="@+id/buttonDelete"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_vertical"
-                    android:gravity="center"
-                    app:srcCompat="@android:drawable/ic_menu_delete" />
-
             </LinearLayout>
 
         </ScrollView>
 
     </RelativeLayout>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/buttonTop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginRight="@dimen/fab_margin4"
+        android:layout_marginBottom="@dimen/fab_margin1"
+        android:foreground="@android:drawable/ic_menu_upload" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/buttonShare"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginRight="@dimen/fab_margin3"
+        android:layout_marginBottom="@dimen/fab_margin1"
+        android:foreground="@android:drawable/ic_menu_share" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/buttonRotate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginRight="@dimen/fab_margin2"
+        android:layout_marginBottom="@dimen/fab_margin1"
+        android:foreground="@android:drawable/ic_menu_rotate" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/buttonDelete"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="@dimen/fab_margin1"
+        android:foreground="@android:drawable/ic_menu_delete" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -19,27 +19,26 @@ import blog.photo.buildalbum.adapters.IconsAdapter
 import blog.photo.buildalbum.adapters.ImagesAdapter
 import blog.photo.buildalbum.model.Image
 import blog.photo.buildalbum.receiver.ConnectivityReceiver
-import blog.photo.buildalbum.tasks.*
+import blog.photo.buildalbum.tasks.DownloadData
+import blog.photo.buildalbum.tasks.DownloadSource
+import blog.photo.buildalbum.tasks.DownloadStatus
 import blog.photo.buildalbum.tasks.DownloadStatus.OK
+import blog.photo.buildalbum.tasks.JsonData
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
-import java.io.File
 
 /**
  * Class to manage the main screen.
  */
+// TODO: Add progress spinner on add image
 class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiverListener,
     DownloadData.OnDownloadComplete,
     JsonData.OnDataAvailable {
-
-    private lateinit var image: Image
 
     /**
      * A companion object for class variables.
      */
     companion object {
-        private const val tag = "MainActivity"
-        private lateinit var file: File
         private val connectivityReceiver = ConnectivityReceiver()
         private lateinit var imageNewView: ImageView
 
@@ -169,19 +168,12 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
         requestCode: Int,
         permissions: Array<String>, grantResults: IntArray
     ) {
-        when (requestCode) {
-            PERMISSIONS_REQUEST_CODE -> {
-                // If permissions were granted add them all.
-                if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                    grantedPermissions.addAll(permissions)
-                } else {
-                    // If permissions were not granted remove them.
-                    grantedPermissions.removeAll(permissions)
-                }
-            }
-            // Ignore all other requests.
-            else -> {
-            }
+        if (requestCode == PERMISSIONS_REQUEST_CODE && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            // If permissions were granted add them all.
+            grantedPermissions.addAll(permissions)
+        } else {
+            // If permissions were not granted remove them.
+            grantedPermissions.removeAll(permissions)
         }
     }
 

@@ -7,7 +7,6 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.AsyncTask
 import android.os.Bundle
-import android.util.Log
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -17,7 +16,6 @@ import blog.photo.buildalbum.adapters.ImagesAdapter
 import blog.photo.buildalbum.model.Image
 import blog.photo.buildalbum.utils.DatabaseHelper
 
-// TODO: Fix E/BitmapFactory: Unable to decode stream: java.io.FileNotFoundException
 /**
  * Interface for async responses
  */
@@ -77,8 +75,6 @@ open class BaseActivity : AppCompatActivity(), AsyncResponse {
     ) :
         AsyncTask<String, Void, Bitmap>() {
 
-        private val tag = "ImageSave"
-
         override fun doInBackground(vararg args: String): Bitmap? {
             return when {
                 // Image is taken from Gallery
@@ -89,14 +85,13 @@ open class BaseActivity : AppCompatActivity(), AsyncResponse {
                 // Image is taken with Camera
                 Manifest.permission.CAMERA == image.origin -> MainActivity.getBitmapFromImageView()
 
-                // Image is downloaded
+                // Image has been edited
                 isEdited -> ImageActivity.getBitmapFromImageView()
 
-                // Image is edited
+                // Image is downloaded
                 else -> try {
                     BitmapFactory.decodeStream(java.net.URL(image.origin).openStream())
                 } catch (e: Exception) {
-                    Log.e(tag, e.message.toString())
                     null
                 }
             }
