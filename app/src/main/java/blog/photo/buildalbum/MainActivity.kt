@@ -74,9 +74,9 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
             AdapterView.OnItemClickListener { _, _, position, _ ->
                 startActivity(
                     Intent(this, ImageActivity::class.java).putExtra(
-                        "imageOriginalName",
+                        "originalName",
                         images[position].name
-                    ).putExtra("imageOriginalOrigin", images[position].origin)
+                    ).putExtra("originalOrigin", images[position].origin)
                 )
             }
 
@@ -308,7 +308,7 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
         source: DownloadSource,
         status: DownloadStatus
     ) {
-        if (status == OK)
+        if (status == OK && data.isNotBlank())
             JsonData(this, source).execute(data)
     }
 
