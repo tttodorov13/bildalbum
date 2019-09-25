@@ -3,7 +3,6 @@ package blog.photo.buildalbum.model
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.net.Uri
 import android.os.Environment
 import android.util.Log
 import blog.photo.buildalbum.BaseActivity.Companion.frames
@@ -35,10 +34,9 @@ data class Image(val context: Context, val isFrame: Boolean, val name: String, v
 
     constructor(context: Context, name: String, origin: String) : this(context, false, name, origin)
 
-    constructor(context: Context, name: String) : this(context, false, name, "")
-
-    constructor(context: Context) : this(context, "img".plus(System.nanoTime()).plus(".png"))
-
+    /**
+     * Override method equals to compare by-origin before by-name
+     */
     override fun equals(other: Any?): Boolean {
         return other != null &&
                 other is Image &&
@@ -50,7 +48,6 @@ data class Image(val context: Context, val isFrame: Boolean, val name: String, v
     val file = File(context.getExternalFilesDir(Environment.DIRECTORY_PICTURES), name)
     val filePath: String = file.canonicalPath
     val bitmap: Bitmap? = BitmapFactory.decodeFile(filePath)
-    val uri = Uri.parse(filePath)!!
 
     internal fun delete() {
         DatabaseHelper(context).deleteImage(

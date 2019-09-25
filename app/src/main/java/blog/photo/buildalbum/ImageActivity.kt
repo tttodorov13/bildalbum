@@ -16,12 +16,13 @@ import androidx.core.content.ContextCompat
 import blog.photo.buildalbum.R.string.*
 import blog.photo.buildalbum.adapters.ImagesAdapter
 import blog.photo.buildalbum.model.Image
-import blog.photo.buildalbum.tasks.SaveImage
 import kotlinx.android.synthetic.main.activity_image.*
 
 /**
  * Class to manage the picture screen.
  */
+// TODO: Paste Edit Image buttons on top of current image
+// TODO: Make frames' GridView scrollable
 class ImageActivity : BaseActivity() {
 
     private lateinit var frame: Image
@@ -68,14 +69,16 @@ class ImageActivity : BaseActivity() {
         frame = Image(this, true, "", "")
 
         // Set new Image URI
-        imageView.setImageURI(image.uri)
+        imageView.setImageBitmap(image.bitmap)
 
+        // Display frames to be added
         framesAdapter = ImagesAdapter(
             this, frames
         )
         gridViewFrames.isExpanded = true
         gridViewFrames.adapter = framesAdapter
 
+        // Scroll to screen top
         imageScreenScroll.smoothScrollTo(0, 0)
 
         // Click listener for Share Button
@@ -135,8 +138,7 @@ class ImageActivity : BaseActivity() {
             }
 
             // Save current image
-            SaveImage(this, true, image).execute()
-            toast(getString(image_saved))
+            ImageSave(true, image).execute()
         }
 
         // Click listener for Add Frame
@@ -160,8 +162,7 @@ class ImageActivity : BaseActivity() {
                 imageView.setImageBitmap(bitmap)
 
                 // Save current image
-                SaveImage(this, true, image).execute()
-                toast(getString(image_saved))
+                ImageSave(true, image).execute()
             }
 
         // Click listener for Delete Button
@@ -225,7 +226,7 @@ class ImageActivity : BaseActivity() {
             savedInstanceState.getString("frameName")!!,
             savedInstanceState.getString("frameOrigin")!!
         )
-        imageView.setImageURI(image.uri)
+        imageView.setImageBitmap(image.bitmap)
     }
 
     /**
@@ -275,7 +276,7 @@ class ImageActivity : BaseActivity() {
      * @return new bitmap to be displayed as image
      */
     private fun imageAddFrame(frame: Image): Bitmap? {
-        val bitmap = (imageView.drawable as BitmapDrawable).bitmap
+        val bitmap = getBitmapFromImageView()
 
         // Resize image to fit in the frame
         var bitmapEdited: Bitmap =
@@ -335,7 +336,7 @@ class ImageActivity : BaseActivity() {
      * @return new bitmap to be displayed as image
      */
     private fun imageRotate(index: Int): Bitmap? {
-        val imageBitmap = (imageView.drawable as BitmapDrawable).bitmap
+        val imageBitmap = getBitmapFromImageView()
         if (index == 0)
             return imageBitmap
 

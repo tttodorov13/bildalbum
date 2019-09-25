@@ -11,22 +11,19 @@ import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
-import android.util.Log.e
 import android.widget.AdapterView
 import android.widget.ImageView
 import androidx.appcompat.app.AlertDialog
 import blog.photo.buildalbum.R.string.*
+import blog.photo.buildalbum.adapters.IconsAdapter
+import blog.photo.buildalbum.adapters.ImagesAdapter
 import blog.photo.buildalbum.model.Image
 import blog.photo.buildalbum.receiver.ConnectivityReceiver
 import blog.photo.buildalbum.tasks.*
 import blog.photo.buildalbum.tasks.DownloadStatus.OK
-import blog.photo.buildalbum.adapters.IconsAdapter
-import blog.photo.buildalbum.adapters.ImagesAdapter
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import java.io.File
-import java.io.FileOutputStream
-import java.io.IOException
 
 /**
  * Class to manage the main screen.
@@ -136,7 +133,7 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
                 data.extras?.get("data") != null -> {
                     val bmp = data.extras?.get("data") as Bitmap?
                     imageViewCamera.setImageBitmap(bmp)
-                    SaveImage(this, false, Image(this, false, CAMERA)).execute()
+                    ImageSave(false, Image(this, false, CAMERA)).execute()
                 }
 
                 // Image is taken from Gallery
@@ -149,7 +146,7 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
                     cursor!!.moveToFirst()
                     val filePath = cursor.getString(cursor.getColumnIndex(filePathColumn[0]))
                     cursor.close()
-                    SaveImage(this, false, Image(this, false, WRITE_EXTERNAL_STORAGE)).execute(
+                    ImageSave(false, Image(this, false, WRITE_EXTERNAL_STORAGE)).execute(
                         filePath
                     )
                 }
@@ -325,11 +322,7 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
                 it
             )
             if (image !in images && image !in frames)
-                SaveImage(
-                    this,
-                    false,
-                    image
-                ).execute()
+                ImageSave(false, image).execute()
         }
     }
 
@@ -340,5 +333,9 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
      */
     override fun onError(exception: Exception) {
         toast(getString(download_exception).plus(exception))
+    }
+
+    override fun taskCompleted(stringId: Int) {
+        // Prevent toast on image saved
     }
 }

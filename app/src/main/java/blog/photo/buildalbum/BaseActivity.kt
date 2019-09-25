@@ -3,22 +3,32 @@ package blog.photo.buildalbum
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.os.AsyncTask
 import android.os.Bundle
+import android.util.Log
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import blog.photo.buildalbum.adapters.ImagesAdapter
 import blog.photo.buildalbum.model.Image
 import blog.photo.buildalbum.utils.DatabaseHelper
-import blog.photo.buildalbum.adapters.ImagesAdapter
+
+// TODO: Fix E/BitmapFactory: Unable to decode stream: java.io.FileNotFoundException
+/**
+ * Interface for async responses
+ */
+interface AsyncResponse {
+    fun taskCompleted(stringId: Int)
+}
 
 /**
- * Class to be base for all activities of the application.
+ * Class base for all activities of the application.
  */
-// TODO: Fix E/BitmapFactory: Unable to decode stream: java.io.FileNotFoundException
-// TODO: Show message image saved on SaveImage execute successfully completed
-open class BaseActivity : AppCompatActivity() {
+open class BaseActivity : AppCompatActivity(), AsyncResponse {
 
     /**
      * A companion object for class variables.
@@ -52,6 +62,51 @@ open class BaseActivity : AppCompatActivity() {
         // Get frames to add
         if (frames.size == 0)
             getFrames()
+    }
+
+    override fun taskCompleted(stringId: Int) {
+        toast(getString(stringId))
+    }
+
+    /**
+     * Class to manage Image Save
+     */
+    inner class ImageSave(
+        private val isEdited: Boolean,
+        private val image: Image
+    ) :
+        AsyncTask<String, Void, Bitmap>() {
+
+        private val tag = "ImageSave"
+
+        override fun doInBackground(vararg args: String): Bitmap? {
+            return when {
+                // Image is taken from Gallery
+                Manifest.permission.WRITE_EXTERNAL_STORAGE == image.origin && args.size >= 0 -> BitmapFactory.decodeFile(
+                    args[0]
+                )
+
+                // Image is taken with Camera
+                Manifest.permission.CAMERA == image.origin -> MainActivity.getBitmapFromImageView()
+
+                // Image is downloaded
+                isEdited -> ImageActivity.getBitmapFromImageView()
+
+                // Image is edited
+                else -> try {
+                    BitmapFactory.decodeStream(java.net.URL(image.origin).openStream())
+                } catch (e: Exception) {
+                    Log.e(tag, e.message.toString())
+                    null
+                }
+            }
+        }
+
+        override fun onPostExecute(result: Bitmap?) {
+            image.write(result)
+            image.save()
+            taskCompleted(R.string.image_saved)
+        }
     }
 
     /**
