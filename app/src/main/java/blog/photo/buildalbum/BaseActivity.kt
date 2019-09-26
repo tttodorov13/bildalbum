@@ -20,12 +20,21 @@ import blog.photo.buildalbum.utils.DatabaseHelper
  * Interface for async responses
  */
 interface AsyncResponse {
-    fun taskCompleted(stringId: Int)
+    /**
+     * Method to mark task begin execution.
+     */
+    fun onTaskBegin()
+
+    /**
+     * Method to mark task end execution.
+     */
+    fun onTaskComplete(stringId: Int)
 }
 
 /**
  * Class base for all activities of the application.
  */
+// TODO: Move download frames to ImageActivity
 open class BaseActivity : AppCompatActivity(), AsyncResponse {
 
     /**
@@ -40,6 +49,7 @@ open class BaseActivity : AppCompatActivity(), AsyncResponse {
         internal var images = ArrayList<Image>()
         internal var hasInternet: Boolean = false
         internal lateinit var imagesAdapter: ImagesAdapter
+        internal var taskCountDown = 0
     }
 
     /**
@@ -62,8 +72,18 @@ open class BaseActivity : AppCompatActivity(), AsyncResponse {
             getFrames()
     }
 
-    override fun taskCompleted(stringId: Int) {
-        toast(getString(stringId))
+    /**
+     * Method to customize async task begin
+     */
+    override fun onTaskBegin() {
+        taskCountDown++
+    }
+
+    /**
+     * Method to customize async task end
+     */
+    override fun onTaskComplete(stringId: Int) {
+        taskCountDown--
     }
 
     /**
@@ -75,20 +95,24 @@ open class BaseActivity : AppCompatActivity(), AsyncResponse {
     ) :
         AsyncTask<String, Void, Bitmap>() {
 
+        override fun onPreExecute() {
+            onTaskBegin()
+        }
+
         override fun doInBackground(vararg args: String): Bitmap? {
             return when {
-                // Image is taken from Gallery
+                // Image has been edited
+                isEdited -> ImageActivity.getBitmapFromImageView()
+
+                // Image from Gallery
                 Manifest.permission.WRITE_EXTERNAL_STORAGE == image.origin && args.size >= 0 -> BitmapFactory.decodeFile(
                     args[0]
                 )
 
-                // Image is taken with Camera
+                // Image from Camera
                 Manifest.permission.CAMERA == image.origin -> MainActivity.getBitmapFromImageView()
 
-                // Image has been edited
-                isEdited -> ImageActivity.getBitmapFromImageView()
-
-                // Image is downloaded
+                // Image download
                 else -> try {
                     BitmapFactory.decodeStream(java.net.URL(image.origin).openStream())
                 } catch (e: Exception) {
@@ -100,7 +124,7 @@ open class BaseActivity : AppCompatActivity(), AsyncResponse {
         override fun onPostExecute(result: Bitmap?) {
             image.write(result)
             image.save()
-            taskCompleted(R.string.image_saved)
+            onTaskComplete(R.string.image_saved)
         }
     }
 

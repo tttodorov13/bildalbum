@@ -26,7 +26,7 @@
                 android:orientation="vertical">
 
                 <ImageView
-                    android:id="@+id/imageView"
+                    android:id="@+id/imageViewCamera"
                     android:layout_width="@dimen/edited_image_size"
                     android:layout_height="@dimen/edited_image_size"
                     android:layout_gravity="center_horizontal"
@@ -52,8 +52,15 @@
 
     </RelativeLayout>
 
+    <ProgressBar
+        android:id="@+id/progressBarImageScreen"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:progressDrawable="@drawable/progress_bar_circular"
+        android:visibility="gone" />
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/buttonTop"
+        android:id="@+id/fabTop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
@@ -62,7 +69,7 @@
         android:foreground="@android:drawable/ic_menu_upload" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/buttonShare"
+        android:id="@+id/fabShare"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
@@ -71,7 +78,7 @@
         android:foreground="@android:drawable/ic_menu_share" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/buttonRotate"
+        android:id="@+id/fabRotate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
@@ -80,7 +87,7 @@
         android:foreground="@android:drawable/ic_menu_rotate" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/buttonDelete"
+        android:id="@+id/fabDelete"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"

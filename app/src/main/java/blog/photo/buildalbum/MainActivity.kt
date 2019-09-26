@@ -14,6 +14,7 @@ import android.provider.MediaStore
 import android.widget.AdapterView
 import android.widget.ImageView
 import androidx.appcompat.app.AlertDialog
+import androidx.core.view.isGone
 import blog.photo.buildalbum.R.string.*
 import blog.photo.buildalbum.adapters.IconsAdapter
 import blog.photo.buildalbum.adapters.ImagesAdapter
@@ -22,15 +23,16 @@ import blog.photo.buildalbum.receiver.ConnectivityReceiver
 import blog.photo.buildalbum.tasks.DownloadData
 import blog.photo.buildalbum.tasks.DownloadSource
 import blog.photo.buildalbum.tasks.DownloadStatus
-import blog.photo.buildalbum.tasks.DownloadStatus.OK
 import blog.photo.buildalbum.tasks.JsonData
+import kotlinx.android.synthetic.main.activity_image.*
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
+import kotlinx.android.synthetic.main.content_main.imageViewCamera
+
 
 /**
  * Class to manage the main screen.
  */
-// TODO: Add progress spinner on add image
 class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiverListener,
     DownloadData.OnDownloadComplete,
     JsonData.OnDataAvailable {
@@ -203,7 +205,9 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
     }
 
     /**
-     * Callback will be called when there is network change
+     * onNetworkConnectionChanged MainActivity
+     *
+     * Callback will be called when there is network change.
      */
     override fun onNetworkConnectionChanged(isConnected: Boolean) {
         hasInternet = if (isConnected) {
@@ -297,7 +301,7 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
         source: DownloadSource,
         status: DownloadStatus
     ) {
-        if (status == OK && data.isNotBlank())
+        if (status == DownloadStatus.OK && data.isNotBlank())
             JsonData(this, source).execute(data)
     }
 
@@ -308,13 +312,13 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
      */
     override fun onDataAvailable(data: ArrayList<String>) {
         data.forEach {
-            val image = Image(
-                this,
-                it.contains(Uri.parse(getString(FRAMES_URI)).authority.toString()),
-                it
-            )
-            if (image !in images && image !in frames)
-                ImageSave(false, image).execute()
+            ImageSave(
+                false, Image(
+                    this,
+                    it.contains(Uri.parse(getString(FRAMES_URI)).authority.toString()),
+                    it
+                )
+            ).execute()
         }
     }
 
@@ -327,7 +331,17 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
         toast(getString(download_exception).plus(exception))
     }
 
-    override fun taskCompleted(stringId: Int) {
-        // Prevent toast on image saved
+    override fun onTaskBegin() {
+        super.onTaskBegin()
+        progressBarImagesScreen.isGone = false
+        fab.isEnabled = false
+    }
+
+    override fun onTaskComplete(stringId: Int) {
+        super.onTaskComplete(stringId)
+        if (taskCountDown <= 0) {
+            progressBarImagesScreen.isGone = true
+            fab.isEnabled = true
+        }
     }
 }

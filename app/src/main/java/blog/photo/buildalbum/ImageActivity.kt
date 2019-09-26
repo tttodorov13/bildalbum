@@ -13,6 +13,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
+import androidx.core.view.isGone
 import blog.photo.buildalbum.R.string.*
 import blog.photo.buildalbum.adapters.ImagesAdapter
 import blog.photo.buildalbum.model.Image
@@ -21,7 +22,6 @@ import kotlinx.android.synthetic.main.activity_image.*
 /**
  * Class to manage the picture screen.
  */
-// TODO: Add progress spinner on edit image
 class ImageActivity : BaseActivity() {
 
     private lateinit var frame: Image
@@ -55,7 +55,7 @@ class ImageActivity : BaseActivity() {
         setContentView(R.layout.activity_image)
 
         // Set ImageView to be used for saving changes
-        imageNewView = imageView
+        imageNewView = imageViewCamera
 
         // Initialize the image object
         image = Image(
@@ -68,7 +68,7 @@ class ImageActivity : BaseActivity() {
         frame = Image(this, true, "", "")
 
         // Set new Image URI
-        imageView.setImageBitmap(image.bitmap)
+        imageViewCamera.setImageBitmap(image.bitmap)
 
         // Display frames to be added
         framesAdapter = ImagesAdapter(
@@ -81,12 +81,12 @@ class ImageActivity : BaseActivity() {
         screen.smoothScrollTo(0, 0)
 
         // Click listener for Scroll-to-Top Button
-        buttonTop.setOnClickListener {
+        fabTop.setOnClickListener {
             screen.smoothScrollTo(0, 0)
         }
 
         // Click listener for Share Button
-        buttonShare.setOnClickListener {
+        fabShare.setOnClickListener {
             var intent = Intent(Intent.ACTION_SEND)
             intent.type = "image/*"
             intent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
@@ -126,19 +126,19 @@ class ImageActivity : BaseActivity() {
         }
 
         // Click listener for Rotate Button
-        buttonRotate.setOnClickListener {
+        fabRotate.setOnClickListener {
             imageSetOriginalView()
 
             // Rotate image with current index +1
             var bitmap = imageRotate(++rotateIndex)
 
             // Set current bitmap on image screen
-            imageView.setImageBitmap(bitmap)
+            imageViewCamera.setImageBitmap(bitmap)
 
             // Check if frame is applied
             if (frame.name != "") {
                 bitmap = imageAddFrame(frame)
-                imageView.setImageBitmap(bitmap)
+                imageViewCamera.setImageBitmap(bitmap)
             }
 
             // Save current image
@@ -157,20 +157,20 @@ class ImageActivity : BaseActivity() {
                 var bitmap = imageRotate(rotateIndex)
 
                 // Set current bitmap on image screen
-                imageView.setImageBitmap(bitmap)
+                imageViewCamera.setImageBitmap(bitmap)
 
                 // Add current frame
                 bitmap = imageAddFrame(frame)
 
                 // Set current bitmap on image screen
-                imageView.setImageBitmap(bitmap)
+                imageViewCamera.setImageBitmap(bitmap)
 
                 // Save current image
                 ImageSave(true, image).execute()
             }
 
         // Click listener for Delete Button
-        buttonDelete.setOnClickListener {
+        fabDelete.setOnClickListener {
             val alertDialog = AlertDialog.Builder(this, R.style.BuildAlbumAlertDialog)
                 .setTitle(getString(image_delete))
                 .setIcon(android.R.drawable.ic_menu_delete).create()
@@ -230,7 +230,7 @@ class ImageActivity : BaseActivity() {
             savedInstanceState.getString("frameName")!!,
             savedInstanceState.getString("frameOrigin")!!
         )
-        imageView.setImageBitmap(image.bitmap)
+        imageViewCamera.setImageBitmap(image.bitmap)
     }
 
     /**
@@ -263,7 +263,7 @@ class ImageActivity : BaseActivity() {
         }
 
         // Set current bitmap on image screen
-        imageView.setImageBitmap(image.bitmap)
+        imageViewCamera.setImageBitmap(image.bitmap)
 
         // If it is not first edition, get saved image
         image = if (imageName != intent.extras!!.get("originalName").toString())
@@ -358,5 +358,26 @@ class ImageActivity : BaseActivity() {
             matrix,
             true
         )
+    }
+
+    override fun onTaskBegin() {
+        super.onTaskBegin()
+        progressBarImageScreen.isGone = false
+        fabTop.isEnabled = false
+        fabShare.isEnabled = false
+        fabRotate.isEnabled = false
+        fabDelete.isEnabled = false
+    }
+
+    override fun onTaskComplete(stringId: Int) {
+        super.onTaskComplete(stringId)
+        if(taskCountDown <= 0) {
+            progressBarImageScreen.isGone = true
+            fabTop.isEnabled = true
+            fabShare.isEnabled = true
+            fabRotate.isEnabled = true
+            fabDelete.isEnabled = true
+        }
+        toast(getString(stringId))
     }
 }
