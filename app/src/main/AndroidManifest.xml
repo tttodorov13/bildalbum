@@ -43,7 +43,7 @@
         </provider>
 
         <receiver
-                android:name=".receiver.ConnectivityReceiver"
+                android:name=".receivers.ConnectivityReceiver"
                 android:enabled="true">
             <intent-filter>
                 <action android:name="android.net.com.CONNECTIVITY_CHANGE" />

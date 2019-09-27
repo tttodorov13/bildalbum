@@ -1,4 +1,4 @@
-package blog.photo.buildalbum.receiver
+package blog.photo.buildalbum.receivers
 
 import android.content.BroadcastReceiver
 import android.content.Context

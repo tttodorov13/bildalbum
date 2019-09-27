@@ -4,7 +4,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
-import blog.photo.buildalbum.model.Image
+import blog.photo.buildalbum.models.Image
 
 /**
  * Class to manage local database transactions.
@@ -49,10 +49,10 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, D
         db.close()
     }
 
-    fun getAllFrames(): ArrayList<Image> {
+    fun getAllFramesReverse(): ArrayList<Image> {
         var frames = ArrayList<Image>()
         val cursor =
-            readableDatabase.rawQuery("SELECT * FROM $TABLE_FRAMES ORDER BY $COLUMN_ID ASC", null)
+            readableDatabase.rawQuery("SELECT * FROM $TABLE_FRAMES ORDER BY $COLUMN_ID DESC", null)
 
         if (cursor!!.moveToFirst()) {
             frames.add(

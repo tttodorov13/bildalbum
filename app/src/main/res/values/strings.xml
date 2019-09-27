@@ -15,7 +15,7 @@
     <string name="com_facebook_katana" translatable="false">com.facebook.katana</string>
     <string name="facebook_sharer" translatable="false">https://www.facebook.com/sharer/sharer.php?u=</string>
     <string name="install_facebook_for_optimal_experience">Install Facebook for best experience!</string>
-    <string name="image_saved">Image saved!</string>
+    <string name="image_saved">Image is saved!</string>
     <string name="image_deleted">Image is deleted!</string>
     <string name="download_exception" translatable="false">Download Exception: </string>
     <string name="not_enough_space_on_disk">Not enough space on disk!</string>
@@ -23,4 +23,5 @@
     <string name="enable_internet">Enable Internet to download images!</string>
     <string name="image_delete">Delete Image</string>
     <string name="image_rescued">Image is rescued!</string>
+    <string name="frame_saved">Frame Saved!</string>
 </resources>

@@ -27,7 +27,7 @@ class JsonData(private val listener: OnDataAvailable, private val source: Downlo
      * @param params
      * @return list of picture URIs
      */
-    override fun doInBackground(vararg params: String?): ArrayList<String> {
+    override fun doInBackground(vararg params: String): ArrayList<String> {
         val imagesUris = ArrayList<String>()
         val jsonData: JSONObject
         val itemsArray: JSONArray

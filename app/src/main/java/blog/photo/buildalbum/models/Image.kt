@@ -1,13 +1,14 @@
-package blog.photo.buildalbum.model
+package blog.photo.buildalbum.models
 
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Environment
 import android.util.Log
-import blog.photo.buildalbum.BaseActivity.Companion.frames
-import blog.photo.buildalbum.BaseActivity.Companion.images
-import blog.photo.buildalbum.BaseActivity.Companion.imagesAdapter
+import blog.photo.buildalbum.AppBase.Companion.frames
+import blog.photo.buildalbum.AppBase.Companion.framesAdapter
+import blog.photo.buildalbum.AppBase.Companion.images
+import blog.photo.buildalbum.AppBase.Companion.imagesAdapter
 import blog.photo.buildalbum.utils.DatabaseHelper
 import java.io.File
 import java.io.FileOutputStream
@@ -73,6 +74,7 @@ data class Image(val context: Context, val isFrame: Boolean, val name: String, v
                         this
                     )
                     frames.add(0, this)
+                    framesAdapter.notifyDataSetChanged()
                     return true
                 }
                 false

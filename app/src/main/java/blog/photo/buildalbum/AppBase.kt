@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
 import android.widget.TextView
@@ -13,29 +14,19 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import blog.photo.buildalbum.adapters.ImagesAdapter
-import blog.photo.buildalbum.model.Image
+import blog.photo.buildalbum.models.Image
+import blog.photo.buildalbum.tasks.*
 import blog.photo.buildalbum.utils.DatabaseHelper
-
-/**
- * Interface for async responses
- */
-interface AsyncResponse {
-    /**
-     * Method to mark task begin execution.
-     */
-    fun onTaskBegin()
-
-    /**
-     * Method to mark task end execution.
-     */
-    fun onTaskComplete(stringId: Int)
-}
 
 /**
  * Class base for all activities of the application.
  */
-// TODO: Move download frames to ImageActivity
-open class BaseActivity : AppCompatActivity(), AsyncResponse {
+// TODO: Add text to progress bar spinner
+// TODO: Automate download new frames
+// TODO: Find and fix Unable to decode stream: java.io.FileNotFoundException
+// TODO: Translate in all Amazon sale's languages
+open class AppBase : AppCompatActivity(), AsyncResponse, DownloadData.OnDownloadComplete,
+    JsonData.OnDataAvailable {
 
     /**
      * A companion object for class variables.
@@ -48,12 +39,13 @@ open class BaseActivity : AppCompatActivity(), AsyncResponse {
         internal var frames = ArrayList<Image>()
         internal var images = ArrayList<Image>()
         internal var hasInternet: Boolean = false
+        internal lateinit var framesAdapter: ImagesAdapter
         internal lateinit var imagesAdapter: ImagesAdapter
         internal var taskCountDown = 0
     }
 
     /**
-     * OnCreate BaseActivity
+     * OnCreate AppBase
      *
      * @param savedInstanceState
      */
@@ -62,14 +54,48 @@ open class BaseActivity : AppCompatActivity(), AsyncResponse {
 
         // Get granted permission
         getPermissions()
+    }
 
-        // Get images to display
-        if (images.size == 0)
-            getImages()
+    /**
+     * Method to mark image download complete
+     *
+     * @param data
+     * @param source
+     * @param status
+     */
+    override fun onDownloadComplete(
+        data: String,
+        source: DownloadSource,
+        status: DownloadStatus
+    ) {
+        if (status == DownloadStatus.OK && data.isNotBlank())
+            JsonData(this, source).execute(data)
+    }
 
-        // Get frames to add
-        if (frames.size == 0)
-            getFrames()
+    /**
+     * Method to download images
+     *
+     * @param data - images' URIs
+     */
+    override fun onDataAvailable(data: ArrayList<String>) {
+        data.forEach {
+            ImageSave(
+                false, Image(
+                    this,
+                    it.contains(Uri.parse(getString(R.string.FRAMES_URI)).authority.toString()),
+                    it
+                )
+            ).execute()
+        }
+    }
+
+    /**
+     * Method to display error message on image download unsuccessful
+     *
+     * @param exception
+     */
+    override fun onError(exception: Exception) {
+        toast(getString(R.string.download_exception).plus(exception))
     }
 
     /**
@@ -124,7 +150,10 @@ open class BaseActivity : AppCompatActivity(), AsyncResponse {
         override fun onPostExecute(result: Bitmap?) {
             image.write(result)
             image.save()
-            onTaskComplete(R.string.image_saved)
+            if (image.isFrame)
+                onTaskComplete(R.string.frame_saved)
+            else
+                onTaskComplete(R.string.image_saved)
         }
     }
 
@@ -151,6 +180,34 @@ open class BaseActivity : AppCompatActivity(), AsyncResponse {
     }
 
     /**
+     * Method to download frames
+     */
+    protected fun downloadFrames() {
+        DownloadData(
+            this,
+            DownloadSource.FRAMES
+        ).execute(getString(R.string.FRAMES_URI))
+    }
+
+    /**
+     * Method to get all frames
+     */
+    protected fun getFrames(): Int {
+        frames.addAll(DatabaseHelper(this).getAllFramesReverse())
+        return frames.size
+    }
+
+    /**
+     * Method to get all images
+     *
+     * @return paths of stored imagesNames
+     */
+    protected fun getImages(): Int {
+        images.addAll(DatabaseHelper(this).getAllImagesReverse())
+        return images.size
+    }
+
+    /**
      * Method to check for the required permissions
      */
     private fun getPermissions() {
@@ -174,23 +231,5 @@ open class BaseActivity : AppCompatActivity(), AsyncResponse {
                 PERMISSIONS_REQUEST_CODE
             )
         }
-    }
-
-    /**
-     * Method to get all images
-     *
-     * @return paths of stored imagesNames
-     */
-    private fun getImages(): Int {
-        images.addAll(DatabaseHelper(this).getAllImagesReverse())
-        return images.size
-    }
-
-    /**
-     * Method to get all frames
-     */
-    private fun getFrames(): Int {
-        frames.addAll(DatabaseHelper(this).getAllFrames())
-        return frames.size
     }
 }

@@ -18,37 +18,32 @@ import androidx.core.view.isGone
 import blog.photo.buildalbum.R.string.*
 import blog.photo.buildalbum.adapters.IconsAdapter
 import blog.photo.buildalbum.adapters.ImagesAdapter
-import blog.photo.buildalbum.model.Image
-import blog.photo.buildalbum.receiver.ConnectivityReceiver
+import blog.photo.buildalbum.models.Image
+import blog.photo.buildalbum.receivers.ConnectivityReceiver
 import blog.photo.buildalbum.tasks.DownloadData
 import blog.photo.buildalbum.tasks.DownloadSource
 import blog.photo.buildalbum.tasks.DownloadStatus
 import blog.photo.buildalbum.tasks.JsonData
-import kotlinx.android.synthetic.main.activity_image.*
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
-import kotlinx.android.synthetic.main.content_main.imageViewCamera
-
 
 /**
  * Class to manage the main screen.
  */
-class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiverListener,
-    DownloadData.OnDownloadComplete,
-    JsonData.OnDataAvailable {
+class MainActivity() : AppBase(), ConnectivityReceiver.ConnectivityReceiverListener {
 
     /**
      * A companion object for class variables.
      */
     companion object {
         private val connectivityReceiver = ConnectivityReceiver()
-        private lateinit var imageNewView: ImageView
+        private lateinit var imageViewNew: ImageView
 
         /**
          * Method to get a bitmap from the new image ImageView
          */
         internal fun getBitmapFromImageView(): Bitmap {
-            return (imageNewView.drawable as BitmapDrawable).bitmap
+            return (imageViewNew.drawable as BitmapDrawable).bitmap
         }
     }
 
@@ -61,7 +56,11 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        imageNewView = imageViewCamera
+        imageViewNew = imageViewCamera
+
+        // Get images to display
+        if (images.size == 0)
+            getImages()
 
         // Display images
         imagesAdapter = ImagesAdapter(this, images)
@@ -128,7 +127,7 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
      * @param data
      */
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == PERMISSIONS_REQUEST_CODE && resultCode == RESULT_OK && data != null) {
+        if (requestCode == PERMISSIONS_REQUEST_CODE && resultCode == RESULT_OK && data != null)
             when {
                 // Image is taken with Camera
                 data.extras?.get("data") != null -> {
@@ -147,16 +146,17 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
                     cursor!!.moveToFirst()
                     val filePath = cursor.getString(cursor.getColumnIndex(filePathColumn[0]))
                     cursor.close()
-                    ImageSave(false, Image(this, false, WRITE_EXTERNAL_STORAGE)).execute(
+                    ImageSave(
+                        false,
+                        Image(this, false, WRITE_EXTERNAL_STORAGE)
+                    ).execute(
                         filePath
                     )
                 }
             }
-        }
         // Image capturing is cancelled
-        else {
+        else
             toast(getString(no_image_is_captured))
-        }
     }
 
     /**
@@ -170,13 +170,12 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
         requestCode: Int,
         permissions: Array<String>, grantResults: IntArray
     ) {
-        if (requestCode == PERMISSIONS_REQUEST_CODE && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            // If permissions were granted add them all.
+        // If permissions were granted add them all.
+        if (requestCode == PERMISSIONS_REQUEST_CODE && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)
             grantedPermissions.addAll(permissions)
-        } else {
-            // If permissions were not granted remove them.
+        // If permissions were not granted remove them.
+        else
             grantedPermissions.removeAll(permissions)
-        }
     }
 
     /**
@@ -211,7 +210,6 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
      */
     override fun onNetworkConnectionChanged(isConnected: Boolean) {
         hasInternet = if (isConnected) {
-            downloadFrames()
             true
         } else {
             toast(getString(enable_internet))
@@ -251,16 +249,6 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
     }
 
     /**
-     * Method to download frames
-     */
-    private fun downloadFrames() {
-        DownloadData(
-            this,
-            DownloadSource.FRAMES
-        ).execute(getString(FRAMES_URI))
-    }
-
-    /**
      * Method to download images from https://www.flickr.com
      */
     private fun downloadFromFlickr() {
@@ -290,53 +278,19 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
     }
 
     /**
-     * Method to mark image download complete
-     *
-     * @param data
-     * @param source
-     * @param status
+     * On image save task begin
+     * disable FAB and show progress bar spinner
      */
-    override fun onDownloadComplete(
-        data: String,
-        source: DownloadSource,
-        status: DownloadStatus
-    ) {
-        if (status == DownloadStatus.OK && data.isNotBlank())
-            JsonData(this, source).execute(data)
-    }
-
-    /**
-     * Method to download images
-     *
-     * @param data - images' URIs
-     */
-    override fun onDataAvailable(data: ArrayList<String>) {
-        data.forEach {
-            ImageSave(
-                false, Image(
-                    this,
-                    it.contains(Uri.parse(getString(FRAMES_URI)).authority.toString()),
-                    it
-                )
-            ).execute()
-        }
-    }
-
-    /**
-     * Method to display error message on image download unsuccessful
-     *
-     * @param exception
-     */
-    override fun onError(exception: Exception) {
-        toast(getString(download_exception).plus(exception))
-    }
-
     override fun onTaskBegin() {
         super.onTaskBegin()
-        progressBarImagesScreen.isGone = false
         fab.isEnabled = false
+        progressBarImagesScreen.isGone = false
     }
 
+    /**
+     * On all image save task complete
+     * enable FAB and hide progress bar spinner
+     */
     override fun onTaskComplete(stringId: Int) {
         super.onTaskComplete(stringId)
         if (taskCountDown <= 0) {

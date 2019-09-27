@@ -7,7 +7,7 @@ import kotlin.concurrent.thread
 /**
  * Class to manage the login screen.
  */
-class LoginActivity : BaseActivity() {
+class LoginActivity : AppBase() {
 
     /**
      * OnCreate LoginActivity

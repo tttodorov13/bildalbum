@@ -16,13 +16,13 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isGone
 import blog.photo.buildalbum.R.string.*
 import blog.photo.buildalbum.adapters.ImagesAdapter
-import blog.photo.buildalbum.model.Image
+import blog.photo.buildalbum.models.Image
 import kotlinx.android.synthetic.main.activity_image.*
 
 /**
  * Class to manage the picture screen.
  */
-class ImageActivity : BaseActivity() {
+class ImageActivity : AppBase() {
 
     private lateinit var frame: Image
     private lateinit var image: Image
@@ -34,14 +34,13 @@ class ImageActivity : BaseActivity() {
     companion object {
         private const val IMAGE_SIZE = 400
         private const val IMAGE_SIZE_BORDER = 100F
-        private lateinit var framesAdapter: ImagesAdapter
-        private lateinit var imageNewView: ImageView
+        private lateinit var imageViewNew: ImageView
 
         /**
          * Method to get a bitmap from the new image
          */
         internal fun getBitmapFromImageView(): Bitmap {
-            return (imageNewView.drawable as BitmapDrawable).bitmap
+            return (imageViewNew.drawable as BitmapDrawable).bitmap
         }
     }
 
@@ -55,7 +54,7 @@ class ImageActivity : BaseActivity() {
         setContentView(R.layout.activity_image)
 
         // Set ImageView to be used for saving changes
-        imageNewView = imageViewCamera
+        imageViewNew = imageView
 
         // Initialize the image object
         image = Image(
@@ -68,7 +67,11 @@ class ImageActivity : BaseActivity() {
         frame = Image(this, true, "", "")
 
         // Set new Image URI
-        imageViewCamera.setImageBitmap(image.bitmap)
+        imageView.setImageBitmap(image.bitmap)
+
+        // If connected to Internet download latest frames
+        if (hasInternet && getFrames() == 0)
+            downloadFrames()
 
         // Display frames to be added
         framesAdapter = ImagesAdapter(
@@ -133,12 +136,12 @@ class ImageActivity : BaseActivity() {
             var bitmap = imageRotate(++rotateIndex)
 
             // Set current bitmap on image screen
-            imageViewCamera.setImageBitmap(bitmap)
+            imageViewNew.setImageBitmap(bitmap)
 
             // Check if frame is applied
             if (frame.name != "") {
                 bitmap = imageAddFrame(frame)
-                imageViewCamera.setImageBitmap(bitmap)
+                imageViewNew.setImageBitmap(bitmap)
             }
 
             // Save current image
@@ -157,13 +160,13 @@ class ImageActivity : BaseActivity() {
                 var bitmap = imageRotate(rotateIndex)
 
                 // Set current bitmap on image screen
-                imageViewCamera.setImageBitmap(bitmap)
+                imageViewNew.setImageBitmap(bitmap)
 
                 // Add current frame
                 bitmap = imageAddFrame(frame)
 
                 // Set current bitmap on image screen
-                imageViewCamera.setImageBitmap(bitmap)
+                imageViewNew.setImageBitmap(bitmap)
 
                 // Save current image
                 ImageSave(true, image).execute()
@@ -230,7 +233,7 @@ class ImageActivity : BaseActivity() {
             savedInstanceState.getString("frameName")!!,
             savedInstanceState.getString("frameOrigin")!!
         )
-        imageViewCamera.setImageBitmap(image.bitmap)
+        imageViewNew.setImageBitmap(image.bitmap)
     }
 
     /**
@@ -263,7 +266,7 @@ class ImageActivity : BaseActivity() {
         }
 
         // Set current bitmap on image screen
-        imageViewCamera.setImageBitmap(image.bitmap)
+        imageViewNew.setImageBitmap(image.bitmap)
 
         // If it is not first edition, get saved image
         image = if (imageName != intent.extras!!.get("originalName").toString())
@@ -360,15 +363,23 @@ class ImageActivity : BaseActivity() {
         )
     }
 
+    /**
+     * On image save task begin
+     * disable all FABs and show progress bar spinner
+     */
     override fun onTaskBegin() {
         super.onTaskBegin()
-        progressBarImageScreen.isGone = false
         fabTop.isEnabled = false
         fabShare.isEnabled = false
         fabRotate.isEnabled = false
         fabDelete.isEnabled = false
+        progressBarImageScreen.isGone = false
     }
 
+    /**
+     * On image save task complete
+     * enable all FABs and hide progress bar spinner
+     */
     override fun onTaskComplete(stringId: Int) {
         super.onTaskComplete(stringId)
         if(taskCountDown <= 0) {

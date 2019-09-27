@@ -9,7 +9,7 @@ import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.ImageView
 import blog.photo.buildalbum.R
-import blog.photo.buildalbum.model.Image
+import blog.photo.buildalbum.models.Image
 
 /**
  * Class to manage render images on main screen.
