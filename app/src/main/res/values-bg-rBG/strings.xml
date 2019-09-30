@@ -14,5 +14,5 @@
     <string name="take_photo">Снимай</string>
     <string name="image_delete">Изтрий Изображение</string>
     <string name="image_rescued">Изображението е спасено!</string>
-    <string name="frame_saved">Рамката е запазена!</string>
+    <string name="pane_added">Добавено е пано!</string>
 </resources>

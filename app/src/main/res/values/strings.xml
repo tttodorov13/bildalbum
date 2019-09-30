@@ -23,5 +23,5 @@
     <string name="enable_internet">Enable Internet to download images!</string>
     <string name="image_delete">Delete Image</string>
     <string name="image_rescued">Image is rescued!</string>
-    <string name="frame_saved">Frame Saved!</string>
+    <string name="pane_added">Pane Added!</string>
 </resources>
