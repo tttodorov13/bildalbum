@@ -6,9 +6,9 @@ import android.graphics.BitmapFactory
 import android.os.Environment
 import android.util.Log
 import blog.photo.buildalbum.AppBase.Companion.frames
-import blog.photo.buildalbum.AppBase.Companion.framesAdapter
+import blog.photo.buildalbum.AppBase.Companion.adapterFrames
 import blog.photo.buildalbum.AppBase.Companion.images
-import blog.photo.buildalbum.AppBase.Companion.imagesAdapter
+import blog.photo.buildalbum.AppBase.Companion.adapterImages
 import blog.photo.buildalbum.utils.DatabaseHelper
 import java.io.File
 import java.io.FileOutputStream
@@ -59,7 +59,7 @@ data class Image(val context: Context, val isFrame: Boolean, val name: String, v
             file.delete()
 
         images.remove(this)
-        imagesAdapter.notifyDataSetChanged()
+        adapterImages.notifyDataSetChanged()
     }
 
     /**
@@ -74,7 +74,7 @@ data class Image(val context: Context, val isFrame: Boolean, val name: String, v
                         this
                     )
                     frames.add(0, this)
-                    framesAdapter.notifyDataSetChanged()
+                    adapterFrames.notifyDataSetChanged()
                     return true
                 }
                 false
@@ -86,7 +86,7 @@ data class Image(val context: Context, val isFrame: Boolean, val name: String, v
                     this
                 )
                 images.add(0, this)
-                imagesAdapter.notifyDataSetChanged()
+                adapterImages.notifyDataSetChanged()
                 true
             }
             else -> false

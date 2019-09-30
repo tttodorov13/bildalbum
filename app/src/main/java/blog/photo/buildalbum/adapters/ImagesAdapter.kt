@@ -31,9 +31,9 @@ class ImagesAdapter(private val context: Context, private val images: ArrayList<
 
     override fun getView(position: Int, view: View?, parent: ViewGroup): View? {
         var convertView = view
-        var viewHolder: ViewHolder
+        val viewHolder: ViewHolder
 
-        var options = BitmapFactory.Options()
+        val options = BitmapFactory.Options()
         options.inDither = false
         options.inJustDecodeBounds = false
         options.inPreferredConfig = Bitmap.Config.ARGB_8888

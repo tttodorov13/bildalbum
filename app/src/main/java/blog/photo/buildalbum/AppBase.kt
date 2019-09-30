@@ -29,22 +29,6 @@ open class AppBase : AppCompatActivity(), AsyncResponse, DownloadData.OnDownload
     JsonData.OnDataAvailable {
 
     /**
-     * A companion object for class variables.
-     */
-    companion object {
-        internal var grantedPermissions = ArrayList<String>()
-        internal const val PERMISSIONS_REQUEST_CODE = 8888
-        internal val REQUIRED_PERMISSIONS =
-            arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-        internal var frames = ArrayList<Image>()
-        internal var images = ArrayList<Image>()
-        internal var hasInternet: Boolean = false
-        internal lateinit var framesAdapter: ImagesAdapter
-        internal lateinit var imagesAdapter: ImagesAdapter
-        internal var taskCountDown = 0
-    }
-
-    /**
      * OnCreate AppBase
      *
      * @param savedInstanceState
@@ -151,7 +135,7 @@ open class AppBase : AppCompatActivity(), AsyncResponse, DownloadData.OnDownload
             image.write(result)
             image.save()
             if (image.isFrame)
-                onTaskComplete(R.string.frame_saved)
+                onTaskComplete(R.string.pane_added)
             else
                 onTaskComplete(R.string.image_saved)
         }
@@ -231,5 +215,24 @@ open class AppBase : AppCompatActivity(), AsyncResponse, DownloadData.OnDownload
                 PERMISSIONS_REQUEST_CODE
             )
         }
+    }
+
+    /**
+     * A companion object for class variables.
+     */
+    companion object {
+        internal var grantedPermissions = ArrayList<String>()
+        internal const val PERMISSIONS_REQUEST_CODE = 8888
+        internal val REQUIRED_PERMISSIONS =
+            arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+
+        internal var frames = ArrayList<Image>()
+        internal var images = ArrayList<Image>()
+
+        internal var hasInternet: Boolean = false
+        internal var taskCountDown = 0
+
+        internal lateinit var adapterFrames: ImagesAdapter
+        internal lateinit var adapterImages: ImagesAdapter
     }
 }

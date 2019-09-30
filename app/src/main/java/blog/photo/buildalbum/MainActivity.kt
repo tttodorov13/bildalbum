@@ -22,8 +22,6 @@ import blog.photo.buildalbum.models.Image
 import blog.photo.buildalbum.receivers.ConnectivityReceiver
 import blog.photo.buildalbum.tasks.DownloadData
 import blog.photo.buildalbum.tasks.DownloadSource
-import blog.photo.buildalbum.tasks.DownloadStatus
-import blog.photo.buildalbum.tasks.JsonData
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 
@@ -63,8 +61,8 @@ class MainActivity() : AppBase(), ConnectivityReceiver.ConnectivityReceiverListe
             getImages()
 
         // Display images
-        imagesAdapter = ImagesAdapter(this, images)
-        girdViewImages.adapter = imagesAdapter
+        adapterImages = ImagesAdapter(this, images)
+        girdViewImages.adapter = adapterImages
 
         // Click listener for ImageActivity
         girdViewImages.onItemClickListener =
@@ -127,6 +125,7 @@ class MainActivity() : AppBase(), ConnectivityReceiver.ConnectivityReceiverListe
      * @param data
      */
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == PERMISSIONS_REQUEST_CODE && resultCode == RESULT_OK && data != null)
             when {
                 // Image is taken with Camera

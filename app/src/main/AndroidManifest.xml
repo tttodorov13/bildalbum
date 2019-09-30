@@ -20,6 +20,8 @@
             android:supportsRtl="true"
             android:theme="@style/BuildAlbumTheme">
 
+        <activity android:name=".AppBase" />
+
         <activity android:name=".ImageActivity" />
 
         <activity android:name=".LoginActivity">

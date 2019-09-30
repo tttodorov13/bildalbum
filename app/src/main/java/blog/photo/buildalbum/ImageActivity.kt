@@ -74,11 +74,11 @@ class ImageActivity : AppBase() {
             downloadFrames()
 
         // Display frames to be added
-        framesAdapter = ImagesAdapter(
+        adapterFrames = ImagesAdapter(
             this, frames
         )
         gridViewFrames.isExpanded = true
-        gridViewFrames.adapter = framesAdapter
+        gridViewFrames.adapter = adapterFrames
 
         // Scroll to screen top
         screen.smoothScrollTo(0, 0)
