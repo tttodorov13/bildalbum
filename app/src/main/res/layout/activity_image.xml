@@ -66,7 +66,7 @@
         android:layout_gravity="bottom|end"
         android:layout_marginRight="@dimen/fab_margin4"
         android:layout_marginBottom="@dimen/fab_margin1"
-        android:scaleType="centerCrop"
+        android:scaleType="center"
         app:srcCompat="@android:drawable/ic_menu_upload" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -76,7 +76,7 @@
         android:layout_gravity="bottom|end"
         android:layout_marginRight="@dimen/fab_margin3"
         android:layout_marginBottom="@dimen/fab_margin1"
-        android:scaleType="centerCrop"
+        android:scaleType="center"
         app:srcCompat="@android:drawable/ic_menu_share" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -86,7 +86,7 @@
         android:layout_gravity="bottom|end"
         android:layout_marginRight="@dimen/fab_margin2"
         android:layout_marginBottom="@dimen/fab_margin1"
-        android:scaleType="centerCrop"
+        android:scaleType="center"
         app:srcCompat="@android:drawable/ic_menu_rotate" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -95,7 +95,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin1"
-        android:scaleType="centerCrop"
+        android:scaleType="center"
         app:srcCompat="@android:drawable/ic_menu_delete" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
