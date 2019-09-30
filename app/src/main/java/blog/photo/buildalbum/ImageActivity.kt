@@ -22,7 +22,7 @@ import kotlinx.android.synthetic.main.activity_image.*
 /**
  * Class to manage the picture screen.
  */
-class ImageActivity : AppBase() {
+class ImageActivity : BaseActivity() {
 
     private lateinit var frame: Image
     private lateinit var image: Image
@@ -174,7 +174,7 @@ class ImageActivity : AppBase() {
 
         // Click listener for Delete Button
         fabDelete.setOnClickListener {
-            val alertDialog = AlertDialog.Builder(this, R.style.BuildAlbumAlertDialog)
+            val alertDialog = AlertDialog.Builder(this, R.style.AppAlertDialog)
                 .setTitle(getString(image_delete))
                 .setIcon(android.R.drawable.ic_menu_delete).create()
 

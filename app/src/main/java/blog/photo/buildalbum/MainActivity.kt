@@ -28,7 +28,7 @@ import kotlinx.android.synthetic.main.content_main.*
 /**
  * Class to manage the main screen.
  */
-class MainActivity() : AppBase(), ConnectivityReceiver.ConnectivityReceiverListener {
+class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiverListener {
 
     /**
      * A companion object for class variables.
@@ -102,7 +102,7 @@ class MainActivity() : AppBase(), ConnectivityReceiver.ConnectivityReceiverListe
 
             val adapter = IconsAdapter(this, itemTexts, itemIcons)
 
-            val alertDialog = AlertDialog.Builder(this, R.style.BuildAlbumAlertDialog)
+            val alertDialog = AlertDialog.Builder(this, R.style.AppAlertDialog)
                 .setTitle(getString(image_add))
                 .setIcon(android.R.drawable.ic_input_add)
             alertDialog.setAdapter(adapter) { dialog, item ->

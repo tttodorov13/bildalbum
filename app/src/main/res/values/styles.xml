@@ -1,20 +1,30 @@
 <resources>
 
-    <style name="BuildAlbumTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
-        <item name="actionBarStyle">@style/BuildAlbumActionBar</item>
+        <item name="actionBarStyle">@style/AppActionBar</item>
     </style>
 
-    <style name="BuildAlbumActionBar" parent="Widget.AppCompat.ActionBar.Solid">
+    <style name="AppTheme.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
+    <style name="AppActionBar" parent="Widget.AppCompat.ActionBar.Solid">
         <!-- Used for the background -->
         <item name="android:background">@color/colorPrimary</item>
         <!-- Used for the title -->
         <item name="android:textColor">@color/colorWhite</item>
     </style>
 
-    <style name="BuildAlbumAlertDialog" parent="Theme.AppCompat.Light.Dialog.Alert">
+    <style name="AppAlertDialog" parent="Theme.AppCompat.Light.Dialog.Alert">
         <!-- Used for the background -->
         <item name="android:background">@color/colorPrimary</item>
         <!-- Used for the title -->

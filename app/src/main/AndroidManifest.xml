@@ -18,9 +18,9 @@
             android:requestLegacyExternalStorage="true"
             android:roundIcon="@mipmap/ic_launcher_round"
             android:supportsRtl="true"
-            android:theme="@style/BuildAlbumTheme">
+            android:theme="@style/AppTheme">
 
-        <activity android:name=".AppBase" />
+        <activity android:name=".BaseActivity" />
 
         <activity android:name=".ImageActivity" />
 

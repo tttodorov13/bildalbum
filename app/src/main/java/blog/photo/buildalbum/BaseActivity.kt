@@ -25,11 +25,11 @@ import blog.photo.buildalbum.utils.DatabaseHelper
 // TODO: Automate download new frames
 // TODO: Find and fix Unable to decode stream: java.io.FileNotFoundException
 // TODO: Translate in all Amazon sale's languages
-open class AppBase : AppCompatActivity(), AsyncResponse, DownloadData.OnDownloadComplete,
+open class BaseActivity : AppCompatActivity(), AsyncResponse, DownloadData.OnDownloadComplete,
     JsonData.OnDataAvailable {
 
     /**
-     * OnCreate AppBase
+     * OnCreate BaseActivity
      *
      * @param savedInstanceState
      */

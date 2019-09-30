@@ -5,10 +5,10 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Environment
 import android.util.Log
-import blog.photo.buildalbum.AppBase.Companion.adapterFrames
-import blog.photo.buildalbum.AppBase.Companion.adapterImages
-import blog.photo.buildalbum.AppBase.Companion.frames
-import blog.photo.buildalbum.AppBase.Companion.images
+import blog.photo.buildalbum.BaseActivity.Companion.adapterFrames
+import blog.photo.buildalbum.BaseActivity.Companion.adapterImages
+import blog.photo.buildalbum.BaseActivity.Companion.frames
+import blog.photo.buildalbum.BaseActivity.Companion.images
 import blog.photo.buildalbum.utils.DatabaseHelper
 import java.io.File
 import java.io.FileOutputStream
