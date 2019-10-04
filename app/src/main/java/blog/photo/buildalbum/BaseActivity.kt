@@ -17,11 +17,11 @@ import blog.photo.buildalbum.adapters.ImagesAdapter
 import blog.photo.buildalbum.models.Image
 import blog.photo.buildalbum.tasks.*
 import blog.photo.buildalbum.utils.DatabaseHelper
+import kotlinx.android.synthetic.main.spinner_layout.*
 
 /**
  * Class base for all activities of the application.
  */
-// TODO: Add text to progress bar spinner
 // TODO: Automate download new frames
 // TODO: Find and fix Unable to decode stream: java.io.FileNotFoundException
 // TODO: Translate in all Amazon sale's languages
@@ -62,6 +62,7 @@ open class BaseActivity : AppCompatActivity(), AsyncResponse, DownloadData.OnDow
      * @param data - images' URIs
      */
     override fun onDataAvailable(data: ArrayList<String>) {
+        spinner_title.text = getString(R.string.downloading)
         data.forEach {
             ImageSave(
                 false, Image(
@@ -195,7 +196,7 @@ open class BaseActivity : AppCompatActivity(), AsyncResponse, DownloadData.OnDow
      * Method to check for the required permissions
      */
     private fun getPermissions() {
-        var requestPermissions = ArrayList<String>()
+        val requestPermissions = ArrayList<String>()
         REQUIRED_PERMISSIONS.forEach {
             if (ActivityCompat.checkSelfPermission(
                     this,

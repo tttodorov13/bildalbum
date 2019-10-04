@@ -15,4 +15,6 @@
     <string name="image_delete">Изтрий Изображение</string>
     <string name="image_rescued">Изображението е спасено!</string>
     <string name="pane_added">Добавено е пано!</string>
+    <string name="downloading">Сваляне&#8230;&#8230;&#8230;</string>
+    <string name="saving">Запаметяване&#8230;&#8230;&#8230;</string>
 </resources>

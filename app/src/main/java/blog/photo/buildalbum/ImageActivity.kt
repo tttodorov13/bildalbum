@@ -18,6 +18,7 @@ import blog.photo.buildalbum.R.string.*
 import blog.photo.buildalbum.adapters.ImagesAdapter
 import blog.photo.buildalbum.models.Image
 import kotlinx.android.synthetic.main.activity_image.*
+import kotlinx.android.synthetic.main.spinner_layout.*
 
 /**
  * Class to manage the picture screen.
@@ -145,6 +146,7 @@ class ImageActivity : BaseActivity() {
             }
 
             // Save current image
+            spinner_title.text = getString(saving)
             ImageSave(true, image).execute()
         }
 
@@ -169,6 +171,7 @@ class ImageActivity : BaseActivity() {
                 imageViewNew.setImageBitmap(bitmap)
 
                 // Save current image
+                spinner_title.text = getString(saving)
                 ImageSave(true, image).execute()
             }
 
@@ -286,7 +289,7 @@ class ImageActivity : BaseActivity() {
         val bitmap = getBitmapFromImageView()
 
         // Resize image to fit in the frame
-        var bitmapEdited: Bitmap =
+        val bitmapEdited: Bitmap =
             // Check if the original image is too small to cut a square from it and just resize it
             if (IMAGE_SIZE >= bitmap.width || IMAGE_SIZE >= bitmap.height)
                 Bitmap.createScaledBitmap(
@@ -340,6 +343,7 @@ class ImageActivity : BaseActivity() {
     /**
      * Method to rotate by 90 degrees clockwise
      *
+     * @param index - rotate index
      * @return new bitmap to be displayed as image
      */
     private fun imageRotate(index: Int): Bitmap? {
@@ -347,7 +351,7 @@ class ImageActivity : BaseActivity() {
         if (index == 0)
             return imageBitmap
 
-        rotateIndex == index % 4
+        rotateIndex = index % 4
         val degrees = 90f * rotateIndex
         val matrix = Matrix()
         matrix.setRotate(degrees)
@@ -373,7 +377,7 @@ class ImageActivity : BaseActivity() {
         fabShare.isEnabled = false
         fabRotate.isEnabled = false
         fabDelete.isEnabled = false
-        progressBarImageScreen.isGone = false
+        progressSpinner.isGone = false
     }
 
     /**
@@ -382,8 +386,8 @@ class ImageActivity : BaseActivity() {
      */
     override fun onTaskComplete(stringId: Int) {
         super.onTaskComplete(stringId)
-        if(taskCountDown <= 0) {
-            progressBarImageScreen.isGone = true
+        if (taskCountDown <= 0) {
+            progressSpinner.isGone = true
             fabTop.isEnabled = true
             fabShare.isEnabled = true
             fabRotate.isEnabled = true

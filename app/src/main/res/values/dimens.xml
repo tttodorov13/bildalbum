@@ -1,11 +1,12 @@
 <resources>
+    <dimen name="activity_margin">0dp</dimen>
+    <dimen name="edited_image_size">400dp</dimen>
     <dimen name="fab_margin1">16dp</dimen>
     <dimen name="fab_margin2">80dp</dimen>
     <dimen name="fab_margin3">144dp</dimen>
     <dimen name="fab_margin4">208dp</dimen>
-    <!-- Default screen margins, per the Android Design guidelines. -->
-    <dimen name="activity_margin">0dp</dimen>
     <dimen name="inner_margin">4dp</dimen>
-    <!-- Default ImageView size -->
-    <dimen name="edited_image_size">400dp</dimen>
+    <dimen name="logo_margin_top">100dp</dimen>
+    <dimen name="text_margin_top">10dp</dimen>
+    <dimen name="text_size">44sp</dimen>
 </resources>

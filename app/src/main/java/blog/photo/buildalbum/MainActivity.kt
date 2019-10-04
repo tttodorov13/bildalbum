@@ -24,6 +24,7 @@ import blog.photo.buildalbum.tasks.DownloadData
 import blog.photo.buildalbum.tasks.DownloadSource
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
+import kotlinx.android.synthetic.main.spinner_layout.*
 
 /**
  * Class to manage the main screen.
@@ -132,6 +133,7 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
                 data.extras?.get("data") != null -> {
                     val bmp = data.extras?.get("data") as Bitmap?
                     imageViewCamera.setImageBitmap(bmp)
+                    spinner_title.text = getString(saving)
                     ImageSave(false, Image(this, false, CAMERA)).execute()
                 }
 
@@ -145,6 +147,7 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
                     cursor!!.moveToFirst()
                     val filePath = cursor.getString(cursor.getColumnIndex(filePathColumn[0]))
                     cursor.close()
+                    spinner_title.text = getString(saving)
                     ImageSave(
                         false,
                         Image(this, false, WRITE_EXTERNAL_STORAGE)
@@ -283,7 +286,7 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
     override fun onTaskBegin() {
         super.onTaskBegin()
         fab.isEnabled = false
-        progressBarImagesScreen.isGone = false
+        progressSpinner.isGone = false
     }
 
     /**
@@ -293,7 +296,7 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
     override fun onTaskComplete(stringId: Int) {
         super.onTaskComplete(stringId)
         if (taskCountDown <= 0) {
-            progressBarImagesScreen.isGone = true
+            progressSpinner.isGone = true
             fab.isEnabled = true
         }
     }

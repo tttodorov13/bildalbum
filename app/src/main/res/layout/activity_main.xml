@@ -10,12 +10,15 @@
 
     <include layout="@layout/content_main" />
 
-    <ProgressBar
-        android:id="@+id/progressBarImagesScreen"
+    <LinearLayout
+        android:id="@+id/progressSpinner"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:progressDrawable="@drawable/progress_bar_circular"
-        android:visibility="gone" />
+        android:visibility="gone">
+
+        <include layout="@layout/spinner_layout" />
+
+    </LinearLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/fab"
