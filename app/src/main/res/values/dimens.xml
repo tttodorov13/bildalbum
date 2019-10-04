@@ -5,6 +5,10 @@
     <dimen name="fab_margin2">80dp</dimen>
     <dimen name="fab_margin3">144dp</dimen>
     <dimen name="fab_margin4">208dp</dimen>
+    <dimen name="grid_column_width">110dp</dimen>
+    <dimen name="grid_image_size">100dp</dimen>
+    <dimen name="grid_spacing_horizontal">5dp</dimen>
+    <dimen name="grid_spacing_vertical">20dp</dimen>
     <dimen name="inner_margin">4dp</dimen>
     <dimen name="logo_margin_top">100dp</dimen>
     <dimen name="text_margin_top">10dp</dimen>
