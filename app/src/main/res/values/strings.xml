@@ -24,6 +24,6 @@
     <string name="image_delete">Delete Image</string>
     <string name="image_rescued">Image is rescued!</string>
     <string name="pane_added">Pane Added!</string>
-    <string name="downloading">Downloading&#8230;&#8230;&#8230;</string>
-    <string name="saving">Saving&#8230;&#8230;&#8230;</string>
+    <string name="downloading">Downloading&#8230;</string>
+    <string name="saving">Saving&#8230;</string>
 </resources>
