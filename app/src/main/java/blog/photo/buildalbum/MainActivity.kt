@@ -16,8 +16,8 @@ import android.widget.ImageView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isGone
 import blog.photo.buildalbum.R.string.*
-import blog.photo.buildalbum.adapters.IconsAdapter
-import blog.photo.buildalbum.adapters.ImagesAdapter
+import blog.photo.buildalbum.adapters.IconAdapter
+import blog.photo.buildalbum.adapters.ImageAdapter
 import blog.photo.buildalbum.models.Image
 import blog.photo.buildalbum.receivers.ConnectivityReceiver
 import blog.photo.buildalbum.tasks.DownloadData
@@ -62,7 +62,7 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
             getImages()
 
         // Display images
-        adapterImages = ImagesAdapter(this, images)
+        adapterImages = ImageAdapter(this, images)
         girdViewImages.adapter = adapterImages
 
         // Click listener for ImageActivity

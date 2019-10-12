@@ -13,7 +13,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import blog.photo.buildalbum.adapters.ImagesAdapter
+import blog.photo.buildalbum.adapters.ImageAdapter
 import blog.photo.buildalbum.models.Image
 import blog.photo.buildalbum.tasks.*
 import blog.photo.buildalbum.utils.DatabaseHelper
@@ -233,7 +233,7 @@ open class BaseActivity : AppCompatActivity(), AsyncResponse, DownloadData.OnDow
         internal var hasInternet: Boolean = false
         internal var taskCountDown = 0
 
-        internal lateinit var adapterFrames: ImagesAdapter
-        internal lateinit var adapterImages: ImagesAdapter
+        internal lateinit var adapterFrames: ImageAdapter
+        internal lateinit var adapterImages: ImageAdapter
     }
 }

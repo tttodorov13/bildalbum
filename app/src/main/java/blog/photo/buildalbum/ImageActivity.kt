@@ -15,7 +15,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.core.view.isGone
 import blog.photo.buildalbum.R.string.*
-import blog.photo.buildalbum.adapters.ImagesAdapter
+import blog.photo.buildalbum.adapters.ImageAdapter
 import blog.photo.buildalbum.models.Image
 import kotlinx.android.synthetic.main.activity_image.*
 import kotlinx.android.synthetic.main.spinner_layout.*
@@ -75,7 +75,7 @@ class ImageActivity : BaseActivity() {
             downloadFrames()
 
         // Display frames to be added
-        adapterFrames = ImagesAdapter(
+        adapterFrames = ImageAdapter(
             this, frames
         )
         gridViewFrames.isExpanded = true

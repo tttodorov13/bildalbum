@@ -14,7 +14,7 @@ import blog.photo.buildalbum.models.Image
 /**
  * Class to manage render images on main screen.
  */
-class ImagesAdapter(private val context: Context, private val images: ArrayList<Image>) :
+class ImageAdapter(private val context: Context, private val images: ArrayList<Image>) :
     BaseAdapter() {
 
     override fun getCount(): Int {

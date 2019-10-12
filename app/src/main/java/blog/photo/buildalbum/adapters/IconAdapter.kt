@@ -13,7 +13,7 @@ import blog.photo.buildalbum.R
 /**
  * Class to manage render icons and texts in Add Image dialog.
  */
-class IconsAdapter : ArrayAdapter<String> {
+class IconAdapter : ArrayAdapter<String> {
 
     private var icons: List<Int?>? = null
 
