@@ -5,32 +5,38 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:actionBarStyle">@style/AppActionBar</item>
+        <item name="android:alertDialogTheme">@style/AppAlertDialog</item>
+
+        <!-- Support library compatibility -->
         <item name="actionBarStyle">@style/AppActionBar</item>
+        <item name="alertDialogTheme">@style/AppAlertDialog</item>
     </style>
 
-    <style name="AppTheme.NoActionBar">
-        <item name="windowActionBar">false</item>
-        <item name="windowNoTitle">true</item>
-    </style>
-
-    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
-
-    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
-
-    <style name="AppActionBar" parent="Widget.AppCompat.ActionBar.Solid">
-        <!-- Used for the background -->
+    <!-- ActionBar styles -->
+    <style name="AppActionBar" parent="@style/Widget.AppCompat.ActionBar">
         <item name="android:background">@color/colorPrimary</item>
-        <!-- Used for the title -->
-        <item name="android:textColor">@color/colorWhite</item>
+        <item name="android:titleTextStyle">@style/AppActionBarTitleText</item>
+
+        <!-- Support library compatibility -->
+        <item name="background">@color/colorPrimary</item>
+        <item name="titleTextStyle">@style/AppActionBarTitleText</item>
     </style>
 
-    <style name="AppAlertDialog" parent="Theme.AppCompat.Light.Dialog.Alert">
-        <!-- Used for the background -->
+    <!-- ActionBar title text style -->
+    <style name="AppActionBarTitleText" parent="@style/TextAppearance.AppCompat.Widget.ActionBar.Title">
+        <item name="android:textColor">@color/colorYellow</item>
+    </style>
+
+    <!-- Dialog styles -->
+    <style name="AppAlertDialog" parent="@style/Theme.AppCompat.Light.Dialog.Alert">
         <item name="android:background">@color/colorPrimary</item>
-        <!-- Used for the title -->
-        <item name="android:textColor">@color/colorWhite</item>
-        <!-- Used for the items -->
-        <item name="textColorAlertDialogListItem">@color/colorWhite</item>
+        <item name="android:textColor">@color/colorYellow</item>
+        <item name="android:tint">@color/colorYellow</item>
+
+        <!-- Support library compatibility -->
+        <item name="background">@color/colorPrimary</item>
+        <item name="tint">@color/colorYellow</item>
     </style>
 
 </resources>

@@ -158,7 +158,7 @@ open class BaseActivity : AppCompatActivity(), AsyncResponse, DownloadData.OnDow
         textView.setTextColor(
             ContextCompat.getColor(
                 this,
-                R.color.colorWhite
+                R.color.colorYellow
             )
         )
         toastMessage.show()

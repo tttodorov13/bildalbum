@@ -101,9 +101,9 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
             itemTexts.add(getString(close))
             itemIcons.add(android.R.drawable.ic_menu_close_clear_cancel)
 
-            val adapter = IconsAdapter(this, itemTexts, itemIcons)
+            val adapter = IconAdapter(this, itemTexts, itemIcons)
 
-            val alertDialog = AlertDialog.Builder(this, R.style.AppAlertDialog)
+            val alertDialog = AlertDialog.Builder(this)
                 .setTitle(getString(image_add))
                 .setIcon(android.R.drawable.ic_input_add)
             alertDialog.setAdapter(adapter) { dialog, item ->

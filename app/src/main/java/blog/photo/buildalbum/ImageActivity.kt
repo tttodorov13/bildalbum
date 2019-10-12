@@ -177,7 +177,7 @@ class ImageActivity : BaseActivity() {
 
         // Click listener for Delete Button
         fabDelete.setOnClickListener {
-            val alertDialog = AlertDialog.Builder(this, R.style.AppAlertDialog)
+            val alertDialog = AlertDialog.Builder(this)
                 .setTitle(getString(image_delete))
                 .setIcon(android.R.drawable.ic_menu_delete).create()
 
