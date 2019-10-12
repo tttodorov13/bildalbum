@@ -77,7 +77,7 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
             }
 
         // Click listener for Add Image Dialog
-        fab.setOnClickListener {
+        fabAddImage.setOnClickListener {
             val itemTexts = ArrayList<String>()
             val itemIcons = ArrayList<Int>()
 
@@ -285,7 +285,7 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
      */
     override fun onTaskBegin() {
         super.onTaskBegin()
-        fab.isEnabled = false
+        fabAddImage.isEnabled = false
         progressSpinner.isGone = false
     }
 
@@ -297,7 +297,7 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
         super.onTaskComplete(stringId)
         if (taskCountDown <= 0) {
             progressSpinner.isGone = true
-            fab.isEnabled = true
+            fabAddImage.isEnabled = true
         }
     }
 }
