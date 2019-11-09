@@ -11,7 +11,8 @@ import blog.photo.buildalbum.models.Image
  */
 // TODO: Save to local database with Room
 // TODO: Fix A SQLiteConnection object for database '+data+data+blog_photo_buildalbum+databases+buildalbum_db' was leaked!  Please fix your application to end transactions in progress properly and to close the database when it is no longer needed.
-class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
+class DatabaseHelper(private val context: Context) :
+    SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL("CREATE TABLE $TABLE_FRAMES ($COLUMN_ID INTEGER PRIMARY KEY, $COLUMN_NAME TEXT,$COLUMN_ORIGIN TEXT)")
@@ -54,7 +55,7 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, D
         val cursor =
             readableDatabase.rawQuery("SELECT * FROM $TABLE_FRAMES ORDER BY $COLUMN_ID DESC", null)
 
-        if (cursor!!.moveToFirst()) {
+        if (cursor!!.moveToFirst())
             frames.add(
                 Image(
                     context,
@@ -70,8 +71,8 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, D
                     )
                 )
             )
-        }
-        while (cursor.moveToNext()) {
+
+        while (cursor.moveToNext())
             frames.add(
                 Image(
                     context,
@@ -88,9 +89,8 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, D
                     )
                 )
             )
-        }
-        cursor.close()
 
+        cursor.close()
         return frames
     }
 
@@ -114,7 +114,8 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, D
                     )
                 )
             )
-            while (cursor.moveToNext()) {
+
+            while (cursor.moveToNext())
                 images.add(
                     Image(
                         context,
@@ -129,10 +130,9 @@ class DatabaseHelper(private val context: Context) : SQLiteOpenHelper(context, D
                         )
                     )
                 )
-            }
         }
-        cursor.close()
 
+        cursor.close()
         return images
     }
 
