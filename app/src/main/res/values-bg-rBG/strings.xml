@@ -17,4 +17,6 @@
     <string name="pane_added">Добавено е пано!</string>
     <string name="downloading">Сваляне&#8230;</string>
     <string name="saving">Запаметяване&#8230;</string>
+    <string name="download_from_flickr">Последно от Flickr</string>
+    <string name="download_from_pixabay">Последно от Pixabay</string>
 </resources>

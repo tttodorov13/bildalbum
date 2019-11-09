@@ -9,8 +9,8 @@
     <string name="image_add">Add Image</string>
     <string name="take_photo">Take a Photo</string>
     <string name="choice_from_gallery">Choice from Gallery</string>
-    <string name="download_from_flickr" translatable="false">Download from Flickr</string>
-    <string name="download_from_pixabay" translatable="false">Download from Pixabay</string>
+    <string name="download_from_flickr">Latest from Flickr</string>
+    <string name="download_from_pixabay">Latest from Pixabay</string>
     <string name="close">Close</string>
     <string name="com_facebook_katana" translatable="false">com.facebook.katana</string>
     <string name="facebook_sharer" translatable="false">https://www.facebook.com/sharer/sharer.php?u=</string>
