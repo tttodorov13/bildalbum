@@ -38,18 +38,10 @@ public abstract class AppRoomDatabase : RoomDatabase() {
 
         suspend fun populateImages(imageDao: ImageDao) {
             // Add sample words.
-            var image = ImageEntity("image1", "origin1")
-            imageDao.insert(image)
-            image = ImageEntity("image2", "origin2")
-            imageDao.insert(image)
         }
 
         suspend fun populatePanes(paneDao: PaneDao) {
             // Add sample words.
-            var pane = PaneEntity("pane1", "origin1")
-            paneDao.insert(pane)
-            pane = PaneEntity("pane2", "origin2")
-            paneDao.insert(pane)
         }
     }
 
