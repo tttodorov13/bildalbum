@@ -22,7 +22,7 @@ import kotlinx.android.synthetic.main.spinner_layout.*
 /**
  * Class base for all activities of the application.
  */
-// TODO: Automate download new frames
+// TODO: Automate download new panes
 // TODO: Find and fix Unable to decode stream: java.io.FileNotFoundException
 // TODO: Translate in all Amazon sale's languages
 open class BaseActivity : AppCompatActivity(), AsyncResponse, DownloadData.OnDownloadComplete,
@@ -64,12 +64,13 @@ open class BaseActivity : AppCompatActivity(), AsyncResponse, DownloadData.OnDow
     override fun onDataAvailable(data: ArrayList<String>) {
         spinner_title.text = getString(R.string.downloading)
         data.forEach {
+            val image = Image(
+                this,
+                it.contains(Uri.parse(getString(R.string.PANES_URI)).authority.toString()),
+                it
+            )
             ImageSave(
-                false, Image(
-                    this,
-                    it.contains(Uri.parse(getString(R.string.FRAMES_URI)).authority.toString()),
-                    it
-                )
+                false, image
             ).execute()
         }
     }
@@ -171,7 +172,7 @@ open class BaseActivity : AppCompatActivity(), AsyncResponse, DownloadData.OnDow
         DownloadData(
             this,
             DownloadSource.FRAMES
-        ).execute(getString(R.string.FRAMES_URI))
+        ).execute(getString(R.string.PANES_URI))
     }
 
     /**

@@ -2,7 +2,7 @@
     <string name="app_name">Build Album</string>
     <string name="app_info">Build Your Album</string>
     <string name="app_web" translatable="false">https://buildalbum.photo.blog</string>
-    <string name="FRAMES_URI" translatable="false">https://drive.google.com</string>
+    <string name="PANES_URI" translatable="false">https://drive.google.com/uc?export=view&amp;id=1kituJ8bOZYybBydnECcy31Z7sg1Y2KG7</string>
     <string name="FLICKR_API_URI" translatable="false">https://api.flickr.com/services/feeds/photos_public.gne</string>
     <string name="PIXABAY_API_URI" translatable="false">https://pixabay.com/api/</string>
     <string name="PIXABAY_API_KEY" translatable="false">13310406-d6e15cf3e2d5c590fa44a6bea</string>
