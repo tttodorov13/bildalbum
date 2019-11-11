@@ -1,4 +1,4 @@
-package blog.photo.buildalbum.tasks
+package blog.photo.buildalbum.task
 
 import android.os.AsyncTask
 import android.util.Log
@@ -7,23 +7,23 @@ import java.net.MalformedURLException
 import java.net.URL
 
 /**
- * Enum for picture's download sources.
+ * Enum for card's download sources.
  */
 enum class DownloadSource {
     FLICKR, PIXABAY, FRAMES
 }
 
 /**
- * Enum for picture's download statuses.
+ * Enum for card's download statuses.
  */
 enum class DownloadStatus {
     OK, IDLE, NOT_INITIALIZED, FAILED_OR_EMPTY, PERMISSIONS_ERROR, ERROR
 }
 
 /**
- * Class that manages the download of imagesNames.
+ * Class to manage cards' download.
  */
-class DownloadData(private val listener: OnDownloadComplete, private val source: DownloadSource) :
+internal class DownloadData(private val listener: OnDownloadComplete, private val source: DownloadSource) :
     AsyncTask<String, Void, String>() {
     private val tag = "DownloadData"
     private var status = DownloadStatus.IDLE

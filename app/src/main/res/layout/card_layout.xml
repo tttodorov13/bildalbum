@@ -7,7 +7,7 @@
     android:layout_marginTop="200dp">
 
     <ImageView
-        android:id="@+id/picture"
+        android:id="@+id/card"
         android:layout_width="@dimen/grid_image_size"
         android:layout_height="@dimen/grid_image_size"
         android:layout_gravity="center_horizontal"

@@ -5,216 +5,140 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Matrix
-import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
+import android.view.View
 import android.widget.AdapterView
-import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.core.view.isGone
-import blog.photo.buildalbum.R.string.*
-import blog.photo.buildalbum.adapters.ImageAdapter
-import blog.photo.buildalbum.models.Image
+import blog.photo.buildalbum.adapter.IconAdapter
+import blog.photo.buildalbum.db.entity.Card
+import blog.photo.buildalbum.db.entity.Image
+import blog.photo.buildalbum.db.entity.Pane
+import blog.photo.buildalbum.task.DownloadData
+import blog.photo.buildalbum.task.DownloadSource
 import kotlinx.android.synthetic.main.activity_image.*
 import kotlinx.android.synthetic.main.spinner_layout.*
+import java.io.File
 
 /**
- * Class to manage the picture screen.
+ * Class to manage the image screen.
  */
 class ImageActivity : BaseActivity() {
 
-    private lateinit var frame: Image
+    private val imageSize = 400
+    private val imageSizeBorder = 100f
     private lateinit var image: Image
+    private var pane: Pane = Pane(false, "", "")
     private var rotateIndex = 0
 
-    /**
-     * A companion object for static variables
-     */
-    companion object {
-        private const val IMAGE_SIZE = 400
-        private const val IMAGE_SIZE_BORDER = 100F
-        private lateinit var imageViewNew: ImageView
-
-        /**
-         * Method to get a bitmap from the new image
-         */
-        internal fun getBitmapFromImageView(): Bitmap {
-            return (imageViewNew.drawable as BitmapDrawable).bitmap
-        }
-    }
-
-    /**
-     * OnCreate ImageActivity
-     *
-     * @param savedInstanceState
-     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_image)
 
-        // Set ImageView to be used for saving changes
-        imageViewNew = imageView
-
         // Initialize the image object
         image = Image(
-            this,
-            intent.extras!!.get("originalName").toString(),
-            intent.extras!!.get("originalOrigin").toString()
+            false,
+            intent.extras!!.get("file").toString(),
+            intent.extras!!.get("source").toString()
         )
 
-        // Initialize the frame object
-        frame = Image(this, true, "", "")
+        newImageView = signalImageView
 
-        // Set new Image URI
-        imageView.setImageBitmap(image.bitmap)
-
-        // If connected to Internet download latest frames
-        if (hasInternet && getFrames() == 0)
-            downloadFrames()
-
-        // Display frames to be added
-        adapterFrames = ImageAdapter(
-            this, frames
-        )
-        gridViewFrames.isExpanded = true
-        gridViewFrames.adapter = adapterFrames
-
-        // Scroll to screen top
-        screen.smoothScrollTo(0, 0)
-
-        // Click listener for Scroll-to-Top Button
-        fabTop.setOnClickListener {
-            screen.smoothScrollTo(0, 0)
-        }
-
-        // Click listener for Share Button
-        fabShare.setOnClickListener {
-            var intent = Intent(Intent.ACTION_SEND)
-            intent.type = "image/*"
-            intent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
-
-            intent.putExtra(
-                Intent.EXTRA_STREAM,
-                Uri.fromFile(image.file)
+        // Set the image view
+        newImageView.setImageBitmap(
+            BitmapFactory.decodeFile(
+                File(
+                    getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+                    image.file
+                ).canonicalPath
             )
+        )
 
-            // See if official Facebook app is found
-            var facebookAppFound = false
-            val matches = packageManager.queryIntentActivities(intent, 0)
-            for (info in matches) {
-                if (info.activityInfo.packageName.equals(
-                        getString(
-                            com_facebook_katana
-                        ),
-                        true
-                    )
-                ) {
-                    intent.setPackage(info.activityInfo.packageName)
-                    facebookAppFound = true
-                    break
-                }
-            }
+        // Display panes in an interesting layout
+        panesGridView.isExpanded = true
+        panesGridView.adapter = paneAdapter
 
-            // As fallback, launch sharer.php in a browser
-            if (!facebookAppFound) {
-                intent = Intent(
-                    Intent.ACTION_VIEW,
-                    Uri.parse(getString(facebook_sharer).plus(getString(app_web)))
-                )
-                toast(getString(install_facebook_for_optimal_experience))
-            }
-
-            startActivity(intent)
-        }
-
-        // Click listener for Rotate Button
-        fabRotate.setOnClickListener {
-            imageSetOriginalView()
-
-            // Rotate image with current index +1
-            var bitmap = imageRotate(++rotateIndex)
-
-            // Set current bitmap on image screen
-            imageViewNew.setImageBitmap(bitmap)
-
-            // Check if frame is applied
-            if (frame.name != "") {
-                bitmap = imageAddFrame(frame)
-                imageViewNew.setImageBitmap(bitmap)
-            }
-
-            // Save current image
-            spinner_title.text = getString(saving)
-            ImageSave(true, image).execute()
-        }
+        scrollToTop()
 
         // Click listener for Add Frame
-        gridViewFrames.onItemClickListener =
+        panesGridView.onItemClickListener =
             AdapterView.OnItemClickListener { _, _, position, _ ->
-                imageSetOriginalView()
+                imageSetOriginal()
 
-                // Copy frame from selection
-                frame = frames[position]
+                // Copy pane from selection
+                pane = paneAdapter.getPanes()[position]
 
                 // Rotate image with current index
-                var bitmap = imageRotate(rotateIndex)
+                var bitmap = bitmapRotate(rotateIndex)
 
                 // Set current bitmap on image screen
-                imageViewNew.setImageBitmap(bitmap)
+                newImageView.setImageBitmap(bitmap)
 
-                // Add current frame
-                bitmap = imageAddFrame(frame)
+                // Add current pane
+                bitmap = getPaneBitmap(pane)
 
                 // Set current bitmap on image screen
-                imageViewNew.setImageBitmap(bitmap)
+                newImageView.setImageBitmap(bitmap)
 
                 // Save current image
-                spinner_title.text = getString(saving)
-                ImageSave(true, image).execute()
+                spinner_title.text = getString(R.string.progress_saving)
+                CardSave().execute(Card(image.isEdited, image.file, image.source))
+                image.isEdited = true
             }
 
-        // Click listener for Delete Button
-        fabDelete.setOnClickListener {
+        // Click listener for Scroll-to-Bottom Button
+        fabBottomSingle.setOnClickListener {
+            scrollToBottom()
+        }
+
+        // Click listener for edit button
+        fabEdit.setOnClickListener {
+            scrollToTop()
+
+            val itemTexts = ArrayList<String>()
+            val itemIcons = ArrayList<Int>()
+
+            if (hasInternet) {
+                itemTexts.add(getString(R.string.latest_panes))
+                itemIcons.add(R.drawable.ic_download_24dp)
+            } else
+                toast(R.string.enable_internet)
+
+            itemTexts.add(getString(R.string.rotate))
+            itemIcons.add(R.drawable.ic_rotate_24dp)
+
+            itemTexts.add(getString(R.string.share))
+            itemIcons.add(R.drawable.ic_share_24dp)
+
+            itemTexts.add(getString(R.string.delete))
+            itemIcons.add(R.drawable.ic_delete_24dp)
+
+            itemTexts.add(getString(R.string.close))
+            itemIcons.add(R.drawable.ic_close_24dp)
+
+            val adapter = IconAdapter(this, itemTexts, itemIcons)
+
             val alertDialog = AlertDialog.Builder(this)
-                .setTitle(getString(image_delete))
-                .setIcon(android.R.drawable.ic_menu_delete).create()
+                .setTitle(getString(R.string.image_edit))
+                .setIcon(R.drawable.ic_edit_24dp)
+            alertDialog.setAdapter(adapter) { dialog, item ->
+                when (adapter.getItem(item)) {
+                    getString(R.string.latest_panes) -> downloadPanes()
+                    getString(R.string.rotate) -> imageRotate()
+                    getString(R.string.share) -> imageShare()
+                    getString(R.string.delete) -> imageDelete()
+                    else -> dialog.dismiss()
+                }
+            }.show()
+        }
 
-            alertDialog.setButton(
-                AlertDialog.BUTTON_NEGATIVE,
-                getString(android.R.string.cancel),
-                ContextCompat.getDrawable(
-                    this,
-                    android.R.drawable.ic_delete
-                )
-            ) { dialog, _ ->
-                toast(getString(image_rescued))
-                dialog.dismiss()
-            }
-
-            alertDialog.setButton(
-                AlertDialog.BUTTON_POSITIVE,
-                getString(android.R.string.ok),
-                ContextCompat.getDrawable(
-                    this,
-                    android.R.drawable.checkbox_on_background
-                )
-            ) { _, _ ->
-                image.delete()
-                toast(getString(image_deleted))
-                finish()
-            }
-
-            alertDialog.show()
-
-            val btnPositive = alertDialog.getButton(AlertDialog.BUTTON_POSITIVE)
-            val btnNegative = alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE)
-
-            val layoutParams = btnPositive.layoutParams as LinearLayout.LayoutParams
-            layoutParams.weight = 10f
-            btnPositive.layoutParams = layoutParams
-            btnNegative.layoutParams = layoutParams
+        // Click listener for Scroll-to-Top Button
+        fabTopSingle.setOnClickListener {
+            scrollToTop()
         }
     }
 
@@ -226,17 +150,24 @@ class ImageActivity : BaseActivity() {
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
         image = Image(
-            this,
-            savedInstanceState.getString("imageName")!!,
-            savedInstanceState.getString("imageOrigin")!!
+            savedInstanceState.getString("isEdited")!!.toBoolean(),
+            savedInstanceState.getString("imageFile")!!,
+            savedInstanceState.getString("imageSource")!!
         )
-        frame = Image(
-            this,
-            true,
-            savedInstanceState.getString("frameName")!!,
-            savedInstanceState.getString("frameOrigin")!!
+        newImageView.setImageBitmap(
+            BitmapFactory.decodeFile(
+                File(
+                    getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+                    image.file
+                ).canonicalPath
+            )
         )
-        imageViewNew.setImageBitmap(image.bitmap)
+        pane = Pane(
+            false,
+            savedInstanceState.getString("paneFile")!!,
+            savedInstanceState.getString("paneSource")!!
+        )
+        rotateIndex = savedInstanceState.getString("rotateIndex")!!.toInt()
     }
 
     /**
@@ -245,57 +176,108 @@ class ImageActivity : BaseActivity() {
      * @param outState
      */
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putString("imageName", image.name)
-        outState.putString("imageOrigin", image.origin)
-        outState.putString("frameName", frame.name)
-        outState.putString("frameOrigin", frame.origin)
+        outState.putString("imageFile", image.file)
+        outState.putString("imageSource", image.source)
+        outState.putString("isEdited", image.isEdited.toString())
+        outState.putString("paneFile", pane.file)
+        outState.putString("paneSource", pane.source)
+        outState.putString("rotateIndex", rotateIndex.toString())
         super.onSaveInstanceState(outState)
     }
 
     /**
-     * Method to get image origin
+     * On image save task begin
+     * disable all FABs and show progress bar spinner
      */
-    private fun imageSetOriginalView() {
-        // Store image.name in temporary var
-        val imageName = image.name
-
-        // If it is not first edition, get image original
-        if (image.name != intent.extras!!.get("originalName").toString()) {
-            image = Image(
-                this,
-                intent.extras!!.get("originalName").toString(),
-                intent.extras!!.get("originalOrigin").toString()
-            )
-        }
-
-        // Set current bitmap on image screen
-        imageViewNew.setImageBitmap(image.bitmap)
-
-        // If it is not first edition, get saved image
-        image = if (imageName != intent.extras!!.get("originalName").toString())
-            Image(this, imageName, getString(app_name))
-        // Else create new image
-        else
-            Image(this, false, getString(app_name))
+    override fun onTaskBegin() {
+        super.onTaskBegin()
+        progressSpinner.isGone = false
+        fabBottomSingle.isEnabled = false
+        fabBottomSingle.alpha = 0.1F
+        fabEdit.isEnabled = false
+        fabEdit.alpha = 0.1F
+        fabTopSingle.isEnabled = false
+        fabTopSingle.alpha = 0.1F
+        panesGridView.isEnabled = false
+        panesGridView.alpha = 0.1F
     }
 
     /**
-     * Method to add a frame
+     * On image save task complete
+     * enable all FABs and hide progress bar spinner
+     */
+    override fun onTaskComplete(stringId: Int) {
+        super.onTaskComplete(stringId)
+        if (taskCountDown <= 0) {
+            fabBottomSingle.isEnabled = true
+            fabBottomSingle.alpha = 1.0F
+            fabEdit.isEnabled = true
+            fabEdit.alpha = 1.0F
+            fabTopSingle.isEnabled = true
+            fabTopSingle.alpha = 1.0F
+            panesGridView.isEnabled = true
+            panesGridView.alpha = 1.0F
+            progressSpinner.isGone = true
+        }
+        toast(stringId)
+    }
+
+
+    /**
+     * Method to rotate current image bitmap by 90 degrees clockwise
      *
-     * @param frame to be applied
+     * @param index - times image to be rotated by 90 degrees
      * @return new bitmap to be displayed as image
      */
-    private fun imageAddFrame(frame: Image): Bitmap? {
+    private fun bitmapRotate(index: Int): Bitmap? {
+        rotateIndex = index % 4
+        val imageBitmap = getBitmapFromImageView()
+
+        if (rotateIndex == 0)
+            return imageBitmap
+
+        val degrees = 90f * rotateIndex
+        val matrix = Matrix()
+        matrix.setRotate(degrees)
+
+        return Bitmap.createBitmap(
+            imageBitmap,
+            0,
+            0,
+            imageBitmap.width,
+            imageBitmap.height,
+            matrix,
+            true
+        )
+    }
+
+    /**
+     * Method to download latest panes.
+     */
+    private fun downloadPanes() {
+        DownloadData(
+            this,
+            DownloadSource.FRAMES
+        ).execute(getString(R.string.PANES_URI))
+    }
+
+    /**
+     * Method to get a pane bitmap.
+     *
+     * @param pane  -   to be applied
+     * @return the bitmap from pane file
+     */
+    private fun getPaneBitmap(pane: Pane): Bitmap? {
         val bitmap = getBitmapFromImageView()
 
-        // Resize image to fit in the frame
+        // Resize image to fit on the pane
         val bitmapEdited: Bitmap =
             // Check if the original image is too small to cut a square from it and just resize it
-            if (IMAGE_SIZE >= bitmap.width || IMAGE_SIZE >= bitmap.height)
+            if (imageSize >= bitmap.width || imageSize >= bitmap.height)
                 Bitmap.createScaledBitmap(
                     bitmap,
-                    IMAGE_SIZE,
-                    IMAGE_SIZE,
+                    imageSize,
+                    imageSize,
                     false
                 )
             // If the original image is large enough cut a square from it and resize it
@@ -317,14 +299,19 @@ class ImageActivity : BaseActivity() {
                     )
                 Bitmap.createScaledBitmap(
                     bitmapCut,
-                    IMAGE_SIZE,
-                    IMAGE_SIZE,
+                    imageSize,
+                    imageSize,
                     false
                 )
             }
 
         // Get the bitmap frame to be applied
-        val bitmapNew = BitmapFactory.decodeFile(frame.filePath).copy(
+        val bitmapNew = BitmapFactory.decodeFile(
+            File(
+                getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+                pane.file
+            ).canonicalPath
+        ).copy(
             Bitmap.Config.ARGB_8888,
             true
         )
@@ -332,8 +319,8 @@ class ImageActivity : BaseActivity() {
         // Add the scaled image onto the frame
         Canvas(bitmapNew).drawBitmap(
             bitmapEdited,
-            IMAGE_SIZE_BORDER,
-            IMAGE_SIZE_BORDER,
+            imageSizeBorder,
+            imageSizeBorder,
             null
         )
 
@@ -341,58 +328,181 @@ class ImageActivity : BaseActivity() {
     }
 
     /**
-     * Method to rotate by 90 degrees clockwise
-     *
-     * @param index - rotate index
-     * @return new bitmap to be displayed as image
+     * Method to delete current image.
      */
-    private fun imageRotate(index: Int): Bitmap? {
-        val imageBitmap = getBitmapFromImageView()
-        if (index == 0)
-            return imageBitmap
+    private fun imageDelete() {
+        val alertDialog = AlertDialog.Builder(this)
+            .setTitle(getString(R.string.delete))
+            .setIcon(R.drawable.ic_delete_24dp).create()
 
-        rotateIndex = index % 4
-        val degrees = 90f * rotateIndex
-        val matrix = Matrix()
-        matrix.setRotate(degrees)
+        alertDialog.setButton(
+            AlertDialog.BUTTON_NEGATIVE,
+            getString(android.R.string.cancel),
+            ContextCompat.getDrawable(
+                this,
+                R.drawable.ic_close_24dp
+            )
+        ) { dialog, _ ->
+            toast(R.string.image_rescued)
+            dialog.dismiss()
+        }
 
-        return Bitmap.createBitmap(
-            imageBitmap,
-            0,
-            0,
-            imageBitmap.width,
-            imageBitmap.height,
-            matrix,
-            true
+        alertDialog.setButton(
+            AlertDialog.BUTTON_POSITIVE,
+            getString(android.R.string.ok),
+            ContextCompat.getDrawable(
+                this,
+                R.drawable.ic_check_24dp
+            )
+        ) { _, _ ->
+            imageViewModel.delete(image)
+            val file = File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), image.file)
+            if (file.exists())
+                file.delete()
+            toast(R.string.image_deleted)
+            finish()
+        }
+
+        alertDialog.show()
+
+        val btnPositive = alertDialog.getButton(AlertDialog.BUTTON_POSITIVE)
+        val btnNegative = alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE)
+
+        val layoutParams = btnPositive.layoutParams as LinearLayout.LayoutParams
+        layoutParams.weight = 10f
+        btnPositive.layoutParams = layoutParams
+        btnPositive.setTextColor(
+            ContextCompat.getColor(
+                this,
+                R.color.colorYellow
+            )
+        )
+        btnNegative.layoutParams = layoutParams
+        btnNegative.setTextColor(
+            ContextCompat.getColor(
+                this,
+                R.color.colorYellow
+            )
         )
     }
 
     /**
-     * On image save task begin
-     * disable all FABs and show progress bar spinner
+     * Method to rotate current image.
      */
-    override fun onTaskBegin() {
-        super.onTaskBegin()
-        fabTop.isEnabled = false
-        fabShare.isEnabled = false
-        fabRotate.isEnabled = false
-        fabDelete.isEnabled = false
-        progressSpinner.isGone = false
+    private fun imageRotate() {
+        imageSetOriginal()
+
+        // Rotate image with current index +1
+        var bitmap = bitmapRotate(++rotateIndex)
+
+        // Set current bitmap on image screen
+        newImageView.setImageBitmap(bitmap)
+
+        // Check if pane is chosen
+        if (pane.file != "") {
+            bitmap = getPaneBitmap(pane)
+            newImageView.setImageBitmap(bitmap)
+        }
+
+        // Save current image
+        spinner_title.text = getString(R.string.progress_saving)
+        CardSave().execute(Card(image.isEdited, image.file, image.source))
+        image.isEdited = true
     }
 
     /**
-     * On image save task complete
-     * enable all FABs and hide progress bar spinner
+     * Method to get image origin
      */
-    override fun onTaskComplete(stringId: Int) {
-        super.onTaskComplete(stringId)
-        if (taskCountDown <= 0) {
-            progressSpinner.isGone = true
-            fabTop.isEnabled = true
-            fabShare.isEnabled = true
-            fabRotate.isEnabled = true
-            fabDelete.isEnabled = true
+    private fun imageSetOriginal() {
+        // Store image.file and image.source in temporary vars
+        val imageFile = image.file
+        val imageSource = image.source
+
+        // If it is not first edition, get image original
+        if (image.file != intent.extras!!.get("file").toString()) {
+            image = Image(
+                false,
+                intent.extras!!.get("file").toString(),
+                intent.extras!!.get("source").toString()
+            )
         }
-        toast(getString(stringId))
+
+        // Set current bitmap on image screen
+        newImageView.setImageBitmap(
+            BitmapFactory.decodeFile(
+                File(
+                    getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+                    image.file
+                ).canonicalPath
+            )
+        )
+
+        // If it is not first edition, get saved image
+        image = if (imageFile != intent.extras!!.get("file").toString())
+            Image(true, imageFile, imageSource)
+        // Else create new image
+        else
+            Image(false, "".plus(System.nanoTime()).plus(".png"), application.packageName)
+    }
+
+    /**
+     * Method to share current image on Facebook.
+     */
+    private fun imageShare() {
+        var intent = Intent(Intent.ACTION_SEND)
+        intent.type = "image/*"
+        intent.flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
+
+        intent.putExtra(
+            Intent.EXTRA_STREAM,
+            Uri.fromFile(
+                File(
+                    getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+                    image.file
+                )
+            )
+        )
+
+        // See if official Facebook app is found
+        var facebookAppFound = false
+        val matches = packageManager.queryIntentActivities(intent, 0)
+        for (info in matches) {
+            if (info.activityInfo.packageName.equals(
+                    getString(
+                        R.string.com_facebook_katana
+                    ),
+                    true
+                )
+            ) {
+                intent.setPackage(info.activityInfo.packageName)
+                facebookAppFound = true
+                break
+            }
+        }
+
+        // As fallback, launch sharer.php in a browser
+        if (!facebookAppFound) {
+            intent = Intent(
+                Intent.ACTION_VIEW,
+                Uri.parse(getString(R.string.facebook_sharer).plus(getString(R.string.app_web)))
+            )
+            toast(R.string.install_facebook_for_optimal_experience)
+        }
+
+        startActivity(intent)
+    }
+
+    /**
+     * Method to scroll to screen top.
+     */
+    private fun scrollToBottom() {
+        screen.fullScroll(View.FOCUS_DOWN)
+    }
+
+    /**
+     * Method to scroll to screen top.
+     */
+    private fun scrollToTop() {
+        screen.smoothScrollTo(0, 0)
     }
 }

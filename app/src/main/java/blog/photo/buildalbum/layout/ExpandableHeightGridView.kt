@@ -1,4 +1,4 @@
-package blog.photo.buildalbum.utils
+package blog.photo.buildalbum.layout
 
 import android.content.Context
 import android.util.AttributeSet
@@ -22,7 +22,7 @@ class ExpandableHeightGridView : GridView {
     ) : super(context, attrs, defStyle) {
     }
 
-    public override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         if (isExpanded) {
             // Calculate entire height by providing a very large height hint.
             // View.MEASURED_SIZE_MASK represents the largest height possible.

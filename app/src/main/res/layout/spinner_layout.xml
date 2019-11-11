@@ -15,7 +15,18 @@
         android:layout_gravity="center_horizontal"
         android:layout_marginTop="@dimen/text_margin_top"
         android:gravity="center_horizontal"
-        android:text="@string/downloading"
+        android:text="@string/progress_downloading"
+        android:textColor="@color/colorAccent"
+        android:textSize="@dimen/text_size"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/spinner_percentage"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:text="@string/progress_percentage"
         android:textColor="@color/colorAccent"
         android:textSize="@dimen/text_size"
         android:textStyle="bold" />

@@ -1,21 +1,26 @@
-package blog.photo.buildalbum.adapters
+package blog.photo.buildalbum.adapter
 
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.os.Environment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.ImageView
+import blog.photo.buildalbum.db.entity.Image
 import blog.photo.buildalbum.R
-import blog.photo.buildalbum.models.Image
+import java.io.File
 
 /**
  * Class to manage render images on main screen.
  */
-class ImageAdapter(private val context: Context, private val images: ArrayList<Image>) :
+class ImageAdapter(private val context: Context) :
     BaseAdapter() {
+
+    // Cached copy of images
+    private var images = emptyList<Image>()
 
     override fun getCount(): Int {
         return images.size
@@ -34,18 +39,21 @@ class ImageAdapter(private val context: Context, private val images: ArrayList<I
         val viewHolder: ViewHolder
 
         val options = BitmapFactory.Options()
-        options.inDither = false
         options.inJustDecodeBounds = false
         options.inPreferredConfig = Bitmap.Config.ARGB_8888
         options.inSampleSize = 3
-        options.inPurgeable = true
 
-        val bitmap = BitmapFactory.decodeFile(images[position].filePath, options)
+        val bitmap = BitmapFactory.decodeFile(
+            File(
+                context.getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+                images[position].file
+            ).canonicalPath, options
+        )
 
         if (convertView == null) {
-            convertView = LayoutInflater.from(context).inflate(R.layout.image_layout, null)
+            convertView = LayoutInflater.from(context).inflate(R.layout.card_layout, null)
 
-            val imageView = convertView.findViewById(R.id.picture) as ImageView
+            val imageView = convertView.findViewById(R.id.card) as ImageView
 
             viewHolder = ViewHolder(imageView)
             viewHolder.imageView.setImageBitmap(bitmap)
@@ -62,4 +70,13 @@ class ImageAdapter(private val context: Context, private val images: ArrayList<I
     private inner class ViewHolder(
         var imageView: ImageView
     )
+
+    internal fun getImages(): List<Image> {
+        return this.images
+    }
+
+    internal fun setImages(images: List<Image>) {
+        this.images = images
+        notifyDataSetChanged()
+    }
 }

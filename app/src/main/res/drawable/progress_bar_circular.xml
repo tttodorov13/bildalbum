@@ -19,6 +19,7 @@
             android:startColor="@color/colorAccent"
             android:type="sweep"
             android:useLevel="false" />
+
     </shape>
 
 </rotate>

@@ -1,22 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Направи Албум</string>
-    <string name="image_add">Добави Изображение</string>
     <string name="app_info">Направи Своя Албум</string>
-    <string name="choice_from_gallery">Избери от Галерия</string>
     <string name="close">Затвори</string>
-    <string name="enable_internet">Включи Интернет, за да сваляш снимки!</string>
-    <string name="image_deleted">Изображението е изтрито!</string>
-    <string name="image_saved">Изображението е запазено!</string>
+    <string name="download_completed">Свалянето приключи!</string>
+    <string name="download_failed">Свалянето неуспешно!</string>
+    <string name="enable_internet">Включи Интернет, за да отключиш още функции!</string>
+    <string name="image_add">Добави изображение</string>
+    <string name="image_added">Добавено изображение!</string>
+    <string name="image_deleted">Изтрито изображение!</string>
+    <string name="image_edited">Променено изображение!</string>
+    <string name="image_rescued">Спасено изобрание!</string>
     <string name="install_facebook_for_optimal_experience">Инсталирай Facebook за най-добро изживяване!</string>
-    <string name="no_image_is_captured">Не е добавено изображение!</string>
-    <string name="not_enough_space_on_disk">Недостатъчно място на диска!</string>
+    <string name="latest_from_flickr">Последни от Flickr</string>
+    <string name="latest_from_pixabay">Последни от Pixabay</string>
+    <string name="nothing_new_captured">Нищо не е добавено!</string>
+    <string name="pick_from_gallery">Избери от Галерия!</string>
+    <string name="progress_downloading">Сваляне&#8230;</string>
+    <string name="progress_saving">Запазване&#8230;</string>
+    <string name="progress_sketch">Рисувам</string>
     <string name="take_photo">Снимай</string>
-    <string name="image_delete">Изтрий Изображение</string>
-    <string name="image_rescued">Изображението е спасено!</string>
-    <string name="pane_added">Добавено е пано!</string>
-    <string name="downloading">Сваляне&#8230;</string>
-    <string name="saving">Запаметяване&#8230;</string>
-    <string name="download_from_flickr">Последно от Flickr</string>
-    <string name="download_from_pixabay">Последно от Pixabay</string>
+    <string name="latest_panes">Последни пана</string>
+    <string name="delete">Изтрий</string>
+    <string name="rotate">Завърти</string>
+    <string name="share">Сподели</string>
+    <string name="image_edit">Промени изображение</string>
 </resources>

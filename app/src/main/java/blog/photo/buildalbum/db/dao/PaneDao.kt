@@ -5,29 +5,14 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import blog.photo.buildalbum.db.entity.PaneEntity
+import blog.photo.buildalbum.db.entity.Pane
 
 @Dao
 interface PaneDao {
 
-    @Query("SELECT * from panes ORDER BY name DESC")
-    fun getAll(): LiveData<List<PaneEntity>>
+    @Query("SELECT * from pane_table ORDER BY file DESC")
+    fun getAlphabetizedPanes(): LiveData<List<Pane>>
 
-    @Query("DELETE FROM panes WHERE name = :name")
-    suspend fun delete(name: String)
-
-    @Query("DELETE FROM panes")
-    suspend fun deleteAll()
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(pane: PaneEntity)
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAll(paneEntities: List<PaneEntity>)
-
-    @Query("SELECT * FROM panes WHERE name = :name")
-    abstract fun load(name: String): LiveData<PaneEntity>
-
-    @Query("SELECT * FROM panes WHERE name = :name")
-    abstract fun loadSync(name: String): PaneEntity
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insert(pane: Pane)
 }

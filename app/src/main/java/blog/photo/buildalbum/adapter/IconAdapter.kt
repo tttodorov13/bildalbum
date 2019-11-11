@@ -1,4 +1,4 @@
-package blog.photo.buildalbum.adapters
+package blog.photo.buildalbum.adapter
 
 import android.content.Context
 import android.os.Build
@@ -20,6 +20,7 @@ class IconAdapter(context: Context, texts: List<String?>, icons: List<Int?>) : A
 ) {
 
     private var icons: List<Int?>? = icons
+    private val iconSize: Float = 12f
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
         val view = super.getView(position, convertView, parent)
@@ -28,7 +29,7 @@ class IconAdapter(context: Context, texts: List<String?>, icons: List<Int?>) : A
         textView.compoundDrawablePadding =
             TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_DIP,
-                12f,
+                iconSize,
                 context.resources.displayMetrics
             ).toInt()
 

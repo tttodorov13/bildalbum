@@ -1,117 +1,98 @@
 package blog.photo.buildalbum
 
-import android.Manifest.permission.CAMERA
-import android.Manifest.permission.WRITE_EXTERNAL_STORAGE
+import android.Manifest
 import android.content.Intent
-import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.graphics.drawable.BitmapDrawable
-import android.net.ConnectivityManager
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
+import android.util.Log
 import android.widget.AdapterView
-import android.widget.ImageView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isGone
-import blog.photo.buildalbum.R.string.*
-import blog.photo.buildalbum.adapters.IconAdapter
-import blog.photo.buildalbum.adapters.ImageAdapter
-import blog.photo.buildalbum.models.Image
-import blog.photo.buildalbum.receivers.ConnectivityReceiver
-import blog.photo.buildalbum.tasks.DownloadData
-import blog.photo.buildalbum.tasks.DownloadSource
+import blog.photo.buildalbum.adapter.IconAdapter
+import blog.photo.buildalbum.db.entity.Image
+import blog.photo.buildalbum.task.DownloadData
+import blog.photo.buildalbum.task.DownloadSource
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.content_main.*
 import kotlinx.android.synthetic.main.spinner_layout.*
+import java.io.FileNotFoundException
 
 /**
  * Class to manage the main screen.
  */
-class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiverListener {
-
-    /**
-     * A companion object for class variables.
-     */
-    companion object {
-        private val connectivityReceiver = ConnectivityReceiver()
-        private lateinit var imageViewNew: ImageView
-
-        /**
-         * Method to get a bitmap from the new image ImageView
-         */
-        internal fun getBitmapFromImageView(): Bitmap {
-            return (imageViewNew.drawable as BitmapDrawable).bitmap
-        }
-    }
+class MainActivity : BaseActivity() {
 
     /**
      * OnCreate MainActivity
      *
-     * @param savedInstanceState
+     * @param savedInstanceState    - to be used on app resume
      */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        imageViewNew = imageViewCamera
+        newImageView = mainImageView
 
-        // Get images to display
-        if (images.size == 0)
-            getImages()
-
-        // Display images
-        adapterImages = ImageAdapter(this, images)
-        girdViewImages.adapter = adapterImages
+        // Display images in an interesting layout
+        imagesGridView.adapter = imageAdapter
 
         // Click listener for ImageActivity
-        girdViewImages.onItemClickListener =
+        imagesGridView.onItemClickListener =
             AdapterView.OnItemClickListener { _, _, position, _ ->
                 startActivity(
-                    Intent(this, ImageActivity::class.java).putExtra(
-                        "originalName",
-                        images[position].name
-                    ).putExtra("originalOrigin", images[position].origin)
+                    Intent(this, ImageActivity::class.java)
+                        .putExtra(
+                            "file",
+                            imageAdapter.getImages()[position].file
+                        )
+                        .putExtra(
+                            "source",
+                            imageAdapter.getImages()[position].source
+                        )
                 )
             }
 
-        // Click listener for Add Image Dialog
-        fabAddImage.setOnClickListener {
+        // Click listener for add button
+        fabAdd.setOnClickListener {
             val itemTexts = ArrayList<String>()
             val itemIcons = ArrayList<Int>()
 
             if (hasInternet) {
-                itemTexts.add(getString(download_from_pixabay))
-                itemIcons.add(android.R.drawable.stat_sys_download_done)
-                itemTexts.add(getString(download_from_flickr))
-                itemIcons.add(android.R.drawable.stat_sys_download_done)
+                itemTexts.add(getString(R.string.latest_from_pixabay))
+                itemIcons.add(R.drawable.ic_download_24dp)
+                itemTexts.add(getString(R.string.latest_from_flickr))
+                itemIcons.add(R.drawable.ic_download_24dp)
+            } else
+                toast(R.string.enable_internet)
+
+            if (Manifest.permission.WRITE_EXTERNAL_STORAGE in permissionsGranted) {
+                itemTexts.add(getString(R.string.pick_from_gallery))
+                itemIcons.add(R.drawable.ic_gallery_24dp)
             }
 
-            if (WRITE_EXTERNAL_STORAGE in grantedPermissions) {
-                itemTexts.add(getString(choice_from_gallery))
-                itemIcons.add(android.R.drawable.ic_menu_gallery)
+            if (Manifest.permission.CAMERA in permissionsGranted) {
+                itemTexts.add(getString(R.string.take_photo))
+                itemIcons.add(R.drawable.ic_camera_24dp)
             }
 
-            if (CAMERA in grantedPermissions) {
-                itemTexts.add(getString(take_photo))
-                itemIcons.add(android.R.drawable.ic_menu_camera)
-            }
-
-            itemTexts.add(getString(close))
-            itemIcons.add(android.R.drawable.ic_menu_close_clear_cancel)
+            itemTexts.add(getString(R.string.close))
+            itemIcons.add(R.drawable.ic_close_24dp)
 
             val adapter = IconAdapter(this, itemTexts, itemIcons)
 
             val alertDialog = AlertDialog.Builder(this)
-                .setTitle(getString(image_add))
-                .setIcon(android.R.drawable.ic_input_add)
+                .setTitle(getString(R.string.image_add))
+                .setIcon(R.drawable.ic_add_24dp)
             alertDialog.setAdapter(adapter) { dialog, item ->
                 when (adapter.getItem(item)) {
-                    getString(take_photo) -> startIntentCamera()
-                    getString(choice_from_gallery) -> startIntentGallery()
-                    getString(download_from_flickr) -> downloadFromFlickr()
-                    getString(download_from_pixabay) -> downloadFromPixabay()
+                    getString(R.string.take_photo) -> startIntentCamera()
+                    getString(R.string.pick_from_gallery) -> startIntentGallery()
+                    getString(R.string.latest_from_flickr) -> downloadFromFlickr()
+                    getString(R.string.latest_from_pixabay) -> downloadFromPixabay()
                     else -> dialog.dismiss()
                 }
             }.show()
@@ -121,44 +102,49 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
     /**
      * OnActivityResult MainActivity
      *
-     * @param requestCode
-     * @param resultCode
-     * @param data
+     * @param requestCode   - sent on adding new image
+     * @param resultCode    - comes with request end
+     * @param data          - comes as a result
      */
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == PERMISSIONS_REQUEST_CODE && resultCode == RESULT_OK && data != null)
+
+        // Check for the right request/result codes and data available
+        if (requestCode == permissionsRequestCode && resultCode == RESULT_OK && data != null) {
+            spinner_title.text = getString(R.string.progress_saving)
+            val image =
+                Image(
+                    false,
+                    "".plus(System.nanoTime()).plus(".png"),
+                    packageName
+                )
+
             when {
                 // Image is taken with Camera
                 data.extras?.get("data") != null -> {
-                    val bmp = data.extras?.get("data") as Bitmap?
-                    imageViewCamera.setImageBitmap(bmp)
-                    spinner_title.text = getString(saving)
-                    ImageSave(false, Image(this, false, CAMERA)).execute()
+                    mainImageView.setImageBitmap(data.extras?.get("data") as Bitmap?)
                 }
 
                 // Image is taken from Gallery
                 data.data != null -> {
-                    val filePathColumn = arrayOf(MediaStore.Images.Media.DATA)
-                    val cursor = contentResolver.query(
-                        data.data!!,
-                        filePathColumn, null, null, null
-                    )
-                    cursor!!.moveToFirst()
-                    val filePath = cursor.getString(cursor.getColumnIndex(filePathColumn[0]))
-                    cursor.close()
-                    spinner_title.text = getString(saving)
-                    ImageSave(
-                        false,
-                        Image(this, false, WRITE_EXTERNAL_STORAGE)
-                    ).execute(
-                        filePath
-                    )
+                    try {
+                        mainImageView.setImageBitmap(
+                            BitmapFactory.decodeStream(
+                                contentResolver.openInputStream(data.data!!)
+                            )
+                        )
+                    } catch (e: FileNotFoundException) {
+                        Log.e("MainActivity", e.message.toString())
+                        toast(R.string.nothing_new_captured)
+                        return
+                    }
                 }
             }
+            CardSave().execute(image)
+        }
         // Image capturing is cancelled
         else
-            toast(getString(no_image_is_captured))
+            toast(R.string.nothing_new_captured)
     }
 
     /**
@@ -173,58 +159,39 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
         permissions: Array<String>, grantResults: IntArray
     ) {
         // If permissions were granted add them all.
-        if (requestCode == PERMISSIONS_REQUEST_CODE && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)
-            grantedPermissions.addAll(permissions)
+        if (requestCode == permissionsRequestCode &&
+            grantResults.isNotEmpty() &&
+            grantResults[0] == PackageManager.PERMISSION_GRANTED
+        )
+            permissionsGranted.addAll(permissions)
         // If permissions were not granted remove them.
         else
-            grantedPermissions.removeAll(permissions)
+            permissionsGranted.removeAll(permissions)
     }
 
     /**
-     * OnResume MainActivity
-     *
-     * Set connectivity receiver to listen for Internet connection.
+     * On image save task begin
+     * disable FAB and show progress bar spinner
      */
-    override fun onResume() {
-        super.onResume()
-        ConnectivityReceiver.connectivityReceiverListener = this
+    override fun onTaskBegin() {
+        super.onTaskBegin()
+        fabAdd.isEnabled = false
+        fabAdd.alpha = 0.1F
+        progressSpinner.isGone = false
     }
 
     /**
-     * OnStart MainActivity
-     *
-     * Register connectivity receiver to listen for Internet connection.
+     * On all image save task complete
+     * enable FAB and hide progress bar spinner
      */
-    override fun onStart() {
-        super.onStart()
-
-        // Register connectivity receiver
-        registerReceiver(
-            connectivityReceiver,
-            IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
-        )
-    }
-
-    /**
-     * onNetworkConnectionChanged MainActivity
-     *
-     * Callback will be called when there is network change.
-     */
-    override fun onNetworkConnectionChanged(isConnected: Boolean) {
-        hasInternet = if (isConnected) {
-            true
-        } else {
-            toast(getString(enable_internet))
-            false
+    override fun onTaskComplete(stringId: Int) {
+        super.onTaskComplete(stringId)
+        if (taskCountDown <= 0) {
+            progressSpinner.isGone = true
+            fabAdd.isEnabled = true
+            fabAdd.alpha = 1.0F
         }
-    }
-
-    /**
-     * OnStop MainActivity
-     */
-    override fun onStop() {
-        unregisterReceiver(connectivityReceiver)
-        super.onStop()
+        toast(stringId)
     }
 
     /**
@@ -234,7 +201,7 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
         Intent(MediaStore.ACTION_IMAGE_CAPTURE).also { intent ->
             // Ensure there is a Camera Activity to handle the intent
             intent.resolveActivity(packageManager)?.also {
-                startActivityForResult(intent, PERMISSIONS_REQUEST_CODE)
+                startActivityForResult(intent, permissionsRequestCode)
             }
         }
     }
@@ -244,9 +211,10 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
      */
     private fun startIntentGallery() {
         Intent(
-            Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+            Intent.ACTION_PICK
         ).also { intent ->
-            startActivityForResult(intent, PERMISSIONS_REQUEST_CODE)
+            intent.type = "image/*"
+            startActivityForResult(intent, permissionsRequestCode)
         }
     }
 
@@ -254,7 +222,7 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
      * Method to download images from https://www.flickr.com
      */
     private fun downloadFromFlickr() {
-        val uri = Uri.parse(getString(FLICKR_API_URI)).buildUpon()
+        val uri = Uri.parse(getString(R.string.FLICKR_API_URI)).buildUpon()
             .appendQueryParameter("format", "json")
             .appendQueryParameter("nojsoncallback", "1")
             .build().toString()
@@ -269,35 +237,13 @@ class MainActivity() : BaseActivity(), ConnectivityReceiver.ConnectivityReceiver
      * Method to download images from https://pixabay.com
      */
     private fun downloadFromPixabay() {
-        val uri = Uri.parse(getString(PIXABAY_API_URI)).buildUpon()
-            .appendQueryParameter("key", getString(PIXABAY_API_KEY))
+        val uri = Uri.parse(getString(R.string.PIXABAY_API_URI)).buildUpon()
+            .appendQueryParameter("key", getString(R.string.PIXABAY_API_KEY))
             .build().toString()
 
         DownloadData(
             this,
             DownloadSource.PIXABAY
         ).execute(uri)
-    }
-
-    /**
-     * On image save task begin
-     * disable FAB and show progress bar spinner
-     */
-    override fun onTaskBegin() {
-        super.onTaskBegin()
-        fabAddImage.isEnabled = false
-        progressSpinner.isGone = false
-    }
-
-    /**
-     * On all image save task complete
-     * enable FAB and hide progress bar spinner
-     */
-    override fun onTaskComplete(stringId: Int) {
-        super.onTaskComplete(stringId)
-        if (taskCountDown <= 0) {
-            progressSpinner.isGone = true
-            fabAddImage.isEnabled = true
-        }
     }
 }

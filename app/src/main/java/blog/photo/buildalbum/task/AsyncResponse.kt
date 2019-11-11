@@ -1,7 +1,7 @@
-package blog.photo.buildalbum.tasks
+package blog.photo.buildalbum.task
 
 /**
- * Interface for async responses
+ * Interface for async responses.
  */
 interface AsyncResponse {
     /**

@@ -5,28 +5,51 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.drawable.BitmapDrawable
 import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
+import android.os.Environment
+import android.util.Log
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import blog.photo.buildalbum.adapters.ImageAdapter
-import blog.photo.buildalbum.models.Image
-import blog.photo.buildalbum.tasks.*
-import blog.photo.buildalbum.utils.DatabaseHelper
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import blog.photo.buildalbum.adapter.ImageAdapter
+import blog.photo.buildalbum.adapter.PaneAdapter
+import blog.photo.buildalbum.db.entity.Card
+import blog.photo.buildalbum.db.entity.Image
+import blog.photo.buildalbum.db.entity.Pane
+import blog.photo.buildalbum.db.model.ImageViewModel
+import blog.photo.buildalbum.db.model.PaneViewModel
+import blog.photo.buildalbum.task.*
 import kotlinx.android.synthetic.main.spinner_layout.*
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
 
 /**
- * Class base for all activities of the application.
+ * Class base for all application activities.
  */
-// TODO: Automate download new panes
-// TODO: Find and fix Unable to decode stream: java.io.FileNotFoundException
-// TODO: Translate in all Amazon sale's languages
 open class BaseActivity : AppCompatActivity(), AsyncResponse, DownloadData.OnDownloadComplete,
-    JsonData.OnDataAvailable {
+    DownloadJson.OnDataAvailable {
+
+    private val tag = "BaseActivity"
+    private val permissionsRequired =
+        arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    internal var permissionsGranted = ArrayList<String>()
+    internal val permissionsRequestCode = 8888
+    internal var taskCountDown = 0
+    internal var hasInternet: Boolean = false
+    internal lateinit var imageAdapter: ImageAdapter
+    internal lateinit var imageViewModel: ImageViewModel
+    internal lateinit var newImageView: ImageView
+    internal lateinit var paneAdapter: PaneAdapter
+    internal lateinit var paneViewModel: PaneViewModel
 
     /**
      * OnCreate BaseActivity
@@ -36,8 +59,30 @@ open class BaseActivity : AppCompatActivity(), AsyncResponse, DownloadData.OnDow
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        checkInternet()
+
         // Get granted permission
         getPermissions()
+
+        // Initialize images
+        imageAdapter = ImageAdapter(this)
+
+        imageViewModel = ViewModelProvider(this).get(ImageViewModel::class.java)
+
+        imageViewModel.allImages.observe(this, Observer { images ->
+            // Update the cached copy of the images in the adapter.
+            images?.let { imageAdapter.setImages(it) }
+        })
+
+        // Initialize panes
+        paneAdapter = PaneAdapter(this)
+
+        paneViewModel = ViewModelProvider(this).get(PaneViewModel::class.java)
+
+        paneViewModel.allPanes.observe(this, Observer { panes ->
+            // Update the cached copy of the images in the adapter.
+            panes?.let { paneAdapter.setPanes(it) }
+        })
     }
 
     /**
@@ -53,35 +98,60 @@ open class BaseActivity : AppCompatActivity(), AsyncResponse, DownloadData.OnDow
         status: DownloadStatus
     ) {
         if (status == DownloadStatus.OK && data.isNotBlank())
-            JsonData(this, source).execute(data)
+            DownloadJson(this, source).execute(data)
     }
 
     /**
      * Method to download images
      *
-     * @param data - images' URIs
+     * @param data - cards' URIs
      */
     override fun onDataAvailable(data: ArrayList<String>) {
-        spinner_title.text = getString(R.string.downloading)
+        spinner_title.text = getString(R.string.progress_downloading)
+        val list = ArrayList<Card>()
         data.forEach {
-            val image = Image(
-                this,
-                it.contains(Uri.parse(getString(R.string.PANES_URI)).authority.toString()),
+            val card = Card(
+                false,
+                "".plus(System.nanoTime()).plus(".png"),
                 it
             )
-            ImageSave(
-                false, image
-            ).execute()
+            if (card !in imageAdapter.getImages() && card !in paneAdapter.getPanes())
+                list.add(card)
         }
+        val array = arrayOfNulls<Card>(list.size)
+        list.toArray(array)
+        spinner_percentage.text = "0 %"
+        CardSave().execute(*array)
     }
 
     /**
-     * Method to display error message on image download unsuccessful
+     * Method to display error message on card download failed
      *
-     * @param exception
+     * @param exception - exception thrown
      */
     override fun onError(exception: Exception) {
-        toast(getString(R.string.download_exception).plus(exception))
+        toast(R.string.download_failed)
+        Log.e(tag, exception.message.toString())
+    }
+
+    /**
+     * OnResume BaseActivity
+     *
+     * Check for Internet connection.
+     */
+    override fun onResume() {
+        super.onResume()
+        checkInternet()
+    }
+
+    /**
+     * OnStart BaseActivity
+     *
+     * Check for Internet connection.
+     */
+    override fun onStart() {
+        super.onStart()
+        checkInternet()
     }
 
     /**
@@ -99,58 +169,15 @@ open class BaseActivity : AppCompatActivity(), AsyncResponse, DownloadData.OnDow
     }
 
     /**
-     * Class to manage Image Save
-     */
-    inner class ImageSave(
-        private val isEdited: Boolean,
-        private val image: Image
-    ) :
-        AsyncTask<String, Void, Bitmap>() {
-
-        override fun onPreExecute() {
-            onTaskBegin()
-        }
-
-        override fun doInBackground(vararg args: String): Bitmap? {
-            return when {
-                // Image has been edited
-                isEdited -> ImageActivity.getBitmapFromImageView()
-
-                // Image from Gallery
-                Manifest.permission.WRITE_EXTERNAL_STORAGE == image.origin && args.size >= 0 -> BitmapFactory.decodeFile(
-                    args[0]
-                )
-
-                // Image from Camera
-                Manifest.permission.CAMERA == image.origin -> MainActivity.getBitmapFromImageView()
-
-                // Image download
-                else -> try {
-                    BitmapFactory.decodeStream(java.net.URL(image.origin).openStream())
-                } catch (e: Exception) {
-                    null
-                }
-            }
-        }
-
-        override fun onPostExecute(result: Bitmap?) {
-            image.write(result)
-            image.save()
-            if (image.isFrame)
-                onTaskComplete(R.string.pane_added)
-            else
-                onTaskComplete(R.string.image_saved)
-        }
-    }
-
-    /**
      * Method to show toast message
+     *
+     * @param stringId - ID of translatable string
      */
-    protected fun Context.toast(message: String) {
+    internal fun Context.toast(stringId: Int) {
         val toastMessage =
             Toast.makeText(
                 this,
-                message, Toast.LENGTH_SHORT
+                getString(stringId), Toast.LENGTH_SHORT
             )
         val toastView = toastMessage.view
         toastMessage.view.setBackgroundResource(R.drawable.buildalbum_toast)
@@ -166,31 +193,10 @@ open class BaseActivity : AppCompatActivity(), AsyncResponse, DownloadData.OnDow
     }
 
     /**
-     * Method to download frames
+     * Method to get a bitmap from the new image ImageView
      */
-    protected fun downloadFrames() {
-        DownloadData(
-            this,
-            DownloadSource.FRAMES
-        ).execute(getString(R.string.PANES_URI))
-    }
-
-    /**
-     * Method to get all frames
-     */
-    protected fun getFrames(): Int {
-        frames.addAll(DatabaseHelper(this).getAllFramesReverse())
-        return frames.size
-    }
-
-    /**
-     * Method to get all images
-     *
-     * @return paths of stored imagesNames
-     */
-    protected fun getImages(): Int {
-        images.addAll(DatabaseHelper(this).getAllImagesReverse())
-        return images.size
+    internal fun getBitmapFromImageView(): Bitmap {
+        return (newImageView.drawable as BitmapDrawable).bitmap
     }
 
     /**
@@ -198,13 +204,13 @@ open class BaseActivity : AppCompatActivity(), AsyncResponse, DownloadData.OnDow
      */
     private fun getPermissions() {
         val requestPermissions = ArrayList<String>()
-        REQUIRED_PERMISSIONS.forEach {
+        permissionsRequired.forEach {
             if (ActivityCompat.checkSelfPermission(
                     this,
                     it
                 ) == PackageManager.PERMISSION_GRANTED
             )
-                grantedPermissions.add(it)
+                permissionsGranted.add(it)
             else
                 requestPermissions.add(it)
         }
@@ -214,27 +220,143 @@ open class BaseActivity : AppCompatActivity(), AsyncResponse, DownloadData.OnDow
             ActivityCompat.requestPermissions(
                 this,
                 requestedPermissionsArray,
-                PERMISSIONS_REQUEST_CODE
+                permissionsRequestCode
             )
         }
     }
 
     /**
-     * A companion object for class variables.
+     * Method to write on filesystem
+     *
+     * @param card     -   image to be written to
+     * @param bitmap    -   bitmap to be applied on image
+     *
+     * @return true if completed successfully
      */
-    companion object {
-        internal var grantedPermissions = ArrayList<String>()
-        internal const val PERMISSIONS_REQUEST_CODE = 8888
-        internal val REQUIRED_PERMISSIONS =
-            arrayOf(Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+    private fun writeOnFilesystem(card: Card, bitmap: Bitmap?): Boolean {
+        val file = File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), card.file)
+        if (file.exists())
+            file.delete()
 
-        internal var frames = ArrayList<Image>()
-        internal var images = ArrayList<Image>()
+        return try {
+            val out = FileOutputStream(file)
+            bitmap?.compress(Bitmap.CompressFormat.PNG, 100, out)
+            out.flush()
+            out.close()
+            true
+        } catch (e: IOException) {
+            Log.e(tag, e.message.toString())
+            false
+        }
+    }
 
-        internal var hasInternet: Boolean = false
-        internal var taskCountDown = 0
+    /**
+     * Method to check Internet connection.
+     */
+    private fun checkInternet() {
+        CheckInternet(object : CheckInternet.Consumer {
+            override fun accept(internet: Boolean) {
+                hasInternet = internet
+            }
+        })
+    }
 
-        internal lateinit var adapterFrames: ImageAdapter
-        internal lateinit var adapterImages: ImageAdapter
+    /**
+     * Class to manage card saving
+     *
+     * @param isEdited  -   shows whether the card is edited on the filesystem
+     * @param card      -   the card to be saved
+     */
+    inner class CardSave :
+        AsyncTask<Card, String, Int>() {
+
+        // Mark task beginning
+        override fun onPreExecute() {
+            onTaskBegin()
+        }
+
+        // Save the card in parallel thread
+        override fun doInBackground(vararg args: Card): Int? {
+            var bitmap: Bitmap?
+            var count = 0
+
+            args.forEach {
+                // Multiple cards are downloaded
+                if (args.size > 1) {
+                    // Get bitmap from Internet
+                    bitmap = try {
+                        BitmapFactory.decodeStream(java.net.URL(it.source).openStream())
+                    } catch (e: Exception) {
+                        null
+                    }
+
+                    if (writeOnFilesystem(it, bitmap)) {
+                        if (it.source.contains(Uri.parse(getString(R.string.PANES_URI)).authority.toString())) {
+                            val pane = Pane(false, it.file, it.source)
+                            paneViewModel.insert(pane)
+
+                            // try to touch View of UI thread
+                            runOnUiThread(java.lang.Runnable {
+                                paneAdapter.notifyDataSetChanged()
+                            })
+                        } else {
+                            val image = Image(false, it.file, it.source)
+                            imageViewModel.insert(image)
+
+                            // try to touch View of UI thread
+                            runOnUiThread(java.lang.Runnable {
+                                imageAdapter.notifyDataSetChanged()
+                            })
+                        }
+                        count++
+                        publishProgress(
+                            "".plus((count.toDouble() / args.size * 100).toInt()).plus(
+                                " %"
+                            )
+                        )
+                    }
+                }
+                // Single card is added/edited
+                else if (args.size == 1) {
+                    // Get bitmap from imageView
+                    bitmap = getBitmapFromImageView()
+
+                    publishProgress(getString(R.string.progress_sketch))
+
+                    if (writeOnFilesystem(it, bitmap)) {
+                        // Image is edited
+                        return if (it.isEdited)
+                            R.string.image_edited
+                        // Image is added
+                        else {
+                            val image = Image(false, it.file, it.source)
+                            imageViewModel.insert(image)
+
+                            // try to touch View of UI thread
+                            runOnUiThread(java.lang.Runnable {
+                                imageAdapter.notifyDataSetChanged()
+                            })
+
+                            R.string.image_added
+                        }
+                    }
+                }
+            }
+            return if (count > 0)
+                R.string.download_completed
+            else
+                R.string.nothing_new_captured
+        }
+
+        // Show proper message on progress
+        override fun onProgressUpdate(vararg values: String?) {
+            if (values.isNotEmpty())
+                spinner_percentage.text = values[0]
+        }
+
+        // Show proper message on end
+        override fun onPostExecute(result: Int) {
+            onTaskComplete(result)
+        }
     }
 }
