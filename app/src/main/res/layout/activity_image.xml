@@ -62,6 +62,7 @@
         android:layout_marginRight="@dimen/fab_margin3"
         android:layout_marginBottom="@dimen/fab_margin1"
         android:src="@drawable/ic_vertical_bottom_24dp"
+        app:backgroundTint="@color/colorPrimary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:maxImageSize="@dimen/fab_icon_max_size" />
@@ -75,6 +76,7 @@
         android:layout_marginRight="@dimen/fab_margin2"
         android:layout_marginBottom="@dimen/fab_margin1"
         android:src="@drawable/ic_edit_24dp"
+        app:backgroundTint="@color/colorPrimary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:maxImageSize="@dimen/fab_icon_max_size" />
@@ -88,6 +90,7 @@
         android:layout_marginRight="@dimen/fab_margin1"
         android:layout_marginBottom="@dimen/fab_margin1"
         android:src="@drawable/ic_vertical_top_24dp"
+        app:backgroundTint="@color/colorPrimary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:maxImageSize="@dimen/fab_icon_max_size" />

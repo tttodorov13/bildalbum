@@ -25,6 +25,7 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin1"
         android:src="@drawable/ic_add_24dp"
+        app:backgroundTint="@color/colorPrimary"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:maxImageSize="@dimen/fab_icon_max_size" />
