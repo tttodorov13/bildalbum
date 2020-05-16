@@ -258,7 +258,7 @@ class ImageActivity : BaseActivity() {
         DownloadData(
             this,
             DownloadSource.FRAMES
-        ).execute(getString(R.string.PANES_URI))
+        ).execute(getString(R.string.PANES_API_URI))
     }
 
     /**

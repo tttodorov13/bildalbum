@@ -291,7 +291,7 @@ open class BaseActivity : AppCompatActivity(), AsyncResponse, DownloadData.OnDow
                     }
 
                     if (writeOnFilesystem(it, bitmap)) {
-                        if (it.source.contains(Uri.parse(getString(R.string.PANES_URI)).authority.toString())) {
+                        if (it.source.contains(Uri.parse(getString(R.string.PANES_HOST)).authority.toString())) {
                             val pane = Pane(false, it.file, it.source)
                             paneViewModel.insert(pane)
 
