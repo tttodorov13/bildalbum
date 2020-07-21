@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (c) 2018-2020 SAP and others.
+  ~ All rights reserved. This program and the accompanying materials
+  ~ are made available under the terms of the Eclipse Public License v2.0
+  ~ which accompanies this distribution, and is available at
+  ~ http://www.eclipse.org/legal/epl-v20.html
+  ~ Contributors:
+  ~ SAP - initial API and implementation
+  -->
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/menu_filter_images"
+        android:icon="@drawable/ic_filter_list"
+        android:title="@string/menu_filter"
+        app:showAsAction="always">
+        <menu>
+            <item
+                android:id="@+id/menu_filter_all"
+                android:title="@string/nav_all"
+                app:showAsAction="always" />
+            <item
+                android:id="@+id/menu_filter_added"
+                android:title="@string/nav_added"
+                app:showAsAction="always" />
+            <item
+                android:id="@+id/menu_filter_edited"
+                android:title="@string/nav_edited"
+                app:showAsAction="always" />
+            <item
+                android:id="@+id/menu_filter_favorite_images"
+                android:title="@string/nav_favorite"
+                app:showAsAction="always" />
+        </menu>
+    </item>
+    <item
+        android:id="@+id/menu_clear_favorite_images"
+        android:title="@string/menu_clear_favorites"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/menu_delete_edited"
+        android:title="@string/menu_delete_edited"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/menu_refresh_images"
+        android:title="@string/refresh"
+        app:showAsAction="never" />
+</menu>

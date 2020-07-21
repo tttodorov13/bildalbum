@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (c) 2018-2020 SAP and others.
+  ~ All rights reserved. This program and the accompanying materials
+  ~ are made available under the terms of the Eclipse Public License v2.0
+  ~ which accompanies this distribution, and is available at
+  ~ http://www.eclipse.org/legal/epl-v20.html
+  ~ Contributors:
+  ~ SAP - initial API and implementation
+  -->
+
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <import type="android.view.View" />
+
+        <variable
+            name="viewmodel"
+            type="blog.photo.buildalbum.statistics.StatisticsViewModel" />
+    </data>
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:id="@+id/image_statistics_coordinator_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <blog.photo.buildalbum.ScrollChildSwipeRefreshLayout
+            android:id="@+id/image_statistics_refresh_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:onRefreshListener="@{viewmodel::refresh}"
+            app:refreshing="@{viewmodel.dataLoading}">
+
+            <RelativeLayout
+                android:id="@+id/image_statistics_container_layout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clickable="true"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:id="@+id/image_statistics_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:visibility="@{viewmodel.dataLoading ? View.GONE : View.VISIBLE}">
+
+                    <!-- Title above the chart -->
+                    <TextView
+                        android:id="@+id/textView"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:gravity="center_horizontal"
+                        android:padding="@dimen/list_item_padding"
+                        android:text="@string/images_added_vs_images_edited"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:textColor="@color/colorPrimary"
+                        android:visibility="@{viewmodel.empty ? View.GONE : View.VISIBLE}"
+                        app:layout_constraintBottom_toTopOf="@+id/constraintLayout"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintHorizontal_bias="0.5"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <!-- Doughnut chart starts here -->
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:id="@+id/constraintLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:visibility="@{viewmodel.empty ? View.GONE : View.VISIBLE}"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintHorizontal_bias="0.5"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/textView">
+
+                        <!-- ProgressBar that represents a total of 100% -->
+                        <ProgressBar
+                            android:id="@+id/progressbar_images_added"
+                            style="?android:attr/progressBarStyleHorizontal"
+                            android:layout_width="@dimen/image_details_size"
+                            android:layout_height="@dimen/image_details_size"
+                            android:indeterminate="false"
+                            android:max="100"
+                            android:progress="100"
+                            android:progressDrawable="@drawable/stats_full"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintHorizontal_bias="0.5"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <!-- ProgressBar that represents a chart slice, where "android:progress" is the % value of the slice -->
+                        <ProgressBar
+                            android:id="@+id/progressbar_images_edited"
+                            style="?android:attr/progressBarStyleHorizontal"
+                            android:layout_width="@dimen/image_details_size"
+                            android:layout_height="@dimen/image_details_size"
+                            android:indeterminate="false"
+                            android:max="100"
+                            android:progress="@{viewmodel.editedImagesPercentRound}"
+                            android:progressDrawable="@drawable/stats_progress"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintHorizontal_bias="0.5"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+
+                        <!-- The text that goes in a center of the chart -->
+                        <TextView
+                            android:id="@+id/images_fraction"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@{@string/fraction(viewmodel.addedImages, viewmodel.editedImages)}"
+                            android:textAppearance="?android:attr/textAppearanceLarge"
+                            android:textColor="@color/colorPrimary"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintHorizontal_bias="0.5"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                    <!-- Doughnut chart ends here -->
+
+                    <TextView
+                        android:id="@+id/stats_added_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:gravity="center_horizontal"
+                        android:padding="@dimen/list_item_padding"
+                        android:text="@{@string/images_added(viewmodel.addedImagesPercent)}"
+                        android:textAppearance="?android:attr/textAppearanceMedium"
+                        android:textColor="@color/colorPrimary"
+                        android:visibility="@{viewmodel.empty ? View.GONE : View.VISIBLE}" />
+
+                    <TextView
+                        android:id="@+id/stats_edited_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:gravity="center_horizontal"
+                        android:padding="@dimen/list_item_padding"
+                        android:text="@{@string/images_edited(viewmodel.editedImagesPercent)}"
+                        android:textAppearance="?android:attr/textAppearanceMedium"
+                        android:textColor="@color/colorAccent"
+                        android:visibility="@{viewmodel.empty ? View.GONE : View.VISIBLE}" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/image_statistics_no_images_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:clickable="true"
+                    android:orientation="vertical"
+                    android:visibility="@{viewmodel.empty ? View.VISIBLE : View.GONE}">
+
+                    <ImageView
+                        android:id="@+id/image_statistics_no_images_icon"
+                        android:layout_width="@dimen/empty_list_icon_size"
+                        android:layout_height="@dimen/empty_list_icon_size"
+                        android:layout_gravity="center"
+                        android:layout_marginBottom="@dimen/activity_margin"
+                        android:contentDescription="@string/no_images_all"
+                        android:gravity="center"
+                        android:src="@drawable/ic_camera_alt_96dp"
+                        android:text="@string/add_images"
+                        android:textAlignment="center"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Title"
+                        android:textColor="@color/colorSecondary"
+                        android:textStyle="bold"
+                        android:tint="@color/colorPrimary"
+                        android:tooltipText="@string/add_images" />
+
+                    <TextView
+                        android:id="@+id/image_statistics_no_images_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:text="@string/no_images_all"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:textColor="@color/colorPrimary" />
+                </LinearLayout>
+            </RelativeLayout>
+
+        </blog.photo.buildalbum.ScrollChildSwipeRefreshLayout>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/image_statistics_add_new_fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/fab_margin"
+            android:src="@drawable/ic_add_24dp"
+            android:tint="@color/colorSecondary"
+            android:tooltipText="@string/add_new"
+            android:visibility="@{viewmodel.empty ? View.VISIBLE : View.GONE}"
+            app:backgroundTint="@color/colorPrimaryDark"
+            app:fabSize="normal"
+            app:layout_anchor="@id/image_statistics_refresh_layout"
+            app:layout_anchorGravity="bottom|right|end" />
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+</layout>

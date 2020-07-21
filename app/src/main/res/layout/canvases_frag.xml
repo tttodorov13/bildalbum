@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (c) 2018-2020 SAP and others.
+  ~ All rights reserved. This program and the accompanying materials
+  ~ are made available under the terms of the Eclipse Public License v2.0
+  ~ which accompanies this distribution, and is available at
+  ~ http://www.eclipse.org/legal/epl-v20.html
+  ~ Contributors:
+  ~ SAP - initial API and implementation
+  -->
+
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <import type="android.view.View" />
+
+        <import type="androidx.core.content.ContextCompat" />
+
+        <variable
+            name="viewmodel"
+            type="blog.photo.buildalbum.canvases.CanvasesViewModel" />
+    </data>
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:id="@+id/canvases_coordinator_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <blog.photo.buildalbum.ScrollChildSwipeRefreshLayout
+            android:id="@+id/canvases_refresh_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:onRefreshListener="@{viewmodel::refresh}"
+            app:refreshing="@{viewmodel.dataLoading}">
+
+            <RelativeLayout
+                android:id="@+id/canvases_container_layout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clickable="true"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:id="@+id/canvases_linear_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:visibility="@{viewmodel.empty ? View.GONE : View.VISIBLE}">
+
+                    <TextView
+                        android:id="@+id/canvases_filtering_text"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:layout_marginStart="@dimen/list_item_padding"
+                        android:layout_marginTop="@dimen/activity_margin"
+                        android:layout_marginEnd="@dimen/list_item_padding"
+                        android:layout_marginBottom="@dimen/activity_margin"
+                        android:gravity="center"
+                        android:text="@{context.getString(viewmodel.currentFilteringLabel)}"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:textColor="@color/colorPrimary" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/canvases_list"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="30"
+                        android:canvases="@{viewmodel.canvases}"
+                        android:padding="@dimen/list_item_padding"
+                        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+                        app:spanCount="3" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/no_canvases_layout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:clickable="@{viewmodel.allowDownload}"
+                    android:orientation="vertical"
+                    android:visibility="@{(viewmodel.empty &amp;&amp; viewmodel.hasPermissionInternet)  ? View.VISIBLE : View.GONE}">
+
+                    <ImageView
+                        android:id="@+id/no_canvases_icon"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/activity_margin"
+                        android:background="@color/colorSecondary"
+                        android:clickable="@{viewmodel.allowDownload}"
+                        android:gravity="center_horizontal"
+                        android:imeOptions="flagNoExtractUi"
+                        android:padding="@dimen/activity_margin"
+                        android:src="@{ContextCompat.getDrawable(context, viewmodel.noCanvasesIconRes)}"
+                        android:text="@string/add_canvases"
+                        android:textAlignment="center"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Title"
+                        android:textColor="@color/colorSecondary"
+                        android:textStyle="bold"
+                        android:tint="@color/colorPrimary"
+                        android:tooltipText="@string/add_canvases" />
+
+                    <TextView
+                        android:id="@+id/no_canvases_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:text="@{context.getString(viewmodel.noCanvasesLabel)}"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:textColor="@color/colorPrimary" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/canvases_no_internet"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true"
+                    android:orientation="vertical"
+                    android:visibility="@{(viewmodel.empty &amp;&amp; !viewmodel.hasPermissionInternet) ? View.VISIBLE : View.GONE}">
+
+                    <ImageView
+                        android:id="@+id/canvases_no_internet_icon"
+                        android:layout_width="@dimen/empty_list_icon_size"
+                        android:layout_height="@dimen/empty_list_icon_size"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_marginTop="@dimen/activity_margin"
+                        android:layout_marginBottom="@dimen/activity_margin"
+                        android:contentDescription="@string/enable_internet"
+                        android:gravity="center_horizontal"
+                        android:src="@drawable/ic_airplanemode_96dp"
+                        android:tint="@color/colorPrimary"
+                        android:tooltipText="@string/enable_internet" />
+
+                    <TextView
+                        android:id="@+id/canvases_no_internet_text"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:text="@string/enable_internet"
+                        android:textColor="@color/colorPrimary" />
+                </LinearLayout>
+            </RelativeLayout>
+
+        </blog.photo.buildalbum.ScrollChildSwipeRefreshLayout>
+
+        <LinearLayout
+            android:id="@+id/canvases_progress_spinner"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone">
+
+            <include layout="@layout/progress_layout" />
+
+        </LinearLayout>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/canvases_add_new_fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/fab_margin"
+            android:src="@drawable/ic_add_24dp"
+            android:tint="@color/colorSecondary"
+            android:tooltipText="@string/add_canvases"
+            android:visibility="@{viewmodel.allowDownload ? View.VISIBLE : View.GONE}"
+            app:backgroundTint="@color/colorPrimaryDark"
+            app:fabSize="normal"
+            app:layout_anchor="@id/canvases_refresh_layout"
+            app:layout_anchorGravity="bottom|right|end" />
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+</layout>

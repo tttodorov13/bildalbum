@@ -1,36 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (c) 2018-2020 SAP and others.
+  ~ All rights reserved. This program and the accompanying materials
+  ~ are made available under the terms of the Eclipse Public License v2.0
+  ~ which accompanies this distribution, and is available at
+  ~ http://www.eclipse.org/legal/epl-v20.html
+  ~ Contributors:
+  ~ SAP - initial API and implementation
+  -->
+
 <resources>
-    <string name="app_name">Build Album</string>
-    <string name="app_info">Build Your Album</string>
-    <string name="app_web" translatable="false">https://buildalbum.photo.blog</string>
-    <string name="PANES_API_URI" translatable="false">http://albumbuild.myartsonline.com/panes.json</string>
-    <string name="PANES_HOST" translatable="false">https://drive.google.com</string>
-    <string name="FLICKR_API_URI" translatable="false">https://api.flickr.com/services/feeds/photos_public.gne</string>
-    <string name="PIXABAY_API_URI" translatable="false">https://pixabay.com/api/</string>
-    <string name="PIXABAY_API_KEY" translatable="false">13310406-d6e15cf3e2d5c590fa44a6bea</string>
-    <string name="download_failed">Download failed!</string>
+    <string name="app_name">Album Build</string>
+    <string name="app_info">Album For You</string>
+    <string name="app_web_host" translatable="false">albumbuild.myartsonline.com</string>
+    <string name="app_web_port" translatable="false">80</string>
+    <string name="add_new">Add New</string>
+    <string name="image_details">Image Details</string>
+    <string name="canvas_details">Canvas Details</string>
+    <string name="add_with_camera">Add with Camera</string>
+    <string name="add_from_storage">Add from Storage</string>
+    <string name="add_from_cloud">Add from Cloud</string>
+    <string name="add_canvases">Add Canvases</string>
+    <string name="add_images">Add Images</string>
+    <string name="there_are_no_new_images">There are no new images!</string>
+    <string name="there_are_no_new_canvases">There are no new canvases!</string>
+    <string name="URI_API_CANVASES" translatable="false">http://albumbuild.myartsonline.com/api/canvases.json</string>
+    <string name="URI_API_DEFAULT_CANVASES" translatable="false">http://albumbuild.myartsonline.com/api/defaultCanvases.json</string>
+    <string name="URI_API_DEFAULT_IMAGES" translatable="false">http://albumbuild.myartsonline.com/api/defaultImages.json</string>
+    <string name="URI_API_PIXABAY" translatable="false">https://pixabay.com/api/?key=13310406-d6e15cf3e2d5c590fa44a6bea</string>
+    <string name="URI_API_PRINT" translatable="false">https://www.shutterfly.com</string>
+    <string name="URI_API_SHARE" translatable="false">https://www.facebook.com/sharer/sharer.php?u=</string>
     <string name="progress_downloading">Downloading&#8230;</string>
     <string name="progress_percentage" translatable="false">0 &#37;</string>
-    <string name="progress_saving">Saving&#8230;</string>
-    <string name="progress_sketch">Sketch</string>
-    <string name="enable_internet">Enable Internet to unlock hidden functionality!</string>
-    <string name="nothing_new_captured">Nothing new captured!</string>
-    <string name="download_completed">Download completed!</string>
-    <string name="image_added">Image added!</string>
-    <string name="close">Close</string>
-    <string name="image_add">Add Image</string>
-    <string name="latest_from_pixabay">Latest from Pixabay</string>
-    <string name="latest_from_flickr">Latest from Flickr</string>
-    <string name="pick_from_gallery">Pick from Gallery</string>
-    <string name="take_photo">Take Photo</string>
-    <string name="latest_panes">Latest panes</string>
-    <string name="delete">Delete</string>
-    <string name="rotate">Rotate</string>
-    <string name="share">Share</string>
-    <string name="com_facebook_katana" translatable="false">com.facebook.katana</string>
-    <string name="facebook_sharer" translatable="false">https://www.facebook.com/sharer/sharer.php?u=</string>
-    <string name="install_facebook_for_optimal_experience">Install Facebook for best experience!</string>
-    <string name="image_edited">Image edited!</string>
-    <string name="image_deleted">Image deleted!</string>
-    <string name="image_rescued">Image rescued!</string>
-    <string name="image_edit">Edit Image</string>
+    <string name="progress_capturing">Capturing&#8230;</string>
+    <string name="add_permission_camera">Add Permission Camera to activate option!</string>
+    <string name="add_permission_storage">Add Permission Storage to activate option!</string>
+    <string name="enable_internet">Enable Internet to activate options!</string>
+    <string name="loading_image_error">Error while loading image</string>
+    <string name="loading_images_error">Error while loading images</string>
+    <string name="loading_canvases_error">Error while loading canvases</string>
+    <string name="edited_images_deleted">Edited images deleted</string>
+    <string name="favorite_images_cleared">Favorite images cleared</string>
+    <string name="favorite_canvases_cleared">Favorite canvases cleared</string>
+    <string name="fab_image_save">Save Image</string>
+    <string name="menu_filter">Filter</string>
+    <string name="menu_clear_favorites">Clear favorites</string>
+    <string name="menu_delete_edited">Delete edited</string>
+    <string name="menu_delete_image">Delete image</string>
+    <string name="menu_favorite_image">Add image to favorites</string>
+    <string name="menu_print_image">Print image</string>
+    <string name="menu_rotate_image">Rotate image</string>
+    <string name="menu_share_image">Share image</string>
+    <string name="menu_delete_canvas">Delete canvas</string>
+    <string name="menu_favorite_canvas">Add canvas to favorites</string>
+    <string name="facebook_package" translatable="false">com.facebook.katana</string>
+    <string name="empty_image_message">Image cannot be empty</string>
+    <string name="empty_canvas_message">Canvas cannot be empty</string>
+    <string name="images">Images</string>
+    <string name="canvases">Canvases</string>
+    <string name="new_to_add">NEW to add</string>
+    <string name="statistics">Statistics</string>
+    <string name="images_added_vs_images_edited">Images Added vs. Images Edited</string>
+    <string name="images_added">Images Added: %.1f%%</string>
+    <string name="images_edited">Images Edited: %.1f%%</string>
+    <string name="fraction">%d / %d</string>
+    <string name="no_data">No data</string>
+    <string-array name="list_images_array">
+        <item>@string/nav_all</item>
+        <item>@string/nav_added</item>
+        <item>@string/nav_edited</item>
+        <item>@string/nav_favorite</item>
+    </string-array>
+    <string name="nav_all">All</string>
+    <string name="nav_added">Added</string>
+    <string name="nav_edited">Edited</string>
+    <string name="nav_favorite">Favorites</string>
+    <string name="all_images">All Images</string>
+    <string name="all_canvases">All Canvases</string>
+    <string name="added_images">Added Images</string>
+    <string name="edited_images">Edited Images</string>
+    <string name="favorite_images">Favorite Images</string>
+    <string name="favorite_canvases">Favorite Canvases</string>
+    <string name="no_images_all">You have no images!</string>
+    <string name="no_images_added">You have no added images!</string>
+    <string name="no_images_edited">You have no edited images!</string>
+    <string name="no_images_favorite">You have no favorite images!</string>
+    <string name="no_canvases_all">You have no canvases!</string>
+    <string name="no_canvases_favorite">You have no favorite canvases!</string>
+    <string name="refresh">Refresh</string>
+    <string name="successfully_image_added_message">Image added</string>
+    <string name="successfully_image_deleted_message">Image deleted</string>
+    <string name="successfully_image_edited_message">Image edited</string>
+    <string name="successfully_image_favorited_message">Image added to favorites</string>
+    <string name="successfully_image_unfavorited_message">Image removed from favorites</string>
+    <string name="successfully_image_sent_for_sharing_message">Image sent for sharing</string>
+    <string name="successfully_image_sent_for_printing_message">Image sent for printing</string>
+    <string name="successfully_images_downloaded_message">Images downloaded</string>
+    <string name="successfully_canvases_downloaded_message">Canvases downloaded</string>
+    <string name="successfully_canvas_saved_message">Canvas saved</string>
+    <string name="successfully_canvas_deleted_message">Canvas deleted</string>
+    <string name="successfully_canvas_favorited_message">Canvas added to favorites</string>
+    <string name="successfully_canvas_unfavorited_message">Canvas removed from favorites</string>
+    <string name="canvas_add_cancelled_message">Canvas add cancelled</string>
+    <string name="image_add_cancelled_message">Image add cancelled</string>
+    <string name="image_edit_cancelled_message">Image edit cancelled</string>
+    <string name="rate">Rate</string>
+    <string name="thanks_for_your_support">Thanks For Your Support!</string>
+    <string name="remind_me_later">Remind me later</string>
+    <string name="no_thanks">No, thanks</string>
+    <string name="ok">OK</string>
 </resources>

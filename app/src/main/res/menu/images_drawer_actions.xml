@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (c) 2018-2020 SAP and others.
+  ~ All rights reserved. This program and the accompanying materials
+  ~ are made available under the terms of the Eclipse Public License v2.0
+  ~ which accompanies this distribution, and is available at
+  ~ http://www.eclipse.org/legal/epl-v20.html
+  ~ Contributors:
+  ~ SAP - initial API and implementation
+  -->
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@id/images_fragment_dest"
+        android:icon="@drawable/ic_grid_24dp"
+        android:iconTint="@color/colorPrimary"
+        android:title="@string/images" />
+    <item
+        android:id="@id/statistics_fragment_dest"
+        android:icon="@drawable/ic_statistics_24dp"
+        android:iconTint="@color/colorPrimary"
+        android:title="@string/statistics" />
+    <item
+        android:id="@id/canvases_fragment_dest"
+        android:icon="@drawable/ic_wallpaper_96dp"
+        android:iconTint="@color/colorPrimary"
+        android:title="@string/canvases" />
+</menu>

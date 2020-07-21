@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (c) 2018-2020 SAP and others.
+  ~ All rights reserved. This program and the accompanying materials
+  ~ are made available under the terms of the Eclipse Public License v2.0
+  ~ which accompanies this distribution, and is available at
+  ~ http://www.eclipse.org/legal/epl-v20.html
+  ~ Contributors:
+  ~ SAP - initial API and implementation
+  -->
+
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <import type="android.view.View" />
+
+        <variable
+            name="viewmodel"
+            type="blog.photo.buildalbum.addimage.AddImageViewModel" />
+    </data>
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:id="@+id/addnew_coordinator_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <blog.photo.buildalbum.ScrollChildSwipeRefreshLayout
+            android:id="@+id/addnew_refresh_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:enabled="@{viewmodel.dataLoading}"
+            app:refreshing="@{viewmodel.dataLoading}">
+
+            <ScrollView
+                android:id="@+id/add_image_container_layout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clickable="true"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:id="@+id/addnew_linear_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:id="@+id/new_image"
+                        android:layout_width="@dimen/image_details_size"
+                        android:layout_height="@dimen/image_details_size"
+                        android:layout_gravity="center_horizontal"
+                        android:layout_margin="@dimen/inner_margin"
+                        android:background="@color/colorPrimary"
+                        android:visibility="gone"
+                        app:srcCompat="@mipmap/ic_launcher" />
+
+                    <ImageView
+                        android:id="@+id/addimage_camera"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:contentDescription="@{viewmodel.hasPermissionCamera ? @string/add_with_camera : @string/add_permission_camera}"
+                        android:gravity="center_horizontal"
+                        android:paddingTop="@dimen/activity_margin"
+                        android:src="@drawable/ic_camera_96dp"
+                        android:tint="@{viewmodel.hasPermissionCamera ? @color/colorPrimary : @color/colorAccent}"
+                        android:tooltipText="@string/add_with_camera" />
+
+                    <TextView
+                        android:id="@+id/no_permission_camera"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_centerInParent="true"
+                        android:layout_gravity="center_horizontal"
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical"
+                        android:padding="@dimen/activity_margin"
+                        android:text="@string/add_permission_camera"
+                        android:textColor="@color/colorPrimary"
+                        android:visibility="@{viewmodel.hasPermissionCamera ? View.GONE : View.VISIBLE}" />
+
+                    <ImageView
+                        android:id="@+id/addimage_storage"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:contentDescription="@{viewmodel.hasPermissionStorage ? @string/add_from_storage : @string/add_permission_storage}"
+                        android:gravity="center_horizontal"
+                        android:src="@drawable/ic_photo_library_96dp"
+                        android:tint="@{viewmodel.hasPermissionStorage ? @color/colorPrimary : @color/colorAccent}"
+                        android:tooltipText="@string/add_from_storage" />
+
+                    <TextView
+                        android:id="@+id/no_permission_storage"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_centerInParent="true"
+                        android:layout_gravity="center_horizontal"
+                        android:gravity="center_horizontal"
+                        android:orientation="vertical"
+                        android:padding="@dimen/activity_margin"
+                        android:text="@string/add_permission_storage"
+                        android:textColor="@color/colorPrimary"
+                        android:visibility="@{viewmodel.hasPermissionStorage ? View.GONE : View.VISIBLE}" />
+
+                    <ImageView
+                        android:id="@+id/addimage_cloud"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:contentDescription="@string/add_from_cloud"
+                        android:gravity="center_horizontal"
+                        android:src="@drawable/ic_cloud_download_96dp"
+                        android:tint="@{viewmodel.hasPermissionInternet ? @color/colorPrimary : @color/colorAccent}"
+                        android:tooltipText="@string/add_from_cloud" />
+
+                    <LinearLayout
+                        android:id="@+id/addimage_no_internet"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_centerInParent="true"
+                        android:orientation="vertical"
+                        android:visibility="@{viewmodel.hasPermissionInternet ? View.GONE : View.VISIBLE}">
+
+                        <ImageView
+                            android:id="@+id/addimage_no_internet_icon"
+                            android:layout_width="@dimen/empty_list_icon_size"
+                            android:layout_height="@dimen/empty_list_icon_size"
+                            android:layout_gravity="center"
+                            android:contentDescription="@string/enable_internet"
+                            android:src="@drawable/ic_airplanemode_96dp"
+                            android:tint="@color/colorPrimary"
+                            android:tooltipText="@string/enable_internet"/>
+
+                        <TextView
+                            android:id="@+id/addimage_no_internet_text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_horizontal"
+                            android:gravity="center_horizontal"
+                            android:text="@string/enable_internet"
+                            android:textColor="@color/colorPrimary" />
+                    </LinearLayout>
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/addimage_images_list"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="30"
+                        android:addNewImages="@{viewmodel.images}"
+                        android:alpha="0.5"
+                        android:padding="@dimen/list_item_padding"
+                        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+                        app:spanCount="3" />
+
+                </LinearLayout>
+
+            </ScrollView>
+
+        </blog.photo.buildalbum.ScrollChildSwipeRefreshLayout>
+
+        <LinearLayout
+            android:id="@+id/addnew_progress_spinner"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone">
+
+            <include layout="@layout/progress_layout" />
+
+        </LinearLayout>
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+</layout>

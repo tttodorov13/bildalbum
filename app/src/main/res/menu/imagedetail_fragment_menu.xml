@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (c) 2018-2020 SAP and others.
+  ~ All rights reserved. This program and the accompanying materials
+  ~ are made available under the terms of the Eclipse Public License v2.0
+  ~ which accompanies this distribution, and is available at
+  ~ http://www.eclipse.org/legal/epl-v20.html
+  ~ Contributors:
+  ~ SAP - initial API and implementation
+  -->
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/menu_favorite_image"
+        android:icon="@drawable/ic_favorite_border_24dp"
+        android:title="@string/menu_favorite_image"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/menu_share"
+        android:icon="@drawable/ic_share_24dp"
+        android:title="@string/menu_share_image"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/menu_print"
+        android:icon="@drawable/ic_print_24dp"
+        android:title="@string/menu_print_image"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/menu_rotate"
+        android:icon="@drawable/ic_rotate_24dp"
+        android:title="@string/menu_rotate_image"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/menu_delete_image"
+        android:icon="@drawable/ic_delete_24dp"
+        android:title="@string/menu_delete_image"
+        app:showAsAction="always" />
+</menu>

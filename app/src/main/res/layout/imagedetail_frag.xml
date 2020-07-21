@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (c) 2018-2020 SAP and others.
+  ~ All rights reserved. This program and the accompanying materials
+  ~ are made available under the terms of the Eclipse Public License v2.0
+  ~ which accompanies this distribution, and is available at
+  ~ http://www.eclipse.org/legal/epl-v20.html
+  ~ Contributors:
+  ~ SAP - initial API and implementation
+  -->
+
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <import type="android.view.View" />
+
+        <import type="androidx.core.content.ContextCompat" />
+
+        <import type="android.widget.CompoundButton" />
+
+        <variable
+            name="viewmodel"
+            type="blog.photo.buildalbum.imagedetail.ImageDetailViewModel" />
+    </data>
+
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
+        android:id="@+id/imagedetails_coordinator_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <blog.photo.buildalbum.ScrollChildSwipeRefreshLayout
+            android:id="@+id/imagedetails_refresh_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:onRefreshListener="@{viewmodel::refresh}"
+            app:refreshing="@{viewmodel.dataLoading}">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:padding="@dimen/activity_margin">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:padding="@dimen/activity_margin"
+                    android:visibility="@{viewmodel.isDataAvailable ? View.GONE : View.VISIBLE}">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/no_data"
+                        android:textAppearance="?android:attr/textAppearanceLarge"
+                        android:visibility="@{viewmodel.dataLoading ? View.GONE : View.VISIBLE}" />
+                </LinearLayout>
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:padding="@dimen/activity_margin"
+                    android:visibility="@{viewmodel.isDataAvailable ? View.VISIBLE : View.GONE}">
+
+                    <ImageView
+                        android:id="@+id/imagedetail_bitmap"
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/image_details_size"
+                        android:layout_gravity="center_horizontal"
+                        android:background="@{viewmodel.isNewImage ? @color/colorAccent : @color/colorPrimary}"
+                        android:contentDescription="@{viewmodel.image.publicId}"
+                        android:src="@{viewmodel.image.file}" />
+
+                    <LinearLayout
+                        android:id="@+id/imagedetail_canvases_linear_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_below="@+id/imagedetail_bitmap"
+                        android:orientation="vertical"
+                        android:visibility="@{viewmodel.empty ? View.GONE : View.VISIBLE}">
+
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/imagedetail_canvases_list"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="30"
+                            android:canvasItems="@{viewmodel.canvases}"
+                            android:padding="@dimen/list_item_padding"
+                            app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+                            app:spanCount="3" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/imagedetail_no_canvases_linear_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_below="@+id/imagedetail_bitmap"
+                        android:orientation="vertical"
+                        android:visibility="@{(viewmodel.empty &amp;&amp; viewmodel.hasPermissionInternet) ? View.VISIBLE : View.GONE}">
+
+                        <TextView
+                            android:id="@+id/imagedetail_no_canvases_text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_marginTop="@dimen/activity_margin"
+                            android:layout_marginBottom="@dimen/activity_margin"
+                            android:text="@{context.getString(viewmodel.noCanvasesLabel)}"
+                            android:textColor="@color/colorPrimary" />
+
+                        <ImageView
+                            android:id="@+id/imagedetail_no_canvases_icon"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="@dimen/activity_margin"
+                            android:gravity="center_horizontal"
+                            android:imeOptions="flagNoExtractUi"
+                            android:padding="@dimen/activity_margin"
+                            android:src="@drawable/ic_wallpaper_96dp"
+                            android:tint="@color/colorPrimary"
+                            android:tooltipText="@string/add_canvases" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:id="@+id/imagedetail_no_internet"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_below="@+id/imagedetail_bitmap"
+                        android:layout_centerInParent="true"
+                        android:orientation="vertical"
+                        android:visibility="@{(viewmodel.empty &amp;&amp; !viewmodel.hasPermissionInternet) ? View.VISIBLE : View.GONE}">
+
+                        <TextView
+                            android:id="@+id/imagedetail_no_internet_text"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center"
+                            android:layout_marginTop="@dimen/activity_margin"
+                            android:layout_marginBottom="@dimen/activity_margin"
+                            android:text="@string/enable_internet"
+                            android:textColor="@color/colorPrimary" />
+
+                        <ImageView
+                            android:id="@+id/imagedetail_no_internet_icon"
+                            android:layout_width="@dimen/empty_list_icon_size"
+                            android:layout_height="@dimen/empty_list_icon_size"
+                            android:layout_gravity="center_horizontal"
+                            android:layout_marginBottom="@dimen/activity_margin"
+                            android:contentDescription="@string/enable_internet"
+                            android:gravity="center_horizontal"
+                            android:padding="@dimen/activity_margin"
+                            android:src="@drawable/ic_airplanemode_96dp"
+                            android:tint="@color/colorPrimary"
+                            android:tooltipText="@string/enable_internet" />
+                    </LinearLayout>
+                </RelativeLayout>
+            </LinearLayout>
+        </blog.photo.buildalbum.ScrollChildSwipeRefreshLayout>
+
+        <LinearLayout
+            android:id="@+id/imagedetail_progress_spinner"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone">
+
+            <include layout="@layout/progress_layout" />
+
+        </LinearLayout>
+
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/imagedetail_fab"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/fab_margin"
+            android:src="@drawable/ic_check_24dp"
+            android:tint="@color/colorSecondary"
+            android:tooltipText="@string/fab_image_save"
+            app:backgroundTint="@color/colorPrimaryDark"
+            app:fabSize="normal"
+            app:layout_anchor="@id/imagedetails_refresh_layout"
+            app:layout_anchorGravity="bottom|right|end" />
+
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+</layout>

@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (c) 2018-2020 SAP and others.
+  ~ All rights reserved. This program and the accompanying materials
+  ~ are made available under the terms of the Eclipse Public License v2.0
+  ~ which accompanies this distribution, and is available at
+  ~ http://www.eclipse.org/legal/epl-v20.html
+  ~ Contributors:
+  ~ SAP - initial API and implementation
+  -->
+
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/images_fragment_dest">
+
+    <fragment
+        android:id="@+id/add_image_fragment_dest"
+        android:name="blog.photo.buildalbum.addimage.AddImageFragment"
+        android:label="@string/add_new">
+        <action
+            android:id="@+id/action_addNewFragment_to_imagesFragment"
+            app:destination="@id/images_fragment_dest" />
+    </fragment>
+    <fragment
+        android:id="@+id/canvases_fragment_dest"
+        android:name="blog.photo.buildalbum.canvases.CanvasesFragment"
+        android:label="@string/canvases">
+        <action
+            android:id="@+id/action_canvasesFragment_to_canvasDetailFragment"
+            app:destination="@id/canvas_detail_fragment_dest" />
+        <action
+            android:id="@+id/action_canvasesFragment_to_statisticsFragment"
+            app:destination="@id/statistics_fragment_dest" />
+        <argument
+            android:name="userMessage"
+            android:defaultValue="0"
+            app:argType="integer" />
+    </fragment>
+    <fragment
+        android:id="@+id/canvas_detail_fragment_dest"
+        android:name="blog.photo.buildalbum.canvasdetail.CanvasDetailFragment"
+        android:label="@string/canvas_details">
+        <action
+            android:id="@+id/action_canvasDetailFragment_to_canvasesFragment"
+            app:destination="@id/canvases_fragment_dest" />
+        <argument
+            android:name="imageId"
+            app:argType="integer" />
+        <argument
+            android:name="isFavorite"
+            android:defaultValue="false"
+            app:argType="boolean" />
+    </fragment>
+    <fragment
+        android:id="@+id/images_fragment_dest"
+        android:name="blog.photo.buildalbum.images.ImagesFragment"
+        android:label="@string/images">
+        <action
+            android:id="@+id/action_imagesFragment_to_addNewFragment"
+            app:destination="@id/add_image_fragment_dest" />
+        <action
+            android:id="@+id/action_imagesFragment_to_imageDetailFragment"
+            app:destination="@id/image_detail_fragment_dest" />
+        <action
+            android:id="@+id/action_imagesFragment_to_statisticsFragment"
+            app:destination="@id/statistics_fragment_dest" />
+        <argument
+            android:name="userMessage"
+            android:defaultValue="0"
+            app:argType="integer" />
+    </fragment>
+    <fragment
+        android:id="@+id/image_detail_fragment_dest"
+        android:name="blog.photo.buildalbum.imagedetail.ImageDetailFragment"
+        android:label="@string/image_details">
+        <action
+            android:id="@+id/action_imageDetailFragment_to_imagesFragment"
+            app:destination="@id/images_fragment_dest" />
+        <action
+            android:id="@+id/action_imagesFragment_to_canvasesFragment"
+            app:destination="@id/canvases_fragment_dest" />
+        <argument
+            android:name="imageId"
+            app:argType="integer" />
+        <argument
+            android:name="isFavorite"
+            android:defaultValue="false"
+            app:argType="boolean" />
+    </fragment>
+    <fragment
+        android:id="@+id/statistics_fragment_dest"
+        android:name="blog.photo.buildalbum.statistics.StatisticsFragment"
+        android:label="@string/statistics">
+        <action
+            android:id="@+id/action_statisticsFragment_to_addNewFragment"
+            app:destination="@id/add_image_fragment_dest" />
+        <action
+            android:id="@+id/action_statisticsFragment_to_imagesFragment"
+            app:destination="@id/images_fragment_dest" />
+    </fragment>
+    <argument
+        android:name="userMessage"
+        android:defaultValue="0" />
+</navigation>

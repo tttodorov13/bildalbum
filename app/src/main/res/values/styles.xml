@@ -1,42 +1,73 @@
-<resources>
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ Copyright (c) 2018-2020 SAP and others.
+  ~ All rights reserved. This program and the accompanying materials
+  ~ are made available under the terms of the Eclipse Public License v2.0
+  ~ which accompanies this distribution, and is available at
+  ~ http://www.eclipse.org/legal/epl-v20.html
+  ~ Contributors:
+  ~ SAP - initial API and implementation
+  -->
+
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="AppTheme" parent="Base.AppTheme" />
+
+    <style name="Base.AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:windowDisablePreview">true</item>
+        <item name="android:windowIsTranslucent">true</item>
+
+        <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
-        <item name="android:actionBarStyle">@style/AppActionBar</item>
-        <item name="android:alertDialogTheme">@style/AppAlertDialog</item>
+        <item name="colorSecondary">@color/colorSecondary</item>
 
-        <!-- Support library compatibility -->
-        <item name="actionBarStyle">@style/AppActionBar</item>
-        <item name="alertDialogTheme">@style/AppAlertDialog</item>
+        <!-- For Android sdk versions 26+. -->
+        <item name="android:fontFamily" tools:targetApi="jelly_bean">@font/opensans_font</item>
+        <!-- Set style for overflow button -->
+        <item name="actionOverflowButtonStyle">@style/actionOverflowButtonStyle</item>
+        <!-- Set style for popup menu -->
+        <item name="android:popupMenuStyle">@style/Popup</item>
+
+        <!-- Target Android sdk versions < 26 and > 14. -->
+        <item name="fontFamily">@font/opensans_font</item>
+        <!-- Target Android sdk versions > 24. -->
+        <item name="popupMenuStyle">@style/Popup</item>
     </style>
 
-    <!-- ActionBar styles -->
-    <style name="AppActionBar" parent="@style/Widget.AppCompat.ActionBar">
+    <!-- This style defines the tint color of the overflow menu button -->
+    <style name="actionOverflowButtonStyle" parent="@style/Widget.AppCompat.ActionButton.Overflow">
+        <item name="android:tint">@color/colorSecondary</item>
+    </style>
+
+    <!-- Nav Header style -->
+    <style name="NavHeader" parent="ThemeOverlay.AppCompat.Dark">
+        <item name="android:background">@color/colorPrimaryDark</item>
+        <item name="android:textColor">@color/colorSecondary</item>
+
+        <!-- Support library compatibility -->
+        <item name="background">@color/colorPrimaryDark</item>
+    </style>
+
+    <!-- Toolbar styles -->
+    <style name="Toolbar" parent="ThemeOverlay.AppCompat.Light">
         <item name="android:background">@color/colorPrimary</item>
-        <item name="android:titleTextStyle">@style/AppActionBarTitleText</item>
+
+        <!-- color of the toolbal menu overflow icon -->
+        <item name="android:textColorSecondary">@color/colorSecondary</item>
+
+        <!-- color of the toolbal text -->
+        <item name="titleTextColor">@color/colorSecondary</item>
 
         <!-- Support library compatibility -->
         <item name="background">@color/colorPrimary</item>
-        <item name="titleTextStyle">@style/AppActionBarTitleText</item>
     </style>
 
-    <!-- ActionBar title text style -->
-    <style name="AppActionBarTitleText" parent="@style/TextAppearance.AppCompat.Widget.ActionBar.Title">
-        <item name="android:textColor">@color/colorYellow</item>
-    </style>
-
-    <!-- Dialog styles -->
-    <style name="AppAlertDialog" parent="@style/Theme.AppCompat.Light.Dialog.Alert">
-        <item name="android:background">@color/colorPrimary</item>
-        <item name="android:textColor">@color/colorYellow</item>
-        <item name="android:tint">@color/colorYellow</item>
-
-        <!-- Support library compatibility -->
-        <item name="background">@color/colorPrimary</item>
-        <item name="tint">@color/colorYellow</item>
+    <!-- Popup styles -->
+    <style name="Popup" parent="@android:style/Theme.Dialog">
+        <item name="android:windowBackground">@color/colorPrimary</item>
+        <item name="android:textColor">@color/colorSecondary</item>
     </style>
 
 </resources>
