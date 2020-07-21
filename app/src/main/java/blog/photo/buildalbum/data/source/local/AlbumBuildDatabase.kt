@@ -18,7 +18,7 @@ import blog.photo.buildalbum.data.Image
  *
  * Note that exportSchema should be true in production databases.
  */
-@Database(entities = [Image::class], version = 1, exportSchema = false)
+@Database(entities = [Image::class], version = 1, exportSchema = true)
 abstract class AlbumBuildDatabase : RoomDatabase() {
 
     abstract fun imageDao(): ImagesDao
