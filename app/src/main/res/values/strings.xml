@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?><!--
+<?xml version="1.0" encoding="utf-8"?>
+<!--
   ~ Copyright (c) 2018-2020 SAP and others.
   ~ All rights reserved. This program and the accompanying materials
   ~ are made available under the terms of the Eclipse Public License v2.0
@@ -100,7 +101,6 @@
     <string name="successfully_canvas_deleted_message">Canvas deleted</string>
     <string name="successfully_canvas_favorited_message">Canvas added to favorites</string>
     <string name="successfully_canvas_unfavorited_message">Canvas removed from favorites</string>
-    <string name="canvas_add_cancelled_message">Canvas add cancelled</string>
     <string name="image_add_cancelled_message">Image add cancelled</string>
     <string name="image_edit_cancelled_message">Image edit cancelled</string>
     <string name="rate">Rate</string>

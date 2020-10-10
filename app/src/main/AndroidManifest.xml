@@ -9,7 +9,7 @@
   -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="blog.photo.buildalbum"
+    package="blog.photo.albumbuild"
     android:targetSandboxVersion="1">
 
     <uses-feature
@@ -27,7 +27,7 @@
         android:required="true" />
 
     <application
-        android:name="blog.photo.buildalbum.BuildAlbumApplication"
+        android:name="blog.photo.albumbuild.AlbumBuildApplication"
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -35,16 +35,16 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
 
-        <activity android:name="blog.photo.buildalbum.launch.LaunchActivity">
+        <activity android:name="blog.photo.albumbuild.launch.LaunchActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <activity android:name="blog.photo.buildalbum.images.ImagesActivity" />
+        <activity android:name="blog.photo.albumbuild.images.ImagesActivity" />
 
-        <activity android:name="blog.photo.buildalbum.canvases.CanvasesActivity" />
+        <activity android:name="blog.photo.albumbuild.canvases.CanvasesActivity" />
 
         <provider
             android:name="androidx.core.content.FileProvider"

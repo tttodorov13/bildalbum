@@ -9,7 +9,7 @@ android {
     compileSdkVersion rootProject.compileSdkVersion
 
     defaultConfig {
-        applicationId "blog.photo.buildalbum"
+        applicationId "blog.photo.albumbuild"
         minSdkVersion rootProject.minSdkVersion
         targetSdkVersion rootProject.targetSdkVersion
         versionCode 1
@@ -28,10 +28,10 @@ android {
         sourceSets {
             String sharedTestDir = 'src/sharedTest/java'
             test {
-                java.srcDir sharedTestDir
+                java.srcDirs += sharedTestDir
             }
             androidTest {
-                java.srcDir sharedTestDir
+                java.srcDirs += sharedTestDir
             }
         }
     }
@@ -105,16 +105,6 @@ android {
 }
 
 /*
- * Copyright (c) 2018-2020 SAP and others.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v2.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v20.html
- * Contributors:
- * SAP - initial API and implementation
- */
-
-/*
  Dependency versions are defined in the top level build.gradle file. This helps keeping track of
  all versions in a single place. This improves readability and helps managing project complexity.
  */
@@ -133,10 +123,10 @@ dependencies {
     implementation "androidx.legacy:legacy-support-v4:$androidXLegacySupport"
     implementation "androidx.test.espresso:espresso-idling-resource:$espressoVersion"
     implementation "androidx.room:room-runtime:$roomVersion"
-    kapt "androidx.room:room-compiler:$roomVersion"
     implementation "io.reactivex.rxjava2:rxandroid:$rxandroid"
     implementation "io.reactivex.rxjava2:rxjava:$rxjava"
     implementation "io.reactivex.rxjava2:rxkotlin:$rxkotlin"
+    kapt "androidx.room:room-compiler:$roomVersion"
     implementation "com.android.support:support-compat:28.0.0"
 
     // Architecture Components
@@ -174,8 +164,8 @@ dependencies {
     testImplementation "androidx.test:rules:$androidXTestRulesVersion"
     // Once https://issuetracker.google.com/127986458 is fixed this can be testImplementation
     debugImplementation "androidx.fragment:fragment-testing:$fragmentVersion"
-    implementation "androidx.fragment:fragment:$fragmentVersion"
     implementation "androidx.test:core:$androidXTestCoreVersion"
+    implementation "androidx.fragment:fragment:$fragmentVersion"
 
     // AndroidX Test - Instrumented testing
     androidTestImplementation "androidx.test:core-ktx:$androidXTestCoreVersion"
